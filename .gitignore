@@ -19,10 +19,8 @@ Thumbs.db
 *.cache
 *.ilk
 *.log
-[Dd]ebug*/
 *.lib
 *.sbr
 obj/
-[Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
