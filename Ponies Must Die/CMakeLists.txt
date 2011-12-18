@@ -101,11 +101,13 @@ add_definitions(-DBOOST_ALL_NO_LIB)
 set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
 
 set(HDRS
+	src/environment.h
 	src/pmd.h
 	src/Game.h
 )
 
 set(SRCS
+	src/environment.cpp
 	src/Game.cpp
 	src/main.cpp
 )
