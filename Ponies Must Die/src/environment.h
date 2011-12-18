@@ -44,8 +44,6 @@ class Environment
 public:
 	Environment(Ogre::SceneManager *sceneManager);
 	~Environment();
-
-	void draw();
 private:
 	Ogre::SceneManager * _sceneManager;
 	std::vector<Block> _blocks;
