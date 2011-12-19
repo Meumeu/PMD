@@ -1,21 +1,49 @@
+/*
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) 2011  Guillaume Meunier <guillaume.meunier@centraliens.net>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "pmd.h"
+#include "Game.h"
+#include <OgreConfigFile.h>
+#include "environment.h"
+
+#include <stdio.h>
+
+#ifdef _MSC_VER
+#pragma warning(disable:4305)
+#endif
+
+float distance = 3;
 
 namespace pmd
 {
 	Game::Game(void) :
-		mShutdown(false),
-		mRoot(NULL),
-		mCamera(NULL),
-		mSceneMgr(NULL),
-		mWindow(NULL),
-		mViewport(NULL),
-		mInputManager(NULL),
-		mMouse(NULL),
-		mKeyboard(NULL),
-		mResourcesCfg("../etc/resources.cfg"),
-		mPluginsCfg("../etc/plugins.cfg"),
-		mOgreCfg("../etc/ogre.cfg"),
-		mOgreLog("../ogre.log")
+		_Shutdown(false),
+		_Root(NULL),
+		_Camera(NULL),
+		_SceneMgr(NULL),
+		_Window(NULL),
+		_Viewport(NULL),
+		_InputManager(NULL),
+		_Mouse(NULL),
+		_Keyboard(NULL),
+		_ResourcesCfg("../etc/resources.cfg"),
+		_PluginsCfg("../etc/plugins.cfg"),
+		_OgreCfg("../etc/ogre.cfg"),
+		_OgreLog("../ogre.log")
 	{
 	}
 
@@ -41,7 +69,7 @@ namespace pmd
 	bool Game::keyPressed(const OIS::KeyEvent &arg)
 	{
 		if (arg.key == OIS::KC_ESCAPE)
-			mShutdown = true;
+			_Shutdown = true;
 		return true;
 	}
 
@@ -52,18 +80,32 @@ namespace pmd
 
 	bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
 	{
-		if (mWindow->isClosed())
+		if (_Window->isClosed())
 			return false;
 
 		/*if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
 			return false;*/
 
-		if (mShutdown)
+		if (_Shutdown)
 			return false;
 
+		char buffer[100];
+		if (_Keyboard->isKeyDown(OIS::KC_ADD))
+		{
+			Ogre::LogManager::getSingletonPtr()->logMessage(buffer);
+			distance *= exp(evt.timeSinceLastFrame);
+			_Camera->setPosition(0, 2, distance);
+		}
+		else if (_Keyboard->isKeyDown(OIS::KC_SUBTRACT))
+		{
+			Ogre::LogManager::getSingletonPtr()->logMessage(buffer);
+			distance *= exp(-evt.timeSinceLastFrame);
+			_Camera->setPosition(0, 2, distance);
+		}
+
 		//Need to capture/update each device
-		mKeyboard->capture();
-		mMouse->capture();
+		_Keyboard->capture();
+		_Mouse->capture();
 
 		return true;
 	}
@@ -72,7 +114,7 @@ namespace pmd
 	{
 		// Load resource paths from config file
 		Ogre::ConfigFile cf;
-		cf.load(mResourcesCfg);
+		cf.load(_ResourcesCfg);
 
 		// Go through all sections & settings in the file
 		Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
@@ -99,48 +141,48 @@ namespace pmd
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr;
 
-		mWindow->getCustomAttribute("WINDOW", &windowHnd);
+		_Window->getCustomAttribute("WINDOW", &windowHnd);
 		windowHndStr << windowHnd;
 		pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
 
-		mInputManager = OIS::InputManager::createInputSystem( pl );
+		_InputManager = OIS::InputManager::createInputSystem( pl );
 
-		mKeyboard = static_cast<OIS::Keyboard*>(mInputManager->createInputObject( OIS::OISKeyboard, true ));
-		mMouse = static_cast<OIS::Mouse*>(mInputManager->createInputObject( OIS::OISMouse, true ));
+		_Keyboard = static_cast<OIS::Keyboard*>(_InputManager->createInputObject( OIS::OISKeyboard, true ));
+		_Mouse = static_cast<OIS::Mouse*>(_InputManager->createInputObject( OIS::OISMouse, true ));
 
-		mMouse->setEventCallback(this);
-		mKeyboard->setEventCallback(this);
+		_Mouse->setEventCallback(this);
+		_Keyboard->setEventCallback(this);
 
 		//Set initial mouse clipping size
-		windowResized(mWindow);
+		windowResized(_Window);
 
 		//Register as a Window listener
-		Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
+		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
 
-		mRoot->addFrameListener(this);
+		_Root->addFrameListener(this);
 	}
 
 	bool Game::setup(void)
 	{
-		mRoot = new Ogre::Root(mPluginsCfg, mOgreCfg, mOgreLog);
+		_Root = new Ogre::Root(_PluginsCfg, _OgreCfg, _OgreLog);
 
-		if (!mRoot->restoreConfig())
-			if (!mRoot->showConfigDialog())
+		if (!_Root->restoreConfig())
+			if (!_Root->showConfigDialog())
 				return false;
 		
-		mWindow = mRoot->initialise(true, "Ponies Must Die");
-		mSceneMgr = mRoot->createSceneManager(Ogre::ST_GENERIC);
-		mCamera = mSceneMgr->createCamera("PlayerCam");
+		_Window = _Root->initialise(true, "Ponies Must Die");
+		_SceneMgr = _Root->createSceneManager(Ogre::ST_GENERIC);
+		_Camera = _SceneMgr->createCamera("PlayerCam");
 
 		// Create one viewport, entire window
-		mViewport = mWindow->addViewport(mCamera);
-		mViewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
+		_Viewport = _Window->addViewport(_Camera);
+		_Viewport->setBackgroundColour(Ogre::ColourValue(0, 0.1, 0));
 
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
 		// Alter the camera aspect ratio to match the viewport
-		mCamera->setAspectRatio(
-			Ogre::Real(mViewport->getActualWidth()) / Ogre::Real(mViewport->getActualHeight()));
+		_Camera->setAspectRatio(
+			Ogre::Real(_Viewport->getActualWidth()) / Ogre::Real(_Viewport->getActualHeight()));
 
 		setupResources();
 
@@ -158,8 +200,14 @@ namespace pmd
 	{
 		if (!setup())
 			return;
+
+		Environment env(_SceneMgr);
+
+		_Camera->setPosition(0, 2, distance);
 		
-		mRoot->startRendering();
+		_Camera->setNearClipDistance(0.01);
+		
+		_Root->startRendering();
 
 		cleanup();
 	}
@@ -171,7 +219,7 @@ namespace pmd
 		int left, top;
 		rw->getMetrics(width, height, depth, left, top);
 
-		const OIS::MouseState &ms = mMouse->getMouseState();
+		const OIS::MouseState &ms = _Mouse->getMouseState();
 		ms.width = width;
 		ms.height = height;
 	}
@@ -180,15 +228,15 @@ namespace pmd
 	void Game::windowClosed(Ogre::RenderWindow* rw)
 	{
 		//Only close for window that created OIS
-		if( rw == mWindow )
+		if( rw == _Window )
 		{
-			if( mInputManager )
+			if( _InputManager )
 			{
-				mInputManager->destroyInputObject(mMouse);
-				mInputManager->destroyInputObject(mKeyboard);
+				_InputManager->destroyInputObject(_Mouse);
+				_InputManager->destroyInputObject(_Keyboard);
 
-				OIS::InputManager::destroyInputSystem(mInputManager);
-				mInputManager = 0;
+				OIS::InputManager::destroyInputSystem(_InputManager);
+				_InputManager = 0;
 			}
 		}
 	}

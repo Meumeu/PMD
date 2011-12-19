@@ -1,8 +1,32 @@
+/*
+    <one line to give the program's name and a brief idea of what it does.>
+    Copyright (C) 2011  Guillaume Meunier <guillaume.meunier@centraliens.net>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef GAME_H
 #define GAME_H
 
-#include <Ogre.h>
-#include <OIS.h>
+
+#include <OgreFrameListener.h>
+#include <OgreWindowEventUtilities.h>
+#include <OgreRenderWindow.h>
+#include <OgreRoot.h>
+#include <OISInputManager.h>
+#include <OISKeyboard.h>
+#include <OISMouse.h>
+
 
 namespace pmd
 {
@@ -38,23 +62,23 @@ namespace pmd
 		void setupResources(void);
 		void setupFrameListener(void);
 
-		Ogre::Root * mRoot;
-		Ogre::Camera * mCamera;
-		Ogre::SceneManager * mSceneMgr;
-		Ogre::RenderWindow * mWindow;
-		Ogre::Viewport * mViewport;
+		Ogre::Root * _Root;
+		Ogre::Camera * _Camera;
+		Ogre::SceneManager * _SceneMgr;
+		Ogre::RenderWindow * _Window;
+		Ogre::Viewport * _Viewport;
 
 		//OIS Input devices
-		OIS::InputManager* mInputManager;
-		OIS::Mouse*    mMouse;
-		OIS::Keyboard* mKeyboard;
+		OIS::InputManager* _InputManager;
+		OIS::Mouse*    _Mouse;
+		OIS::Keyboard* _Keyboard;
 
-		Ogre::String mResourcesCfg;
-		Ogre::String mPluginsCfg;
-		Ogre::String mOgreCfg;
-		Ogre::String mOgreLog;
+		Ogre::String _ResourcesCfg;
+		Ogre::String _PluginsCfg;
+		Ogre::String _OgreCfg;
+		Ogre::String _OgreLog;
 
-		bool mShutdown;
+		bool _Shutdown;
 	};
 }
 
