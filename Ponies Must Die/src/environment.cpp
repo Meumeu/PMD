@@ -23,10 +23,6 @@
 #include <OgreSceneManager.h>
 #include <OgreStaticGeometry.h>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4305)
-#endif
-
 namespace pmd
 {
 

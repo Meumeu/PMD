@@ -1,0 +1,2 @@
+[Essential]
+FileSystem=@CMAKE_SOURCE_DIR@/resources

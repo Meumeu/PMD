@@ -109,6 +109,7 @@ set(HDRS
 set(SRCS
 	src/environment.cpp
 	src/Game.cpp
+	src/Game_setup.cpp
 	src/main.cpp
 )
 
@@ -164,7 +165,6 @@ if(WIN32)
         # NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
         # so you'll have to change that to make it work with 1.7.1
 	install(FILES ${OGRE_PLUGIN_DIR_REL}/OgreMain.dll
-		${OGRE_PLUGIN_DIR_REL}/RenderSystem_Direct3D9.dll
 		${OGRE_PLUGIN_DIR_REL}/RenderSystem_GL.dll
 		${OGRE_PLUGIN_DIR_REL}/libOIS.dll
 		DESTINATION bin
@@ -200,21 +200,11 @@ if(UNIX)
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
 
-	install(FILES ${CMAKE_SOURCE_DIR}/cfg/plugins.cfg
-		${CMAKE_SOURCE_DIR}/cfg/resources.cfg
-		DESTINATION etc
-		CONFIGURATIONS Release RelWithDebInfo Debug)
+	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
+		dist/etc/resources.cfg)
 
-	#install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/media
-	#	DESTINATION ./
-	#	CONFIGURATIONS Release RelWithDebInfo Debug
-	#)
- 
-	#install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
-	#	${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
-	#	DESTINATION bin
-	#	CONFIGURATIONS Release RelWithDebInfo Debug
-	#)
+	configure_file(${CMAKE_SOURCE_DIR}/cfg/plugins.cfg.in
+		dist/etc/plugins.cfg)
 
 endif(UNIX)
  
