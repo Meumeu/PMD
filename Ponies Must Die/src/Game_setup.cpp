@@ -34,7 +34,10 @@ namespace pmd
 		_ResourcesCfg("../etc/resources.cfg"),
 		_PluginsCfg("../etc/plugins.cfg"),
 		_OgreCfg("../etc/ogre.cfg"),
-		_OgreLog("../ogre.log")
+		_OgreLog("../ogre.log"),
+		_Player(NULL),
+		_Heading(0),
+		_Pitch(0)
 	{
 	}
 

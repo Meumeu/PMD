@@ -29,6 +29,22 @@ namespace pmd
 {
 	bool Game::mouseMoved(const OIS::MouseEvent &arg)
 	{
+		_Heading -= Ogre::Radian(arg.state.X.rel * 0.01);
+		_Pitch -= Ogre::Radian(arg.state.Y.rel * 0.01);
+		
+		if (_Heading.valueRadians() > M_PI)
+			_Heading -= Ogre::Radian(2 * M_PI);
+		else if (_Heading.valueRadians() < -M_PI)
+			_Heading += Ogre::Radian(2 * M_PI);
+		
+		if (_Pitch.valueRadians() > M_PI / 2)
+			_Pitch = Ogre::Radian(M_PI / 2);
+		else if (_Pitch.valueRadians() < -M_PI / 2)
+			_Pitch = Ogre::Radian(-M_PI / 2);
+		
+		_Player->setOrientation(Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y));
+		_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
+		
 		return true;
 	}
 
@@ -59,23 +75,44 @@ namespace pmd
 		if (_Window->isClosed())
 			return false;
 
-		/*if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-			return false;*/
-
 		if (_Shutdown)
 			return false;
 
-		if (_Keyboard->isKeyDown(OIS::KC_ADD))
+		double velX = 0, velZ = 0;
+		double dt = evt.timeSinceLastFrame;
+		
+		if (_Keyboard->isKeyDown(OIS::KC_Z))
 		{
-			distance *= exp(evt.timeSinceLastFrame);
-			_Camera->setPosition(0, 2, distance);
+			velZ = -2;
 		}
-		else if (_Keyboard->isKeyDown(OIS::KC_SUBTRACT))
+		else if (_Keyboard->isKeyDown(OIS::KC_S))
 		{
-			distance *= exp(-evt.timeSinceLastFrame);
-			_Camera->setPosition(0, 2, distance);
+			velZ = 2;
 		}
 
+		if (_Keyboard->isKeyDown(OIS::KC_Q))
+		{
+			velX = -2;
+		}
+		else if (_Keyboard->isKeyDown(OIS::KC_D))
+		{
+			velX = 2;
+		}
+		
+		if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
+		{
+			velX *= 2.5;
+			velZ *= 2.5;
+		}
+		
+		
+		
+		Ogre::Matrix3 orientation;
+		_Player->getOrientation().ToRotationMatrix(orientation);
+		Ogre::Vector3 vel = orientation * Ogre::Vector3(velX, 0, velZ);
+		
+		_Player->setPosition(_Player->getPosition() + vel * dt);
+		
 		//Need to capture/update each device
 		_Keyboard->capture();
 		_Mouse->capture();
@@ -89,8 +126,16 @@ namespace pmd
 			return;
 
 		Environment env(_SceneMgr);
+		_Player = new Ogre::SceneNode(_SceneMgr, "player");
+		
+		_Player->setPosition(0, 0, 0);
+		_Player->setOrientation(Ogre::Quaternion::IDENTITY);
+		_Player->attachObject(_Camera);
+		
+		_Camera->setPosition(0, 1.5, 2);
+		_Camera->setOrientation(Ogre::Quaternion::IDENTITY);
 
-		_Camera->setPosition(0, 2, distance);
+		//_Camera->setPosition(0, 2, distance);
 		
 		_Camera->setNearClipDistance(0.01);
 		

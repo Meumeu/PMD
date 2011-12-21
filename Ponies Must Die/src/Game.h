@@ -62,23 +62,27 @@ namespace pmd
 		void setupResources(void);
 		void setupFrameListener(void);
 
-		Ogre::Root * _Root;
-		Ogre::Camera * _Camera;
-		Ogre::SceneManager * _SceneMgr;
-		Ogre::RenderWindow * _Window;
-		Ogre::Viewport * _Viewport;
+		Ogre::Root *           _Root;
+		Ogre::Camera *         _Camera;
+		Ogre::SceneManager *   _SceneMgr;
+		Ogre::RenderWindow *   _Window;
+		Ogre::Viewport *       _Viewport;
 
 		//OIS Input devices
-		OIS::InputManager* _InputManager;
-		OIS::Mouse*    _Mouse;
-		OIS::Keyboard* _Keyboard;
+		OIS::InputManager *    _InputManager;
+		OIS::Mouse *           _Mouse;
+		OIS::Keyboard *        _Keyboard;
 
-		Ogre::String _ResourcesCfg;
-		Ogre::String _PluginsCfg;
-		Ogre::String _OgreCfg;
-		Ogre::String _OgreLog;
+		Ogre::String           _ResourcesCfg;
+		Ogre::String           _PluginsCfg;
+		Ogre::String           _OgreCfg;
+		Ogre::String           _OgreLog;
 
-		bool _Shutdown;
+		bool                   _Shutdown;
+		
+		Ogre::SceneNode *      _Player;
+		Ogre::Radian           _Heading;
+		Ogre::Radian           _Pitch;
 	};
 }
 
