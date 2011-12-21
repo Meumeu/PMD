@@ -50,7 +50,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager ) : _sceneManager(sc
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		std::stringstream log;
-		log << "Adding " << block._entity->getName() << " at (" << block._position.x << ", " << block._position.y << ") " << 
+		log << "Adding " << block._entity->getName() << " at (" << block._position.x << ", " << block._position.z << ") " << 
 		(block._orientation == North ? "N" : block._orientation == East ? "E" : block._orientation == South ? "S" : "W");
 		
 		Ogre::LogManager::getSingletonPtr()->logMessage(log.str());
@@ -58,16 +58,16 @@ Environment::Environment ( Ogre::SceneManager* sceneManager ) : _sceneManager(sc
 		switch (block._orientation)
 		{
 			case North:
-				sg->addEntity(block._entity, block._position, Ogre::Quaternion::IDENTITY, Ogre::Vector3(5, 5, 5));
+				sg->addEntity(block._entity, block._position, Ogre::Quaternion::IDENTITY, Ogre::Vector3(0.05, 0.05, 0.05));
 				break;
 			case East:
-				sg->addEntity(block._entity, block._position, eastRotation, Ogre::Vector3(5, 5, 5));
+				sg->addEntity(block._entity, block._position, eastRotation, Ogre::Vector3(0.05, 0.05, 0.05));
 				break;
 			case South:
-				sg->addEntity(block._entity, block._position, southRotation, Ogre::Vector3(5, 5, 5));
+				sg->addEntity(block._entity, block._position, southRotation, Ogre::Vector3(0.05, 0.05, 0.05));
 				break;
 			case West:
-				sg->addEntity(block._entity, block._position, westRotation, Ogre::Vector3(5, 5, 5));
+				sg->addEntity(block._entity, block._position, westRotation, Ogre::Vector3(0.05, 0.05, 0.05));
 		}
 	}
 	sg->build();

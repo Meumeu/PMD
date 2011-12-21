@@ -21,16 +21,17 @@
 #include "environment.h"
 
 #include <stdio.h>
+#include <OgreEntity.h>
 
-
-float distance = 3;
+const float CameraDistance = 0.8;
+const float CameraHeight = 1.8;
 
 namespace pmd
 {
 	bool Game::mouseMoved(const OIS::MouseEvent &arg)
 	{
-		_Heading -= Ogre::Radian(arg.state.X.rel * 0.01);
-		_Pitch -= Ogre::Radian(arg.state.Y.rel * 0.01);
+		_Heading -= Ogre::Radian(arg.state.X.rel * 0.003);
+		_Pitch -= Ogre::Radian(arg.state.Y.rel * 0.003);
 		
 		if (_Heading.valueRadians() > M_PI)
 			_Heading -= Ogre::Radian(2 * M_PI);
@@ -44,6 +45,7 @@ namespace pmd
 		
 		_Player->setOrientation(Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y));
 		_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
+		_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
 		
 		return true;
 	}
@@ -126,19 +128,21 @@ namespace pmd
 			return;
 
 		Environment env(_SceneMgr);
-		_Player = new Ogre::SceneNode(_SceneMgr, "player");
-		
-		_Player->setPosition(0, 0, 0);
-		_Player->setOrientation(Ogre::Quaternion::IDENTITY);
-		_Player->attachObject(_Camera);
-		
-		_Camera->setPosition(0, 1.5, 2);
-		_Camera->setOrientation(Ogre::Quaternion::IDENTITY);
 
-		//_Camera->setPosition(0, 2, distance);
-		
+		Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
+
+		_Player = _SceneMgr->getRootSceneNode()->createChildSceneNode("player");
+		_Player->attachObject(PlayerEntity);
+		_Player->attachObject(_Camera);
+
+		_Player->setOrientation(Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y));
+		_Player->setPosition(0, 0, 0);
+
+		_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
+		_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
+
 		_Camera->setNearClipDistance(0.01);
-		
+
 		_Root->startRendering();
 
 		cleanup();

@@ -195,7 +195,6 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX)
- 
 	install(TARGETS OgreApp
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
@@ -207,4 +206,4 @@ if(UNIX)
 		dist/etc/plugins.cfg)
 
 endif(UNIX)
- 
+

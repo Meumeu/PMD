@@ -79,7 +79,7 @@ namespace pmd
 		Ogre::String           _OgreLog;
 
 		bool                   _Shutdown;
-		
+
 		Ogre::SceneNode *      _Player;
 		Ogre::Radian           _Heading;
 		Ogre::Radian           _Pitch;
