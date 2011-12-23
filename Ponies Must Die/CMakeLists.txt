@@ -202,8 +202,5 @@ if(UNIX)
 	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
 		dist/etc/resources.cfg)
 
-	configure_file(${CMAKE_SOURCE_DIR}/cfg/plugins.cfg.in
-		dist/etc/plugins.cfg)
-
 endif(UNIX)
 

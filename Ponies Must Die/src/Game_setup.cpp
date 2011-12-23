@@ -32,7 +32,7 @@ namespace pmd
 		_Mouse(NULL),
 		_Keyboard(NULL),
 		_ResourcesCfg("../etc/resources.cfg"),
-		_PluginsCfg("../etc/plugins.cfg"),
+		_PluginsCfg("/etc/OGRE/plugins.cfg"),
 		_OgreCfg("../etc/ogre.cfg"),
 		_OgreLog("../ogre.log"),
 		_Player(NULL),
@@ -106,12 +106,12 @@ namespace pmd
 				return false;
 		
 		_Window = _Root->initialise(true, "Ponies Must Die");
-		_SceneMgr = _Root->createSceneManager(Ogre::ST_GENERIC);
+		_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
 		_Camera = _SceneMgr->createCamera("PlayerCam");
 
 		// Create one viewport, entire window
 		_Viewport = _Window->addViewport(_Camera);
-		_Viewport->setBackgroundColour(Ogre::ColourValue(0, 0.1, 0));
+		_Viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
 
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
