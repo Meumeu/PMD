@@ -80,8 +80,8 @@ namespace pmd
 		if (_Shutdown)
 			return false;
 
-		double velX = 0, velZ = 0;
-		double dt = evt.timeSinceLastFrame;
+		float velX = 0, velZ = 0;
+		float dt = evt.timeSinceLastFrame;
 		
 		if (_Keyboard->isKeyDown(OIS::KC_Z))
 		{
