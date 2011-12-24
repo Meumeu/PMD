@@ -1,0 +1,2 @@
+robot.mesh 0 0 0 N
+robot.mesh 2 0 3 S
