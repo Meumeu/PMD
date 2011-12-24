@@ -54,7 +54,7 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 			else
 			{
 				std::stringstream str;
-				str << "Invalid orientation (" << Orientation << ")";// << " line " << LineNumber;
+				str << "Invalid orientation (" << Orientation << ")";
 				throw std::invalid_argument(str.str());
 			}
 
