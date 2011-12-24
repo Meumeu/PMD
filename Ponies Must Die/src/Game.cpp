@@ -127,7 +127,8 @@ namespace pmd
 		if (!setup())
 			return;
 
-		Environment env(_SceneMgr, "../../../default_level.txt");
+		std::fstream f("../../../default_level.txt", std::fstream::in);
+		Environment env(_SceneMgr, f);
 
 		Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
 
