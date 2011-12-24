@@ -23,21 +23,45 @@
 #include <OgreSceneManager.h>
 #include <OgreStaticGeometry.h>
 #include <sstream>
+#include <fstream>
+#include <stdexcept>
 
 namespace pmd
 {
 
-Environment::Environment ( Ogre::SceneManager* sceneManager ) : _sceneManager(sceneManager)
+Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level) : _sceneManager(sceneManager)
 {
-	Ogre::Entity * block1Entity = _sceneManager->createEntity("block1","robot.mesh");
-	_blocks.push_back(Block(block1Entity, North, Ogre::Vector3(0,0,0)));
-	_blocks.push_back(Block(block1Entity->clone("block2"), North, Ogre::Vector3(1,0,0)));
-	_blocks.push_back(Block(block1Entity->clone("block3"), North, Ogre::Vector3(0,0,1)));
-	_blocks.push_back(Block(block1Entity->clone("block4"), North, Ogre::Vector3(1,0,1)));
+	while (!level.eof())
+	{
+		std::string MeshName;
+		std::string Orientation;
+		int x, y, z;
 
-	_blocks.push_back(Block(block1Entity->clone("block5"), East,  Ogre::Vector3(2,0,0)));
-	_blocks.push_back(Block(block1Entity->clone("block6"), West,  Ogre::Vector3(0,0,2)));
-	_blocks.push_back(Block(block1Entity->clone("block7"), South, Ogre::Vector3(2,0,1)));
+		level >> MeshName >> x >> y >> z >> Orientation;
+
+		if (MeshName.compare("") && (MeshName[0] != '#'))
+		{
+			std::cout << "mesh " << MeshName << " at (" << x << "," << y << "," << z << "), " << Orientation << std::endl;
+			orientation_t o;
+			if (!Orientation.compare("N"))
+				o = North;
+			else if (!Orientation.compare("S"))
+				o = South;
+			else if (!Orientation.compare("E"))
+				o = East;
+			else if (!Orientation.compare("W"))
+				o = West;
+			else
+			{
+				std::stringstream str;
+				str << "Invalid orientation (" << Orientation << ")";
+				throw std::invalid_argument(str.str());
+			}
+
+			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
+			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
+		}
+	}
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
@@ -49,12 +73,6 @@ Environment::Environment ( Ogre::SceneManager* sceneManager ) : _sceneManager(sc
 	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
-		std::stringstream log;
-		log << "Adding " << block._entity->getName() << " at (" << block._position.x << ", " << block._position.z << ") " << 
-		(block._orientation == North ? "N" : block._orientation == East ? "E" : block._orientation == South ? "S" : "W");
-		
-		Ogre::LogManager::getSingletonPtr()->logMessage(log.str());
-
 		switch (block._orientation)
 		{
 			case North:

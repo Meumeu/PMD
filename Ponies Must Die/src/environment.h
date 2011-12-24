@@ -19,6 +19,7 @@
 #define ENVIRONMENT_H
 
 #include <vector>
+#include <iostream>
 #include <OgreVector3.h>
 
 namespace Ogre {
@@ -40,7 +41,7 @@ class Environment
 		Ogre::Vector3 _position;
 	};
 public:
-	Environment(Ogre::SceneManager *sceneManager);
+	Environment(Ogre::SceneManager *sceneManager, std::istream &level);
 	~Environment();
 private:
 	Ogre::SceneManager * _sceneManager;

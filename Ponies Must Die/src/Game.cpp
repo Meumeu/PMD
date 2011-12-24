@@ -80,8 +80,8 @@ namespace pmd
 		if (_Shutdown)
 			return false;
 
-		double velX = 0, velZ = 0;
-		double dt = evt.timeSinceLastFrame;
+		float velX = 0, velZ = 0;
+		float dt = evt.timeSinceLastFrame;
 		
 		if (_Keyboard->isKeyDown(OIS::KC_Z))
 		{
@@ -127,7 +127,8 @@ namespace pmd
 		if (!setup())
 			return;
 
-		Environment env(_SceneMgr);
+		std::fstream f("../../../default_level.txt", std::fstream::in);
+		Environment env(_SceneMgr, f);
 
 		Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
 

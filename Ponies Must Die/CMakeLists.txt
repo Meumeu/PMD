@@ -155,7 +155,6 @@ if(WIN32)
 	install(FILES ${CMAKE_SOURCE_DIR}/cfg/plugins_win32.cfg
 		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
 		DESTINATION bin
-		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
 
         # NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll

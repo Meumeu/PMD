@@ -1,0 +1,8 @@
+robot.mesh 0 0 0 N
+robot.mesh 1 0 0 N
+robot.mesh 0 0 1 N
+robot.mesh 1 0 1 N
+
+robot.mesh 2 0 0 E
+robot.mesh 0 0 2 W
+robot.mesh 2 0 1 S
