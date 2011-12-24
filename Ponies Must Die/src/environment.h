@@ -40,7 +40,7 @@ class Environment
 		Ogre::Vector3 _position;
 	};
 public:
-	Environment(Ogre::SceneManager *sceneManager);
+	Environment(Ogre::SceneManager *sceneManager, std::string level = "");
 	~Environment();
 private:
 	Ogre::SceneManager * _sceneManager;

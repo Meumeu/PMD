@@ -1,2 +1,3 @@
 [Essential]
-FileSystem=@CMAKE_SOURCE_DIR@/resources
+FileSystem=@CMAKE_SOURCE_DIR@/resources/meshes
+FileSystem=@CMAKE_SOURCE_DIR@/resources/textures
