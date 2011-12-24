@@ -140,7 +140,6 @@ if(MINGW OR UNIX)
 endif(MINGW OR UNIX)
 
 if(WIN32)
- 
 	install(TARGETS OgreApp
 		RUNTIME DESTINATION bin
 		CONFIGURATIONS All)
@@ -150,16 +149,13 @@ if(WIN32)
 		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
 
-	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins.cfg
+	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
+		dist/etc/resources.cfg)
+
+	install(FILES ${CMAKE_SOURCE_DIR}/cfg/plugins_win32.cfg
 		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
 		DESTINATION bin
-		CONFIGURATIONS Release RelWithDebInfo
-	)
- 
-	install(FILES ${CMAKE_SOURCE_DIR}/dist/bin/plugins_d.cfg
-		${CMAKE_SOURCE_DIR}/dist/bin/resources_d.cfg
-		DESTINATION bin
-		CONFIGURATIONS Debug
+		CONFIGURATIONS Release RelWithDebInfo Debug
 	)
 
         # NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
@@ -186,7 +182,7 @@ if(WIN32)
       DESTINATION bin
       CONFIGURATIONS Release RelWithDebInfo
    )
- 
+
    install(FILES ${Boost_DATE_TIME_LIBRARY_DEBUG}
       ${Boost_THREAD_LIBRARY_DEBUG}
       DESTINATION bin

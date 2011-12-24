@@ -31,10 +31,19 @@ namespace pmd
 		_InputManager(NULL),
 		_Mouse(NULL),
 		_Keyboard(NULL),
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		_ResourcesCfg("../etc/resources.cfg"),
 		_PluginsCfg("/etc/OGRE/plugins.cfg"),
 		_OgreCfg("../etc/ogre.cfg"),
 		_OgreLog("../ogre.log"),
+#elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		_ResourcesCfg("../etc/resources.cfg"),
+		_PluginsCfg("../etc/plugins.cfg"),
+		_OgreCfg("../etc/ogre.cfg"),
+		_OgreLog("../ogre.log"),
+#else
+#error Unsupported platform
+#endif
 		_Player(NULL),
 		_Heading(0),
 		_Pitch(0)

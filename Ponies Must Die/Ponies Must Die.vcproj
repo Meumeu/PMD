@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\Game_setup.cpp"
+				>
+			</File>
+			<File
 				RelativePath="src\main.cpp"
 				>
 			</File>
