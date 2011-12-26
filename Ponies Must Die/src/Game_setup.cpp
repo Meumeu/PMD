@@ -80,7 +80,6 @@ namespace pmd
 	}
 	void Game::setupFrameListener(void)
 	{
-		Ogre::LogManager::getSingletonPtr()->logMessage("*** Initializing OIS ***");
 		OIS::ParamList pl;
 		size_t windowHnd = 0;
 		std::ostringstream windowHndStr;

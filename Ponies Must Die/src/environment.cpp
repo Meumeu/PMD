@@ -76,16 +76,16 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 		switch (block._orientation)
 		{
 			case North:
-				sg->addEntity(block._entity, block._position, Ogre::Quaternion::IDENTITY, Ogre::Vector3(0.05, 0.05, 0.05));
+				sg->addEntity(block._entity, block._position, Ogre::Quaternion::IDENTITY, Ogre::Vector3(0.01, 0.01, 0.01));
 				break;
 			case East:
-				sg->addEntity(block._entity, block._position, eastRotation, Ogre::Vector3(0.05, 0.05, 0.05));
+				sg->addEntity(block._entity, block._position, eastRotation, Ogre::Vector3(0.01, 0.01, 0.01));
 				break;
 			case South:
-				sg->addEntity(block._entity, block._position, southRotation, Ogre::Vector3(0.05, 0.05, 0.05));
+				sg->addEntity(block._entity, block._position, southRotation, Ogre::Vector3(0.01, 0.01, 0.01));
 				break;
 			case West:
-				sg->addEntity(block._entity, block._position, westRotation, Ogre::Vector3(0.05, 0.05, 0.05));
+				sg->addEntity(block._entity, block._position, westRotation, Ogre::Vector3(0.01, 0.01, 0.01));
 		}
 	}
 	sg->build();

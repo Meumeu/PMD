@@ -83,7 +83,7 @@ namespace pmd
 		float velX = 0, velZ = 0;
 		float dt = evt.timeSinceLastFrame;
 		
-		if (_Keyboard->isKeyDown(OIS::KC_Z))
+		if (_Keyboard->isKeyDown(OIS::KC_Z) || _Keyboard->isKeyDown(OIS::KC_W))
 		{
 			velZ = -2;
 		}
@@ -92,7 +92,7 @@ namespace pmd
 			velZ = 2;
 		}
 
-		if (_Keyboard->isKeyDown(OIS::KC_Q))
+		if (_Keyboard->isKeyDown(OIS::KC_Q) || _Keyboard->isKeyDown(OIS::KC_A))
 		{
 			velX = -2;
 		}
@@ -127,7 +127,15 @@ namespace pmd
 		if (!setup())
 			return;
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		std::fstream f("../../../default_level.txt", std::fstream::in);
+#elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+		std::fstream f("../../default_level.txt", std::fstream::in);
+#else
+#error Unsupported platform
+#endif
+		if (!f.is_open()) throw new std::invalid_argument("file not found");
+
 		Environment env(_SceneMgr, f);
 
 		Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
