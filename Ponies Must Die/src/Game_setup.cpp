@@ -46,7 +46,13 @@ namespace pmd
 #endif
 		_Player(NULL),
 		_Heading(0),
-		_Pitch(0)
+		_Pitch(0),
+
+		_CollisionConfiguration(0),
+		_Dispatcher(0),
+		_OverlappingPairCache(0),
+		_Solver(0),
+		_DynamicsWorld(0)
 	{
 	}
 
@@ -132,7 +138,32 @@ namespace pmd
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 
 		setupFrameListener();
+
+		setupBullet();
 		return true;
+	}
+
+	void Game::setupBullet(void)
+	{
+		_CollisionConfiguration = new btDefaultCollisionConfiguration();
+		_Dispatcher = new btCollisionDispatcher(_CollisionConfiguration);
+		_OverlappingPairCache = new btDbvtBroadphase();
+		_Solver = new btSequentialImpulseConstraintSolver();
+
+		_DynamicsWorld = new btDiscreteDynamicsWorld(
+			_Dispatcher,
+			_OverlappingPairCache,
+			_Solver,
+			_CollisionConfiguration);
+	}
+
+	void Game::cleanupBullet(void)
+	{
+		delete _DynamicsWorld;
+		delete _Solver;
+		delete _OverlappingPairCache;
+		delete _Dispatcher;
+		delete _CollisionConfiguration;
 	}
 
 	void Game::cleanup(void)

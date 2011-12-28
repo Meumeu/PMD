@@ -59,6 +59,7 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 			}
 
 			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
+			Entity->setCastShadows(true);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
 		}
 	}
@@ -73,6 +74,7 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
+		block._entity->setCastShadows(false);
 		switch (block._orientation)
 		{
 			case North:
@@ -89,6 +91,7 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 		}
 	}
 	sg->build();
+	sg->setCastShadows(true);
 }
 
 Environment::~Environment()

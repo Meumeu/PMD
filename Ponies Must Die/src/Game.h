@@ -23,10 +23,12 @@
 #include <OgreWindowEventUtilities.h>
 #include <OgreRenderWindow.h>
 #include <OgreRoot.h>
+
 #include <OISInputManager.h>
 #include <OISKeyboard.h>
 #include <OISMouse.h>
 
+#include <btBulletDynamicsCommon.h>
 
 namespace pmd
 {
@@ -59,8 +61,11 @@ namespace pmd
 	private:
 		bool setup(void);
 		void cleanup(void);
+
 		void setupResources(void);
 		void setupFrameListener(void);
+		void setupBullet(void);
+		void cleanupBullet(void);
 
 		Ogre::Root *           _Root;
 		Ogre::Camera *         _Camera;
@@ -83,6 +88,12 @@ namespace pmd
 		Ogre::SceneNode *      _Player;
 		Ogre::Radian           _Heading;
 		Ogre::Radian           _Pitch;
+
+		btCollisionConfiguration * _CollisionConfiguration;
+		btCollisionDispatcher *    _Dispatcher;
+		btBroadphaseInterface *    _OverlappingPairCache;
+		btConstraintSolver *       _Solver;
+		btDynamicsWorld *          _DynamicsWorld;
 	};
 }
 

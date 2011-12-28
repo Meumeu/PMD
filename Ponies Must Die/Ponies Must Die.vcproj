@@ -12,6 +12,9 @@
 		<Platform
 			Name="Win32"
 		/>
+		<Platform
+			Name="x64"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
@@ -41,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;$(OGRE_HOME)\include;$(OGRE_HOME)\include\OIS;$(OGRE_HOME)\include\OGRE;$(OGRE_HOME)\boost_1_44"
+				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -61,12 +64,87 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain_d.lib OIS_d.lib"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib BulletDynamics_Debug.lib BulletCollision_Debug.lib LinearMath_Debug.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="3"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib BulletDynamics_Debug.lib BulletCollision_Debug.lib LinearMath_Debug.lib"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -117,7 +195,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="include;$(OGRE_HOME)\include;$(OGRE_HOME)\include\OIS;$(OGRE_HOME)\include\OGRE;$(OGRE_HOME)\boost_1_44"
+				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -136,14 +214,92 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain.lib OIS.lib"
+				AdditionalDependencies="OgreMain.lib OIS.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				EnableIntrinsicFunctions="true"
+				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="OgreMain.lib OIS.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
+				GenerateDebugInformation="false"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"

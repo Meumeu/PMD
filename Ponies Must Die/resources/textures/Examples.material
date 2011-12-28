@@ -45,3 +45,17 @@ material Examples/Robot
 		}
 	}
 }
+
+material Examples/Rockwall
+{
+        technique
+        {
+                pass
+                {
+                        texture_unit
+                        {
+                                texture rockwall.tga
+                        }
+                }
+        }
+}

@@ -22,6 +22,9 @@
 
 #include <stdio.h>
 #include <OgreEntity.h>
+#include <OgreMeshManager.h>
+
+#include <btBulletDynamicsCommon.h>
 
 const float CameraDistance = 0.8;
 const float CameraHeight = 1.8;
@@ -140,6 +143,7 @@ namespace pmd
 
 		Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
 
+		PlayerEntity->setCastShadows(true);
 		_Player = _SceneMgr->getRootSceneNode()->createChildSceneNode("player");
 		_Player->attachObject(PlayerEntity);
 		_Player->attachObject(_Camera);
@@ -152,6 +156,33 @@ namespace pmd
 
 		_Camera->setNearClipDistance(0.01);
 
+		Ogre::Light* pointLight = _SceneMgr->createLight();
+		pointLight->setType(Ogre::Light::LT_POINT);
+		pointLight->setPosition(Ogre::Vector3(0, 10, 0));
+		pointLight->setDiffuseColour(1,1,1);
+		pointLight->setSpecularColour(1,1,1);
+		
+		_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
+		//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
+
+		Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+		Ogre::MeshManager::getSingleton().createPlane(
+			"ground",
+			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+			plane,
+			15, 15, 200, 200, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
+ 
+		Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
+		entGround->setCastShadows(false);
+		entGround->setMaterialName("Examples/Rockwall");
+		_SceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entGround);
+
+		Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
+		Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+		node->attachObject(entCube);
+		node->setScale(0.005, 0.005, 0.005);
+		node->setPosition(1, 3, 1);
+		
 		_Root->startRendering();
 
 		cleanup();

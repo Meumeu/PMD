@@ -19,8 +19,7 @@ cmake_minimum_required(VERSION 2.6)
 project(OgreApp)
 
 if(WIN32)
-	set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;${CMAKE_MODULE_PATH}")
-
+	set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;$ENV{BULLET_HOME};${CMAKE_MODULE_PATH}")
 endif(WIN32)
 
 if(UNIX)
