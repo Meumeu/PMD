@@ -52,7 +52,7 @@ namespace pmd
 		_Dispatcher(0),
 		_OverlappingPairCache(0),
 		_Solver(0),
-		_DynamicsWorld(0)
+		_World(0)
 	{
 	}
 
@@ -150,16 +150,18 @@ namespace pmd
 		_OverlappingPairCache = new btDbvtBroadphase();
 		_Solver = new btSequentialImpulseConstraintSolver();
 
-		_DynamicsWorld = new btDiscreteDynamicsWorld(
+		_World = new btDiscreteDynamicsWorld(
 			_Dispatcher,
 			_OverlappingPairCache,
 			_Solver,
 			_CollisionConfiguration);
+
+		_World->setGravity(btVector3(0, -10, 0));
 	}
 
 	void Game::cleanupBullet(void)
 	{
-		delete _DynamicsWorld;
+		delete _World;
 		delete _Solver;
 		delete _OverlappingPairCache;
 		delete _Dispatcher;

@@ -348,6 +348,10 @@
 				RelativePath="src\main.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\src\RigidBody.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -364,6 +368,10 @@
 			</File>
 			<File
 				RelativePath="src\pmd.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\RigidBody.h"
 				>
 			</File>
 		</Filter>

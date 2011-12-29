@@ -93,7 +93,7 @@ namespace pmd
 		btCollisionDispatcher *    _Dispatcher;
 		btBroadphaseInterface *    _OverlappingPairCache;
 		btConstraintSolver *       _Solver;
-		btDynamicsWorld *          _DynamicsWorld;
+		btDynamicsWorld *          _World;
 	};
 }
 

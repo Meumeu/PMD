@@ -17,7 +17,7 @@
 
 #include "pmd.h"
 #include "Game.h"
-
+#include "RigidBody.h"
 #include "environment.h"
 
 #include <stdio.h>
@@ -118,11 +118,87 @@ namespace pmd
 		
 		_Player->setPosition(_Player->getPosition() + vel * dt);
 		
+		_World->stepSimulation(evt.timeSinceLastFrame, 10);
+
 		//Need to capture/update each device
 		_Keyboard->capture();
 		_Mouse->capture();
 
 		return true;
+	}
+
+	void DumpSkeleton(std::stringstream &ss, Ogre::SkeletonInstance * s, int level)
+	{
+		Ogre::Skeleton::BoneIterator bi = s->getBoneIterator();
+		while (bi.hasMoreElements())
+		{
+			for(int i = 0; i < level + 2; i++)
+			{
+				ss << " ";
+			}
+			Ogre::Bone * b = bi.getNext();
+
+			ss << b->getName() << " " << b->getPosition() << std::endl;
+		}
+	}
+
+	void DumpNodes(std::stringstream &ss, Ogre::Node *n, int level)
+	{
+		for(int i = 0; i < level; i++)
+		{
+			ss << " ";
+		}
+		ss << "SceneNode: " << n->getName() << " at " << n->getPosition() << std::endl;
+		
+		Ogre::SceneNode::ObjectIterator object_it = ((Ogre::SceneNode *)n)->getAttachedObjectIterator();
+		Ogre::Node::ChildNodeIterator node_it = n->getChildIterator();
+
+		Ogre::MovableObject *m;
+		while(object_it.hasMoreElements())
+		{
+			for(int i = 0; i < level + 2; i++)
+			{
+				ss << " ";
+			}
+			m = object_it.getNext();
+			ss << m->getMovableType() << ": " << m->getName() << std::endl;
+			if (!strcmp(m->getMovableType().c_str(), "Entity"))
+			{
+				Ogre::Entity * e = (Ogre::Entity *)m;
+				Ogre::SkeletonInstance * s = e->getSkeleton();
+				if (s)
+				{
+					DumpSkeleton(ss, s, level);
+				}
+				Ogre::AnimationStateSet * anim = e->getAllAnimationStates();
+				if (anim)
+				{
+					Ogre::AnimationStateIterator anim_it = anim->getAnimationStateIterator();
+					while (anim_it.hasMoreElements())
+					{
+						Ogre::AnimationState * st = anim_it.getNext();
+						for(int i = 0; i < level + 2; i++)
+						{
+							ss << " ";
+						}
+						ss << "Animation: " << st->getAnimationName() << std::endl;
+					}
+				}
+			}
+		}
+		
+		while(node_it.hasMoreElements())
+		{
+			DumpNodes(ss, node_it.getNext(), level + 2);
+		}
+	}
+
+	std::string DumpNodes(Ogre::Node *n)
+	{
+		std::stringstream ss;
+		ss << std::endl << "Node Hierarchy:" << std::endl;
+		DumpNodes(ss, n, 0);
+		return ss.str();
 	}
 
 	void Game::go(void)
@@ -177,12 +253,44 @@ namespace pmd
 		entGround->setMaterialName("Examples/Rockwall");
 		_SceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entGround);
 
-		Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
-		Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-		node->attachObject(entCube);
-		node->setScale(0.005, 0.005, 0.005);
-		node->setPosition(1, 3, 1);
 		
+		btRigidBody * btGround = new btRigidBody(0, 0, new btBoxShape(btVector3(7.5, 0.001, 7.5)));
+		_World->addRigidBody(btGround);
+
+		Ogre::SceneNode * node;
+
+		for(int i = 1; i < 30; i++)
+		{
+			Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
+			node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+			node->attachObject(entCube);
+			node->setScale(0.005, 0.005, 0.005);
+			node->setPosition(1, 3, 1);
+			btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
+			btVector3 inertia;
+			btCubeShape->calculateLocalInertia(1, inertia);
+			btRigidBody * btCube = new btRigidBody(
+				1,
+				new RigidBody<Ogre::SceneNode>(
+					Ogre::Quaternion::IDENTITY,
+					Ogre::Vector3(0, 3+i, -5),
+					node),
+				btCubeShape,
+				inertia);
+			_World->addRigidBody(btCube);
+		}
+
+
+		/*Ogre::Entity * entRobot = _SceneMgr->createEntity("Robot", "robot.mesh");
+		node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+		node->attachObject(entRobot);
+		node->setScale(0.01, 0.01, 0.01);
+		node->setPosition(1, 1, 1);*/
+
+		Ogre::LogManager::getSingleton().logMessage(
+			Ogre::LML_NORMAL,
+			DumpNodes(_SceneMgr->getRootSceneNode()).c_str());
+
 		_Root->startRendering();
 
 		cleanup();

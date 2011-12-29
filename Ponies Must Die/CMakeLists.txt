@@ -103,6 +103,7 @@ set(HDRS
 	src/environment.h
 	src/pmd.h
 	src/Game.h
+	src/RigidBody.h
 )
 
 set(SRCS
@@ -110,6 +111,7 @@ set(SRCS
 	src/Game.cpp
 	src/Game_setup.cpp
 	src/main.cpp
+	src/RigidBody.cpp
 )
 
 include_directories( ${OIS_INCLUDE_DIRS}
