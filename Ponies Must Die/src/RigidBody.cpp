@@ -16,10 +16,9 @@
 */
 
 #include "RigidBody.h"
-#include <ogrescenenode.h>
-#include <ogrebone.h>
+#include <OgreSceneNode.h>
+#include <OgreBone.h>
 
-template class RigidBody<Ogre::SceneNode>;
 
 template<class T> RigidBody<T>::RigidBody(
 	const Ogre::Quaternion &rot,
@@ -59,3 +58,4 @@ template<class T> void RigidBody<T>::getWorldTransform(btTransform &worldTrans) 
 	worldTrans = _Transform;
 }
 
+template class RigidBody<Ogre::SceneNode>;

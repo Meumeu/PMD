@@ -16,8 +16,8 @@
 */
 
 #include <LinearMath/btMotionState.h>
-#include <ogrequaternion.h>
-#include <ogrevector3.h>
+#include <OgreQuaternion.h>
+#include <OgreVector3.h>
 
 template<class T> class RigidBody : public btMotionState
 {

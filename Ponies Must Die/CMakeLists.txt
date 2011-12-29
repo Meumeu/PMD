@@ -118,11 +118,15 @@ include_directories( ${OIS_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
 )
 
+if (EXISTS "/usr/include/bullet")
+	include_directories("/usr/include/bullet")
+endif()
+
 add_executable(OgreApp WIN32 ${HDRS} ${SRCS})
 
 set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
 
-target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES} BulletSoftBody BulletDynamics LinearMath BulletCollision)
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
