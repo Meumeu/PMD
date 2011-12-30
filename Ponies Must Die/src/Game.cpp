@@ -206,6 +206,8 @@ namespace pmd
 		if (!setup())
 			return;
 
+		//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE); // ombre que sur les cubes ??
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 		std::fstream f("../../../default_level.txt", std::fstream::in);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -239,7 +241,6 @@ namespace pmd
 		pointLight->setSpecularColour(1,1,1);
 		
 		_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
-		//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
 
 		Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 		Ogre::MeshManager::getSingleton().createPlane(
@@ -254,12 +255,15 @@ namespace pmd
 		_SceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entGround);
 
 		
-		btRigidBody * btGround = new btRigidBody(0, 0, new btBoxShape(btVector3(7.5, 0.001, 7.5)));
+		btRigidBody * btGround = new btRigidBody(
+			0,
+			new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10, 0))),
+			new btBoxShape(btVector3(7.5, 10, 7.5)));
 		_World->addRigidBody(btGround);
 
 		Ogre::SceneNode * node;
 
-		for(int i = 1; i < 30; i++)
+		for(int i = 0; i < 1000; i++)
 		{
 			Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
 			node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -279,13 +283,6 @@ namespace pmd
 				inertia);
 			_World->addRigidBody(btCube);
 		}
-
-
-		/*Ogre::Entity * entRobot = _SceneMgr->createEntity("Robot", "robot.mesh");
-		node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-		node->attachObject(entRobot);
-		node->setScale(0.01, 0.01, 0.01);
-		node->setPosition(1, 1, 1);*/
 
 		Ogre::LogManager::getSingleton().logMessage(
 			Ogre::LML_NORMAL,
