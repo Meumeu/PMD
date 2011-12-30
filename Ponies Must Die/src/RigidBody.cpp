@@ -59,3 +59,4 @@ template<class T> void RigidBody<T>::getWorldTransform(btTransform &worldTrans) 
 }
 
 template class RigidBody<Ogre::SceneNode>;
+template class RigidBody<Ogre::Bone>;
