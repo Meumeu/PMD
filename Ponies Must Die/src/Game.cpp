@@ -33,20 +33,14 @@ namespace pmd
 {
 	bool Game::mouseMoved(const OIS::MouseEvent &arg)
 	{
-		_Heading -= Ogre::Radian(arg.state.X.rel * 0.003);
 		_Pitch -= Ogre::Radian(arg.state.Y.rel * 0.003);
-		
-		if (_Heading.valueRadians() > M_PI)
-			_Heading -= Ogre::Radian(2 * M_PI);
-		else if (_Heading.valueRadians() < -M_PI)
-			_Heading += Ogre::Radian(2 * M_PI);
-		
 		if (_Pitch.valueRadians() > M_PI / 2)
 			_Pitch = Ogre::Radian(M_PI / 2);
 		else if (_Pitch.valueRadians() < -M_PI / 2)
 			_Pitch = Ogre::Radian(-M_PI / 2);
-		
-		_Player->setOrientation(Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y));
+
+		_Heading -= arg.state.X.rel * 0.003;
+
 		_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 		_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
 		
@@ -88,36 +82,53 @@ namespace pmd
 		
 		if (_Keyboard->isKeyDown(OIS::KC_Z) || _Keyboard->isKeyDown(OIS::KC_W))
 		{
-			velZ = -2;
+			velZ = -3;
 		}
 		else if (_Keyboard->isKeyDown(OIS::KC_S))
 		{
-			velZ = 2;
+			velZ = 3;
 		}
 
 		if (_Keyboard->isKeyDown(OIS::KC_Q) || _Keyboard->isKeyDown(OIS::KC_A))
 		{
-			velX = -2;
+			velX = -3;
 		}
 		else if (_Keyboard->isKeyDown(OIS::KC_D))
 		{
-			velX = 2;
+			velX = 3;
 		}
 		
 		if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 		{
-			velX *= 2.5;
-			velZ *= 2.5;
+			velX *= 3.5;
+			velZ *= 3.5;
 		}
 		
+		btMatrix3x3 orientation(_PlayerBody->getOrientation());
+		btVector3 vel = orientation * btVector3(velX, 0, velZ);
+		btVector3 cur_v = _PlayerBody->getVelocityInLocalPoint(btVector3(0,0,0));
+		btVector3 F = 800 * (vel - cur_v);
+		F.setY(0);
 		
-		
-		Ogre::Matrix3 orientation;
-		_Player->getOrientation().ToRotationMatrix(orientation);
-		Ogre::Vector3 vel = orientation * Ogre::Vector3(velX, 0, velZ);
-		
-		_Player->setPosition(_Player->getPosition() + vel * dt);
-		
+		btQuaternion q = _PlayerBody->getOrientation();
+		btQuaternion q_target(btVector3(0,1,0), _Heading);
+
+		float Iyy = 10.3;
+		float freq = 5;
+		float w = freq * 2 * M_PI;
+		float ksi = 0.7;
+
+		float Kp = Iyy * w * w;
+		float Kd = Iyy * 2 * ksi * w;
+		q = q_target * q.inverse();
+		if (q.getW() < 0) q = -q;
+
+		btVector3 T = Kp * q.getAxis() * q.getAngle() - Kd * _PlayerBody->getAngularVelocity();
+
+		_PlayerBody->activate(true);
+		_PlayerBody->applyTorque(T);
+		_PlayerBody->applyCentralForce(F);
+
 		_World->stepSimulation(evt.timeSinceLastFrame, 10);
 
 		//Need to capture/update each device
@@ -226,8 +237,22 @@ namespace pmd
 		_Player->attachObject(PlayerEntity);
 		_Player->attachObject(_Camera);
 
-		_Player->setOrientation(Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y));
-		_Player->setPosition(0, 0, 0);
+		btCollisionShape * PlayerShape = new btCapsuleShape(0.4, 1.9-2*0.4);
+		btVector3 PlayerInertia;
+		PlayerShape->calculateLocalInertia(80, PlayerInertia);
+		PlayerInertia.setX(0);
+		PlayerInertia.setZ(0);
+
+		_PlayerBody = new btRigidBody(
+			80,
+			new RigidBody<Ogre::SceneNode>(
+			Ogre::Quaternion::IDENTITY,
+				Ogre::Vector3(0, 0, 0),
+				Ogre::Vector3(0, 0.95, 0),
+				_Player),
+			PlayerShape,
+			PlayerInertia);
+		_World->addRigidBody(_PlayerBody);
 
 		_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 		_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
@@ -236,7 +261,7 @@ namespace pmd
 
 		Ogre::Light* pointLight = _SceneMgr->createLight();
 		pointLight->setType(Ogre::Light::LT_POINT);
-		pointLight->setPosition(Ogre::Vector3(0, 10, 0));
+		pointLight->setPosition(Ogre::Vector3(15, 10, 15));
 		pointLight->setDiffuseColour(1,1,1);
 		pointLight->setSpecularColour(1,1,1);
 		
@@ -247,7 +272,7 @@ namespace pmd
 			"ground",
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 			plane,
-			15, 15, 200, 200, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
+			240, 240, 200, 200, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
  
 		Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
 		entGround->setCastShadows(false);
@@ -258,30 +283,36 @@ namespace pmd
 		btRigidBody * btGround = new btRigidBody(
 			0,
 			new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10, 0))),
-			new btBoxShape(btVector3(7.5, 10, 7.5)));
+			new btBoxShape(btVector3(120, 10, 120)));
 		_World->addRigidBody(btGround);
 
-		Ogre::SceneNode * node;
-
-		for(int i = 0; i < 1000; i++)
+		for(float y=0; y < 1000; y += 1)
 		{
-			Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
-			node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-			node->attachObject(entCube);
-			node->setScale(0.005, 0.005, 0.005);
-			node->setPosition(1, 3, 1);
-			btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
-			btVector3 inertia;
-			btCubeShape->calculateLocalInertia(1, inertia);
-			btRigidBody * btCube = new btRigidBody(
-				1,
-				new RigidBody<Ogre::SceneNode>(
-					Ogre::Quaternion::IDENTITY,
-					Ogre::Vector3(0, 3+i, -5),
-					node),
-				btCubeShape,
-				inertia);
-			_World->addRigidBody(btCube);
+			for (float x = -1; x < 1; x += 1000.6)
+			{
+				for (float z = -11; z < -9; z += 1000.6)
+				{
+					Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
+					Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+					node->attachObject(entCube);
+					node->setScale(0.005, 0.005, 0.005);
+					node->setPosition(1, 3, 1);
+					btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
+					//btCollisionShape * btCubeShape = new btSphereShape(0.25*sqrt(3.0f));
+					btVector3 inertia;
+					btCubeShape->calculateLocalInertia(100, inertia);
+					btRigidBody * btCube = new btRigidBody(
+						100,
+						new RigidBody<Ogre::SceneNode>(
+							Ogre::Quaternion::IDENTITY,
+							Ogre::Vector3(x, y, z),
+							Ogre::Vector3(0, 0, 0),
+							node),
+						btCubeShape,
+						inertia);
+					_World->addRigidBody(btCube);
+				}
+			}
 		}
 
 		Ogre::LogManager::getSingleton().logMessage(

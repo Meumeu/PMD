@@ -23,14 +23,20 @@
 template<class T> RigidBody<T>::RigidBody(
 	const Ogre::Quaternion &rot,
 	const Ogre::Vector3 &pos,
+	const Ogre::Vector3 &CoG,
 	T * node)
 {
+	_CoG = CoG;
+	_Rotation = rot;
+
+	Ogre::Matrix3 M;
+	_Rotation.ToRotationMatrix(M);
+	_Position = pos;
+	Ogre::Vector3 pos2 = pos + M * _CoG;
+
 	_Transform = btTransform(
 		btQuaternion(rot.x, rot.y, rot.z, rot.w),
-		btVector3(pos.x, pos.y, pos.z));
-
-	_Rotation = rot;
-	_Position = pos;
+		btVector3(pos2.x, pos2.y, pos2.z));
 
 	_Node = node;
 }
@@ -43,7 +49,10 @@ template<class T> void RigidBody<T>::setWorldTransform(const btTransform &worldT
 	btVector3 x = worldTrans.getOrigin();
 
 	_Rotation = Ogre::Quaternion(q.w(), q.x(), q.y(), q.z());
-	_Position = Ogre::Vector3(x.x(), x.y(), x.z());
+	Ogre::Matrix3 M;
+	_Rotation.ToRotationMatrix(M);
+
+	_Position = Ogre::Vector3(x.x(), x.y(), x.z()) - M * _CoG;
 
 	_Node->setPosition(_Position);
 	_Node->setOrientation(_Rotation);

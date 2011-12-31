@@ -45,14 +45,15 @@ namespace pmd
 #error Unsupported platform
 #endif
 		_Player(NULL),
-		_Heading(0),
 		_Pitch(0),
+		_Heading(0),
 
 		_CollisionConfiguration(0),
 		_Dispatcher(0),
 		_OverlappingPairCache(0),
 		_Solver(0),
-		_World(0)
+		_World(0),
+		_PlayerBody(0)
 	{
 	}
 

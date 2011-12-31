@@ -86,7 +86,7 @@ namespace pmd
 		bool                   _Shutdown;
 
 		Ogre::SceneNode *      _Player;
-		Ogre::Radian           _Heading;
+		float                  _Heading;
 		Ogre::Radian           _Pitch;
 
 		btCollisionConfiguration * _CollisionConfiguration;
@@ -94,6 +94,8 @@ namespace pmd
 		btBroadphaseInterface *    _OverlappingPairCache;
 		btConstraintSolver *       _Solver;
 		btDynamicsWorld *          _World;
+
+		btRigidBody *          _PlayerBody;
 	};
 }
 

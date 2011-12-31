@@ -22,13 +22,18 @@
 template<class T> class RigidBody : public btMotionState
 {
 public:
-	RigidBody(const Ogre::Quaternion &rot, const Ogre::Vector3 &pos, T * node);
+	RigidBody(
+		const Ogre::Quaternion &rot,
+		const Ogre::Vector3 &pos,
+		const Ogre::Vector3 &CoG,
+		T * node);
 	virtual ~RigidBody();
 	virtual void getWorldTransform(btTransform &worldTrans) const;
 	virtual void setWorldTransform(const btTransform &worldTrans);
 
 private:
 	btTransform      _Transform;
+	Ogre::Vector3    _CoG;
 	Ogre::Quaternion _Rotation;
 	Ogre::Vector3    _Position;
 	T *              _Node;
