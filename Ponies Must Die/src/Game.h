@@ -69,8 +69,8 @@ private:
 	void setupBullet(void);
 	void cleanupBullet(void);
 
-	static void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
-	void Game::BulletCallback(btScalar timeStep);
+	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
+	void BulletCallback(btScalar timeStep);
 
 	Ogre::Root *           _Root;
 	Ogre::Camera *         _Camera;

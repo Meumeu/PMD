@@ -104,6 +104,7 @@ set(HDRS
 	src/pmd.h
 	src/Game.h
 	src/RigidBody.h
+	src/CharacterController.h
 
 	src/bullet/btBulletCollisionCommon.h
 	src/bullet/btBulletDynamicsCommon.h
@@ -288,6 +289,7 @@ set(SRCS
 	src/Game_setup.cpp
 	src/main.cpp
 	src/RigidBody.cpp
+	src/CharacterController.cpp
 
 	src/bullet/BulletCollision/BroadphaseCollision/btAxisSweep3.cpp
 	src/bullet/BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp
