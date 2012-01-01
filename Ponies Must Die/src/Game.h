@@ -30,73 +30,77 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#include "CharacterController.h"
+
 namespace pmd
 {
-	class Game :
-		public Ogre::FrameListener,
-		public Ogre::WindowEventListener,
-		public OIS::KeyListener,
-		public OIS::MouseListener
-	{
-	public:
-		Game(void);
-		~Game(void);
-		
-		void go(void);
-	protected:
-		// Ogre::FrameListener
-		virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+class Game :
+	public Ogre::FrameListener,
+	public Ogre::WindowEventListener,
+	public OIS::KeyListener,
+	public OIS::MouseListener
+{
+public:
+	Game(void);
+	~Game(void);
+	
+	void go(void);
+protected:
+	// Ogre::FrameListener
+	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 
-		// OIS::KeyListener
-		virtual bool keyPressed(const OIS::KeyEvent &arg);
-		virtual bool keyReleased(const OIS::KeyEvent &arg);
-		// OIS::MouseListener
-		virtual bool mouseMoved(const OIS::MouseEvent &arg);
-		virtual bool mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
-		virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
+	// OIS::KeyListener
+	virtual bool keyPressed(const OIS::KeyEvent &arg);
+	virtual bool keyReleased(const OIS::KeyEvent &arg);
+	// OIS::MouseListener
+	virtual bool mouseMoved(const OIS::MouseEvent &arg);
+	virtual bool mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
+	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 
-		virtual void windowResized(Ogre::RenderWindow * rw);
-		virtual void windowClosed(Ogre::RenderWindow* rw);
+	virtual void windowResized(Ogre::RenderWindow * rw);
+	virtual void windowClosed(Ogre::RenderWindow* rw);
 
-	private:
-		bool setup(void);
-		void cleanup(void);
+private:
+	bool setup(void);
+	void cleanup(void);
 
-		void setupResources(void);
-		void setupFrameListener(void);
-		void setupBullet(void);
-		void cleanupBullet(void);
+	void setupResources(void);
+	void setupFrameListener(void);
+	void setupBullet(void);
+	void cleanupBullet(void);
 
-		Ogre::Root *           _Root;
-		Ogre::Camera *         _Camera;
-		Ogre::SceneManager *   _SceneMgr;
-		Ogre::RenderWindow *   _Window;
-		Ogre::Viewport *       _Viewport;
+	static void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
+	void Game::BulletCallback(btScalar timeStep);
 
-		//OIS Input devices
-		OIS::InputManager *    _InputManager;
-		OIS::Mouse *           _Mouse;
-		OIS::Keyboard *        _Keyboard;
+	Ogre::Root *           _Root;
+	Ogre::Camera *         _Camera;
+	Ogre::SceneManager *   _SceneMgr;
+	Ogre::RenderWindow *   _Window;
+	Ogre::Viewport *       _Viewport;
 
-		Ogre::String           _ResourcesCfg;
-		Ogre::String           _PluginsCfg;
-		Ogre::String           _OgreCfg;
-		Ogre::String           _OgreLog;
+	//OIS Input devices
+	OIS::InputManager *    _InputManager;
+	OIS::Mouse *           _Mouse;
+	OIS::Keyboard *        _Keyboard;
 
-		bool                   _Shutdown;
+	Ogre::String           _ResourcesCfg;
+	Ogre::String           _PluginsCfg;
+	Ogre::String           _OgreCfg;
+	Ogre::String           _OgreLog;
 
-		Ogre::SceneNode *      _Player;
-		float                  _Heading;
-		Ogre::Radian           _Pitch;
+	bool                   _Shutdown;
 
-		btCollisionConfiguration * _CollisionConfiguration;
-		btCollisionDispatcher *    _Dispatcher;
-		btBroadphaseInterface *    _OverlappingPairCache;
-		btConstraintSolver *       _Solver;
-		btDynamicsWorld *          _World;
+	float                  _Heading;
+	Ogre::Radian           _Pitch;
 
-		btRigidBody *          _PlayerBody;
-	};
+	btCollisionConfiguration * _CollisionConfiguration;
+	btCollisionDispatcher *    _Dispatcher;
+	btBroadphaseInterface *    _OverlappingPairCache;
+	btConstraintSolver *       _Solver;
+	btDynamicsWorld *          _World;
+
+	CharacterController * _Player;
+};
 }
 
 #endif // GAME_H

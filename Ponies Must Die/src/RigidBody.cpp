@@ -19,7 +19,8 @@
 #include <OgreSceneNode.h>
 #include <OgreBone.h>
 
-
+namespace pmd
+{
 template<class T> RigidBody<T>::RigidBody(
 	const Ogre::Quaternion &rot,
 	const Ogre::Vector3 &pos,
@@ -67,5 +68,11 @@ template<class T> void RigidBody<T>::getWorldTransform(btTransform &worldTrans) 
 	worldTrans = _Transform;
 }
 
+template<class T> void RigidBody<T>::setNode(T * node)
+{
+	_Node = node;
+}
+
 template class RigidBody<Ogre::SceneNode>;
 template class RigidBody<Ogre::Bone>;
+}

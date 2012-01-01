@@ -52,8 +52,7 @@ namespace pmd
 		_Dispatcher(0),
 		_OverlappingPairCache(0),
 		_Solver(0),
-		_World(0),
-		_PlayerBody(0)
+		_World(0)
 	{
 	}
 
@@ -144,6 +143,12 @@ namespace pmd
 		return true;
 	}
 
+	void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
+	{
+		Game * g = static_cast<Game*>(world->getWorldUserInfo());
+		g->BulletCallback(timeStep);
+	}
+
 	void Game::setupBullet(void)
 	{
 		_CollisionConfiguration = new btDefaultCollisionConfiguration();
@@ -158,6 +163,11 @@ namespace pmd
 			_CollisionConfiguration);
 
 		_World->setGravity(btVector3(0, -10, 0));
+
+		_World->setInternalTickCallback(
+			&Game::StaticBulletCallback,
+			static_cast<void*>(this),
+			true);
 	}
 
 	void Game::cleanupBullet(void)

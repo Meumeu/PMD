@@ -217,7 +217,7 @@
 				AdditionalDependencies="OgreMain.lib OIS.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -332,6 +332,10 @@
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
+			<File
+				RelativePath=".\src\CharacterController.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\src\environment.cpp"
 				>
@@ -874,6 +878,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\src\CharacterController.h"
+				>
+			</File>
 			<File
 				RelativePath=".\src\environment.h"
 				>

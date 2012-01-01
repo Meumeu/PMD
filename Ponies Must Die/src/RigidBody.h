@@ -15,10 +15,15 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef RIGIDBODY_H
+#define RIGIDBODY_H
+
 #include <LinearMath/btMotionState.h>
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
+namespace pmd
+{
 template<class T> class RigidBody : public btMotionState
 {
 public:
@@ -30,6 +35,7 @@ public:
 	virtual ~RigidBody();
 	virtual void getWorldTransform(btTransform &worldTrans) const;
 	virtual void setWorldTransform(const btTransform &worldTrans);
+	void setNode(T * node);
 
 private:
 	btTransform      _Transform;
@@ -38,3 +44,6 @@ private:
 	Ogre::Vector3    _Position;
 	T *              _Node;
 };
+}
+
+#endif // RIGIDBODY_H
