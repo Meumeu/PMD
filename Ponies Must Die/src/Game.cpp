@@ -229,8 +229,14 @@ void Game::go(void)
 	Ogre::Light* pointLight = _SceneMgr->createLight();
 	pointLight->setType(Ogre::Light::LT_POINT);
 	pointLight->setPosition(Ogre::Vector3(15, 10, 15));
-	pointLight->setDiffuseColour(1,1,1);
-	pointLight->setSpecularColour(1,1,1);
+	pointLight->setDiffuseColour(0.5,0.5,0.5);
+	pointLight->setSpecularColour(0.5,0.5,0.5);
+
+	Ogre::Light* dirLight = _SceneMgr->createLight();
+	dirLight->setType(Ogre::Light::LT_DIRECTIONAL);
+	dirLight->setDirection(Ogre::Vector3(-1, -1, -1));
+	dirLight->setDiffuseColour(0.5,0.5,0.5);
+	dirLight->setSpecularColour(0.5,0.5,0.5);
 
 	_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
 
@@ -241,6 +247,8 @@ void Game::go(void)
 		plane,
 		240, 240, 200, 200, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
 
+
+	// ground
 	Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
 	entGround->setCastShadows(false);
 	entGround->setMaterialName("Examples/Rockwall");
@@ -252,23 +260,41 @@ void Game::go(void)
 		new btBoxShape(btVector3(120, 10, 120)));
 	_World->addRigidBody(btGround);
 
-	for(float y=0; y < 10; y += 0.51)
+	// slope test
+	Ogre::Entity * entSlope = _SceneMgr->createEntity("Prefab_Cube");
+	entSlope->setMaterialName("Examples/Rockwall");
+	Ogre::SceneNode * nodeSlope = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+	nodeSlope->attachObject(entSlope);
+	nodeSlope->setScale(1, 1, 1);
+	nodeSlope->setPosition(170, 0, 0);
+	nodeSlope->setOrientation(Ogre::Quaternion(Ogre::Degree(30), Ogre::Vector3::UNIT_X));
+	btCollisionShape * SlopeShape = new btBoxShape(btVector3(50, 50, 50));
+	btRigidBody * SlopeBody = new btRigidBody(
+		0,
+		new btDefaultMotionState(btTransform(btQuaternion(btVector3(1,0,0), M_PI/6), btVector3(170,0,0))),
+		SlopeShape);
+	SlopeBody->setFriction(1);
+	_World->addRigidBody(SlopeBody);
+	_Player->_Body->setFriction(1);
+
+	
+
+	for(float y=0; y < 5; y += 0.51)
 	{
-		for (float x = -(9-y)*0.6; x < (9-y)*0.6+0.1; x += 0.6)
+		for (float x = -(4.5-y)*0.6; x < (4.5-y)*0.6+0.1; x += 0.6)
 		{
-			for (float z = -(9-y)*0.6-20; z < (9-y)*0.6+0.1-20; z += 0.6)
+			for (float z = -(4.5-y)*0.6-20; z < (4.5-y)*0.6+0.1-20; z += 0.6)
 			{
 				Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
 				Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
 				node->attachObject(entCube);
 				node->setScale(0.005, 0.005, 0.005);
-				node->setPosition(1, 3, 1);
 				btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
 				//btCollisionShape * btCubeShape = new btSphereShape(0.25*sqrt(3.0f));
 				btVector3 inertia;
-				btCubeShape->calculateLocalInertia(5, inertia);
+				btCubeShape->calculateLocalInertia(1, inertia);
 				btRigidBody * btCube = new btRigidBody(
-					5,
+					1,
 					new RigidBody<Ogre::SceneNode>(
 						Ogre::Quaternion::IDENTITY,
 						Ogre::Vector3(x, y+0.25, z),

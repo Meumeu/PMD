@@ -78,23 +78,13 @@ void CharacterController::TickCallback(void)
 	//btQuaternion CurrentQ = _Body->getOrientation();
 	btQuaternion TargetQ(btVector3(0,1,0), _TargetHeading);
 
-	/*const float freq = 5;
-	const float w = freq * 2 * M_PI;
-	const float ksi = 0.7;
-
-	const float Kp = _Inertia.y() * w * w;
-	const float Kd = _Inertia.y() * 2 * ksi * w;
-	btQuaternion q = TargetQ * CurrentQ.inverse();
-	if (q.getW() < 0) q = -q;
-
-	float AngleError = q.getAngle();
-
-	btVector3 T = Kp * q.getAxis() * AngleError - Kd * _Body->getAngularVelocity();
-
-	T.setX(0);
-	T.setZ(0);*/
-
-	if (_Jump) F.setY(_Mass * 15);
+	if (_Jump)
+	{
+		//F.setY(_Mass * 15);
+		btVector3 Velocity = _Body->getLinearVelocity();
+		Velocity.setY(10);
+		_Body->setLinearVelocity(Velocity);
+	}
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
