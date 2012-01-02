@@ -18,6 +18,7 @@
 #include <OgreConfigFile.h>
 #include "AppStateManager.h"
 #include <assert.h>
+#include "pmd.h"
 
 namespace pmd
 {
@@ -33,7 +34,7 @@ bool AppStateManager::setup(void)
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	_OgreRoot = new Ogre::Root("/etc/OGRE/plugins.cfg", "../etc/ogre.cfg", "../ogre.log");
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	_OgreRoot = new Ogre::Root("../plugins.cfg", "../etc/ogre.cfg", "../ogre.log");
+	_OgreRoot = new Ogre::Root("../etc/plugins.cfg", "../etc/ogre.cfg", "../ogre.log");
 #endif
 	
 	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
