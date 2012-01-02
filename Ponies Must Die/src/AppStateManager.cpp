@@ -31,11 +31,10 @@ AppStateManager::AppStateManager()
 
 bool AppStateManager::setup(void)
 {
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	_OgreRoot = new Ogre::Root("/etc/OGRE/plugins.cfg", "../etc/ogre.cfg", "../ogre.log");
-#elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	_OgreRoot = new Ogre::Root("../etc/plugins.cfg", "../etc/ogre.cfg", "../ogre.log");
-#endif
+	_OgreRoot = new Ogre::Root("", "../etc/ogre.cfg", "../ogre.log");
+	
+	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
+	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
 	
 	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
 	{

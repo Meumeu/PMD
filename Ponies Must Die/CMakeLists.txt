@@ -423,6 +423,16 @@ set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
 
 target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
 
+if(WIN32)
+	add_definitions(-DPATH_RenderSystem_GL=\"RenderSystem_GL.dll\" -DPATH_Plugin_OctreeSceneManager=\"Plugin_OctreeSceneManager.dll\")
+else()
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\" -DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG}\")
+	elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_REL}\" -DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_REL}\")
+	endif()
+endif()
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/etc)
@@ -452,7 +462,7 @@ if(WIN32)
 	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
 		dist/etc/resources.cfg)
 
-	install(FILES ${CMAKE_SOURCE_DIR}/cfg/plugins_win32.cfg
+	install(FILES
 		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
 		DESTINATION bin
 	)
@@ -467,7 +477,6 @@ if(WIN32)
 	)
 
 	install(FILES ${OGRE_PLUGIN_DIR_DBG}/OgreMain_d.dll
-		${OGRE_PLUGIN_DIR_DBG}/RenderSystem_Direct3D9_d.dll
 		${OGRE_PLUGIN_DIR_DBG}/RenderSystem_GL_d.dll
 		${OGRE_PLUGIN_DIR_DBG}/libOIS_d.dll
 		DESTINATION bin
