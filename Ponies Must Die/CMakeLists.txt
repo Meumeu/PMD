@@ -105,6 +105,8 @@ set(HDRS
 	src/Game.h
 	src/RigidBody.h
 	src/CharacterController.h
+	src/AppState.h
+	src/AppStateManager.h
 
 	src/bullet/btBulletCollisionCommon.h
 	src/bullet/btBulletDynamicsCommon.h
@@ -290,6 +292,7 @@ set(SRCS
 	src/main.cpp
 	src/RigidBody.cpp
 	src/CharacterController.cpp
+	src/AppStateManager.cpp
 
 	src/bullet/BulletCollision/BroadphaseCollision/btAxisSweep3.cpp
 	src/bullet/BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp
@@ -418,7 +421,7 @@ add_executable(OgreApp WIN32 ${HDRS} ${SRCS})
 
 set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
 
-target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES} BulletSoftBody BulletDynamics LinearMath BulletCollision)
+target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)

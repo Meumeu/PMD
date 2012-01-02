@@ -18,32 +18,14 @@
 #include "pmd.h"
 #include "Game.h"
 #include <OgreConfigFile.h>
+#include "AppStateManager.h"
 
 namespace pmd
 {
 	Game::Game(void) :
-		_Shutdown(false),
-		_Root(NULL),
 		_Camera(NULL),
 		_SceneMgr(NULL),
-		_Window(NULL),
 		_Viewport(NULL),
-		_InputManager(NULL),
-		_Mouse(NULL),
-		_Keyboard(NULL),
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-		_ResourcesCfg("../etc/resources.cfg"),
-		_PluginsCfg("/etc/OGRE/plugins.cfg"),
-		_OgreCfg("../etc/ogre.cfg"),
-		_OgreLog("../ogre.log"),
-#elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		_ResourcesCfg("../etc/resources.cfg"),
-		_PluginsCfg("../etc/plugins.cfg"),
-		_OgreCfg("../etc/ogre.cfg"),
-		_OgreLog("../ogre.log"),
-#else
-#error Unsupported platform
-#endif
 		_Player(NULL),
 		_Pitch(0),
 		_Heading(0),
@@ -60,88 +42,37 @@ namespace pmd
 	{
 	}
 
-	void Game::setupResources(void)
-	{
-		// Load resource paths from config file
-		Ogre::ConfigFile cf;
-		cf.load(_ResourcesCfg);
+void Game::Enter(void)
+{
+	_Root = AppStateManager::GetSingleton().GetOgreRoot();
+	_Window = AppStateManager::GetSingleton().GetWindow();
+	_Mouse = AppStateManager::GetSingleton().GetMouse();
+	_Keyboard = AppStateManager::GetSingleton().GetKeyboard();
+	
+	_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
+	_Camera = _SceneMgr->createCamera("PlayerCam");
+	_Viewport = _Window->addViewport(_Camera, 0);
+	_Camera->setAspectRatio(Ogre::Real(_Viewport->getActualWidth()) / Ogre::Real(_Viewport->getActualHeight()));
+	setupBullet();
+	
+	go();
+}
 
-		// Go through all sections & settings in the file
-		Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
+void Game::Exit(void)
+{
+	cleanupBullet();
+	AppStateManager::GetSingleton().GetWindow()->removeViewport(0);
+	_SceneMgr->destroyCamera(_Camera);
+	AppStateManager::GetSingleton().GetOgreRoot()->destroySceneManager(_SceneMgr);
+}
 
-		Ogre::String secName, typeName, archName;
-		while (seci.hasMoreElements())
-		{
-			secName = seci.peekNextKey();
-			Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
-			Ogre::ConfigFile::SettingsMultiMap::iterator i;
-			for (i = settings->begin(); i != settings->end(); ++i)
-			{
-				typeName = i->first;
-				archName = i->second;
-				Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-					archName, typeName, secName);
-			}
-		}
-	}
-	void Game::setupFrameListener(void)
-	{
-		OIS::ParamList pl;
-		size_t windowHnd = 0;
-		std::ostringstream windowHndStr;
+void Game::Pause(void)
+{
+}
 
-		_Window->getCustomAttribute("WINDOW", &windowHnd);
-		windowHndStr << windowHnd;
-		pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-
-		_InputManager = OIS::InputManager::createInputSystem( pl );
-
-		_Keyboard = static_cast<OIS::Keyboard*>(_InputManager->createInputObject( OIS::OISKeyboard, true ));
-		_Mouse = static_cast<OIS::Mouse*>(_InputManager->createInputObject( OIS::OISMouse, true ));
-
-		_Mouse->setEventCallback(this);
-		_Keyboard->setEventCallback(this);
-
-		//Set initial mouse clipping size
-		windowResized(_Window);
-
-		//Register as a Window listener
-		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
-
-		_Root->addFrameListener(this);
-	}
-
-	bool Game::setup(void)
-	{
-		_Root = new Ogre::Root(_PluginsCfg, _OgreCfg, _OgreLog);
-
-		if (!_Root->restoreConfig())
-			if (!_Root->showConfigDialog())
-				return false;
-		
-		_Window = _Root->initialise(true, "Ponies Must Die");
-		_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
-		_Camera = _SceneMgr->createCamera("PlayerCam");
-
-		// Create one viewport, entire window
-		_Viewport = _Window->addViewport(_Camera);
-		_Viewport->setBackgroundColour(Ogre::ColourValue(0, 0, 0));
-
-		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-
-		// Alter the camera aspect ratio to match the viewport
-		_Camera->setAspectRatio(
-			Ogre::Real(_Viewport->getActualWidth()) / Ogre::Real(_Viewport->getActualHeight()));
-
-		setupResources();
-
-		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-
-		setupFrameListener();
-
-		setupBullet();
-		return true;
-	}
+void Game::Resume(void)
+{
+}
 
 	void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
 	{
@@ -179,36 +110,4 @@ namespace pmd
 		delete _CollisionConfiguration;
 	}
 
-	void Game::cleanup(void)
-	{
-	}
-	
-	//Adjust mouse clipping area
-	void Game::windowResized(Ogre::RenderWindow* rw)
-	{
-		unsigned int width, height, depth;
-		int left, top;
-		rw->getMetrics(width, height, depth, left, top);
-
-		const OIS::MouseState &ms = _Mouse->getMouseState();
-		ms.width = width;
-		ms.height = height;
-	}
-
-	//Unattach OIS before window shutdown (very important under Linux)
-	void Game::windowClosed(Ogre::RenderWindow* rw)
-	{
-		//Only close for window that created OIS
-		if( rw == _Window )
-		{
-			if( _InputManager )
-			{
-				_InputManager->destroyInputObject(_Mouse);
-				_InputManager->destroyInputObject(_Keyboard);
-
-				OIS::InputManager::destroyInputSystem(_InputManager);
-				_InputManager = 0;
-			}
-		}
-	}
 }

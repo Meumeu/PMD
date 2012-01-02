@@ -31,41 +31,30 @@
 #include <btBulletDynamicsCommon.h>
 
 #include "CharacterController.h"
+#include "AppState.h"
 
 namespace pmd
 {
 class Game :
-	public Ogre::FrameListener,
+	/*public Ogre::FrameListener,
 	public Ogre::WindowEventListener,
 	public OIS::KeyListener,
-	public OIS::MouseListener
+	public OIS::MouseListener*/
+	public AppState
 {
 public:
 	Game(void);
 	~Game(void);
 	
-	void go(void);
-protected:
-	// Ogre::FrameListener
-	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
-
-	// OIS::KeyListener
-	virtual bool keyPressed(const OIS::KeyEvent &arg);
-	virtual bool keyReleased(const OIS::KeyEvent &arg);
-	// OIS::MouseListener
-	virtual bool mouseMoved(const OIS::MouseEvent &arg);
-	virtual bool mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
-	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
-
-	virtual void windowResized(Ogre::RenderWindow * rw);
-	virtual void windowClosed(Ogre::RenderWindow* rw);
+	virtual void Enter(void);
+	virtual void Exit(void);
+	virtual void Pause(void);
+	virtual void Resume(void);
+	
+	virtual void Update(float TimeSinceLastFrame);
 
 private:
-	bool setup(void);
-	void cleanup(void);
-
-	void setupResources(void);
-	void setupFrameListener(void);
+	void go(void);
 	void setupBullet(void);
 	void cleanupBullet(void);
 
@@ -75,20 +64,12 @@ private:
 	Ogre::Root *           _Root;
 	Ogre::Camera *         _Camera;
 	Ogre::SceneManager *   _SceneMgr;
-	Ogre::RenderWindow *   _Window;
+ 	Ogre::RenderWindow *   _Window;
 	Ogre::Viewport *       _Viewport;
 
 	//OIS Input devices
-	OIS::InputManager *    _InputManager;
-	OIS::Mouse *           _Mouse;
-	OIS::Keyboard *        _Keyboard;
-
-	Ogre::String           _ResourcesCfg;
-	Ogre::String           _PluginsCfg;
-	Ogre::String           _OgreCfg;
-	Ogre::String           _OgreLog;
-
-	bool                   _Shutdown;
+ 	OIS::Mouse *           _Mouse;
+ 	OIS::Keyboard *        _Keyboard;
 
 	float                  _Heading;
 	Ogre::Radian           _Pitch;

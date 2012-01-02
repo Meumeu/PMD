@@ -25,60 +25,53 @@
 #include <OgreMeshManager.h>
 
 #include <btBulletDynamicsCommon.h>
+#include "AppStateManager.h"
 
 const float CameraDistance = 0.8;
 const float CameraHeight = 1.8;
 
 namespace pmd
 {
-bool Game::mouseMoved(const OIS::MouseEvent &arg)
+// bool Game::mouseMoved(const OIS::MouseEvent &arg)
+// {
+// 	
+// 	return true;
+// }
+// 
+// bool Game::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
+// {
+// 	return true;
+// }
+// 
+// bool Game::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
+// {
+// 	return true;
+// }
+// 
+// bool Game::keyPressed(const OIS::KeyEvent &arg)
+// {
+// 	if (arg.key == OIS::KC_ESCAPE)
+// 		_Shutdown = true;
+// 	return true;
+// }
+// 
+// bool Game::keyReleased(const OIS::KeyEvent &arg)
+// {
+// 	return true;
+// }
+
+//bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
+void Game::Update(float TimeSinceLastFrame)
 {
-	_Pitch -= Ogre::Radian(arg.state.Y.rel * 0.003);
-	if (_Pitch.valueRadians() > M_PI / 2)
-		_Pitch = Ogre::Radian(M_PI / 2);
-	else if (_Pitch.valueRadians() < -M_PI / 2)
-		_Pitch = Ogre::Radian(-M_PI / 2);
+	if (_Window->isClosed()) return;
 
-	_Heading -= arg.state.X.rel * 0.003;
-
-	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
-	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
-	
-	return true;
-}
-
-bool Game::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
-{
-	return true;
-}
-
-bool Game::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
-{
-	return true;
-}
-
-bool Game::keyPressed(const OIS::KeyEvent &arg)
-{
-	if (arg.key == OIS::KC_ESCAPE)
-		_Shutdown = true;
-	return true;
-}
-
-bool Game::keyReleased(const OIS::KeyEvent &arg)
-{
-	return true;
-}
-
-bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
-	if (_Window->isClosed())
-		return false;
-
-	if (_Shutdown)
-		return false;
+	if (_Keyboard->isKeyDown(OIS::KC_ESCAPE))
+	{
+		AppStateManager::GetSingleton().Exit();
+		return;
+	}
 
 	float velX = 0, velZ = 0;
-	float dt = evt.timeSinceLastFrame;
 	
 	if (_Keyboard->isKeyDown(OIS::KC_Z) || _Keyboard->isKeyDown(OIS::KC_W))
 	{
@@ -108,13 +101,25 @@ bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
 	_Player->_TargetHeading = _Heading;
 	_Player->_Jump = _Keyboard->isKeyDown(OIS::KC_SPACE);
 
-	_World->stepSimulation(evt.timeSinceLastFrame, 3);
+	_Pitch -= Ogre::Radian(_Mouse->getMouseState().Y.rel * 0.003);
+	if (_Pitch.valueRadians() > M_PI / 2)
+		_Pitch = Ogre::Radian(M_PI / 2);
+	else if (_Pitch.valueRadians() < -M_PI / 2)
+		_Pitch = Ogre::Radian(-M_PI / 2);
+
+	_Heading -= _Mouse->getMouseState().X.rel * 0.003;
+
+	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
+	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
+
+	
+	_World->stepSimulation(TimeSinceLastFrame, 3);
 
 	//Need to capture/update each device
-	_Keyboard->capture();
-	_Mouse->capture();
+// 	_Keyboard->capture();
+// 	_Mouse->capture();
 
-	return true;
+	return;
 }
 
 void Game::BulletCallback(btScalar timeStep)
@@ -198,8 +203,8 @@ std::string DumpNodes(Ogre::Node *n)
 
 void Game::go(void)
 {
-	if (!setup())
-		return;
+// 	if (!setup())
+// 		return;
 
 	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE); // ombre que sur les cubes ??
 
@@ -252,11 +257,11 @@ void Game::go(void)
 		new btBoxShape(btVector3(120, 10, 120)));
 	_World->addRigidBody(btGround);
 
-	for(float y=0; y < 10; y += 0.51)
+	for(float y=0; y < 3; y += 0.51)
 	{
-		for (float x = -(9-y)*0.6; x < (9-y)*0.6+0.1; x += 0.6)
+		for (float x = -(3-y)*0.6; x < (3-y)*0.6+0.1; x += 0.6)
 		{
-			for (float z = -(9-y)*0.6-20; z < (9-y)*0.6+0.1-20; z += 0.6)
+			for (float z = -(3-y)*0.6-20; z < (3-y)*0.6+0.1-20; z += 0.6)
 			{
 				Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
 				Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
@@ -307,8 +312,8 @@ void Game::go(void)
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 
-	_Root->startRendering();
+	//_Root->startRendering();
 
-	cleanup();
+	//cleanup();
 }
 }

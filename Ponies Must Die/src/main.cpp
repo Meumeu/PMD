@@ -17,6 +17,7 @@
 
 #include "pmd.h"
 #include "Game.h"
+#include "AppStateManager.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
@@ -26,11 +27,16 @@ int main(int argc, char *argv[])
 #endif
 {
 	// Create application object
-	pmd::Game app;
+	//pmd::Game app;
+	pmd::AppStateManager * manager = &pmd::AppStateManager::GetSingleton();
 
 	try
 	{
-		app.go();
+		if (!manager->setup())
+			return 1;
+		
+		manager->MainLoop(new pmd::Game);
+		
 	} catch( Ogre::Exception& e ) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		MessageBox(NULL, e.getFullDescription().c_str(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
