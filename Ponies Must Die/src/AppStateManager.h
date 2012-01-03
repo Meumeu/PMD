@@ -35,6 +35,7 @@ private:
 	void setupResources(void);
 	void setupWindowEventListener(void);
 	void setupOIS(void);
+	void cleanupOIS(void);
 
 	std::deque<AppState *> StateStack;
 	

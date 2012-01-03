@@ -32,35 +32,6 @@ const float CameraHeight = 1.8;
 
 namespace pmd
 {
-// bool Game::mouseMoved(const OIS::MouseEvent &arg)
-// {
-// 	
-// 	return true;
-// }
-// 
-// bool Game::mousePressed(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
-// {
-// 	return true;
-// }
-// 
-// bool Game::mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id)
-// {
-// 	return true;
-// }
-// 
-// bool Game::keyPressed(const OIS::KeyEvent &arg)
-// {
-// 	if (arg.key == OIS::KC_ESCAPE)
-// 		_Shutdown = true;
-// 	return true;
-// }
-// 
-// bool Game::keyReleased(const OIS::KeyEvent &arg)
-// {
-// 	return true;
-// }
-
-//bool Game::frameRenderingQueued(const Ogre::FrameEvent& evt)
 void Game::Update(float TimeSinceLastFrame)
 {
 	if (_Window->isClosed()) return;
@@ -114,10 +85,6 @@ void Game::Update(float TimeSinceLastFrame)
 
 	
 	_World->stepSimulation(TimeSinceLastFrame, 3);
-
-	//Need to capture/update each device
-// 	_Keyboard->capture();
-// 	_Mouse->capture();
 
 	return;
 }
@@ -203,9 +170,6 @@ std::string DumpNodes(Ogre::Node *n)
 
 void Game::go(void)
 {
-// 	if (!setup())
-// 		return;
-
 	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE); // ombre que sur les cubes ??
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
@@ -337,9 +301,5 @@ void Game::go(void)
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");
-
-	//_Root->startRendering();
-
-	//cleanup();
 }
 }

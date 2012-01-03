@@ -20,6 +20,14 @@
 #include <assert.h>
 #include "pmd.h"
 
+#ifndef PATH_RenderSystem_GL
+#	define PATH_RenderSystem_GL "RenderSystem_GL"
+#endif
+
+#ifndef PATH_Plugin_OctreeSceneManager
+#	define PATH_Plugin_OctreeSceneManager "Plugin_OctreeSceneManager"
+#endif
+
 namespace pmd
 {
 AppStateManager * AppStateManager::Singleton;
@@ -94,6 +102,22 @@ void AppStateManager::setupOIS(void)
 
 	_Keyboard = static_cast<OIS::Keyboard*>(_InputManager->createInputObject( OIS::OISKeyboard, true ));
 	_Mouse = static_cast<OIS::Mouse*>(_InputManager->createInputObject( OIS::OISMouse, true ));
+}
+
+void AppStateManager::cleanupOIS(void)
+{
+	if( _InputManager )
+	{
+		_InputManager->destroyInputObject(_Mouse);
+		_Mouse = 0;
+
+		_InputManager->destroyInputObject(_Keyboard);
+		_Keyboard = 0;
+
+		OIS::InputManager::destroyInputSystem(_InputManager);
+		_InputManager = 0;
+	}
+
 }
 
 void AppStateManager::setupWindowEventListener(void)
@@ -182,6 +206,8 @@ void AppStateManager::MainLoop(AppState* InitialState)
 #endif
 		}
 	}
+
+	cleanupOIS();
 }
 
 //Adjust mouse clipping area
@@ -202,14 +228,7 @@ void AppStateManager::windowClosed(Ogre::RenderWindow* rw)
 	//Only close for window that created OIS
 	if( rw == _Window )
 	{
-		if( _InputManager )
-		{
-			_InputManager->destroyInputObject(_Mouse);
-			_InputManager->destroyInputObject(_Keyboard);
-
-			OIS::InputManager::destroyInputSystem(_InputManager);
-			_InputManager = 0;
-		}
+		cleanupOIS();
 	}
 }
 
