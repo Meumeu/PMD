@@ -53,6 +53,7 @@ void Game::Enter(void)
 	_Camera = _SceneMgr->createCamera("PlayerCam");
 	_Viewport = _Window->addViewport(_Camera, 0);
 	_Camera->setAspectRatio(Ogre::Real(_Viewport->getActualWidth()) / Ogre::Real(_Viewport->getActualHeight()));
+
 	setupBullet();
 	
 	go();
@@ -61,6 +62,7 @@ void Game::Enter(void)
 void Game::Exit(void)
 {
 	cleanupBullet();
+
 	AppStateManager::GetSingleton().GetWindow()->removeViewport(0);
 	_SceneMgr->destroyCamera(_Camera);
 	AppStateManager::GetSingleton().GetOgreRoot()->destroySceneManager(_SceneMgr);
@@ -74,40 +76,40 @@ void Game::Resume(void)
 {
 }
 
-	void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
-	{
-		Game * g = static_cast<Game*>(world->getWorldUserInfo());
-		g->BulletCallback(timeStep);
-	}
+void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
+{
+	Game * g = static_cast<Game*>(world->getWorldUserInfo());
+	g->BulletCallback(timeStep);
+}
 
-	void Game::setupBullet(void)
-	{
-		_CollisionConfiguration = new btDefaultCollisionConfiguration();
-		_Dispatcher = new btCollisionDispatcher(_CollisionConfiguration);
-		_OverlappingPairCache = new btDbvtBroadphase();
-		_Solver = new btSequentialImpulseConstraintSolver();
+void Game::setupBullet(void)
+{
+	_CollisionConfiguration = new btDefaultCollisionConfiguration();
+	_Dispatcher = new btCollisionDispatcher(_CollisionConfiguration);
+	_OverlappingPairCache = new btDbvtBroadphase();
+	_Solver = new btSequentialImpulseConstraintSolver();
 
-		_World = new btDiscreteDynamicsWorld(
-			_Dispatcher,
-			_OverlappingPairCache,
-			_Solver,
-			_CollisionConfiguration);
+	_World = new btDiscreteDynamicsWorld(
+		_Dispatcher,
+		_OverlappingPairCache,
+		_Solver,
+		_CollisionConfiguration);
 
-		_World->setGravity(btVector3(0, -10, 0));
+	_World->setGravity(btVector3(0, -20, 0));
 
-		_World->setInternalTickCallback(
-			&Game::StaticBulletCallback,
-			static_cast<void*>(this),
-			true);
-	}
+	_World->setInternalTickCallback(
+		&Game::StaticBulletCallback,
+		static_cast<void*>(this),
+		true);
+}
 
-	void Game::cleanupBullet(void)
-	{
-		delete _World;
-		delete _Solver;
-		delete _OverlappingPairCache;
-		delete _Dispatcher;
-		delete _CollisionConfiguration;
-	}
+void Game::cleanupBullet(void)
+{
+	delete _World;
+	delete _Solver;
+	delete _OverlappingPairCache;
+	delete _Dispatcher;
+	delete _CollisionConfiguration;
+}
 
 }

@@ -82,7 +82,6 @@ void Game::Update(float TimeSinceLastFrame)
 
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
-
 	
 	_World->stepSimulation(TimeSinceLastFrame, 3);
 
@@ -179,7 +178,7 @@ void Game::go(void)
 #else
 #error Unsupported platform
 #endif
-	if (!f.is_open()) throw new std::invalid_argument("file not found");
+	if (!f.is_open()) throw Ogre::Exception(Ogre::Exception::ERR_FILE_NOT_FOUND, "File not found", __FUNCTION__, "File not found", __FILE__, __LINE__);
 
 	Environment env(_SceneMgr, f);
 
@@ -214,7 +213,7 @@ void Game::go(void)
 		"ground",
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		plane,
-		240, 240, 200, 200, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
+		240, 240, 100, 100, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
 
 
 	// ground
@@ -245,10 +244,10 @@ void Game::go(void)
 	SlopeBody->setFriction(1);
 	_World->addRigidBody(SlopeBody);
 	_Player->_Body->setFriction(1);
-
 	
-
-	for(float y=0; y < 5; y += 0.51)
+	
+	
+	for(float y=0; y < 2; y += 0.51)
 	{
 		for (float x = -(4.5-y)*0.6; x < (4.5-y)*0.6+0.1; x += 0.6)
 		{
@@ -261,9 +260,9 @@ void Game::go(void)
 				btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
 				//btCollisionShape * btCubeShape = new btSphereShape(0.25*sqrt(3.0f));
 				btVector3 inertia;
-				btCubeShape->calculateLocalInertia(1, inertia);
+				btCubeShape->calculateLocalInertia(10, inertia);
 				btRigidBody * btCube = new btRigidBody(
-					1,
+					10,
 					new RigidBody<Ogre::SceneNode>(
 						Ogre::Quaternion::IDENTITY,
 						Ogre::Vector3(x, y+0.25, z),
@@ -292,7 +291,7 @@ void Game::go(void)
 				new RigidBody<Ogre::SceneNode>(
 				Ogre::Quaternion::IDENTITY,
 				Ogre::Vector3(x, 0, z),
-				Ogre::Vector3(0, 0.25, 0),
+				Ogre::Vector3(0, 0.5, 0),
 				sn),
 				shape,
 				I);

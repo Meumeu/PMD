@@ -28,22 +28,33 @@ int main(int argc, char *argv[])
 {
 	// Create application object
 	//pmd::Game app;
-	pmd::AppStateManager * manager = &pmd::AppStateManager::GetSingleton();
+	pmd::AppStateManager manager;
 
 	try
 	{
-		if (!manager->setup())
-			return 1;
-		
-		manager->MainLoop(new pmd::Game);
-		
-	} catch( Ogre::Exception& e ) {
+		try
+		{
+			if (!manager.setup())
+				return 1;
+
+			manager.MainLoop(new pmd::Game);
+		} catch(Ogre::Exception& e)
+		{
+			throw std::exception(e.getFullDescription().c_str());
+		}
+	} catch(std::exception& e) {
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-		MessageBox(NULL, e.getFullDescription().c_str(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+		if (manager.GetWindow())
+		{
+			manager.GetWindow()->destroy();
+			manager.GetWindow() = 0;
+		}
+		MessageBoxA(NULL, e.what(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
-		std::cerr << "An exception has occurred: " << e.getFullDescription().c_str() << std::endl;
+		std::cerr << "An exception has occurred: " << e.what() << std::endl;
 #endif
 	}
+
 
 	return 0;
 }

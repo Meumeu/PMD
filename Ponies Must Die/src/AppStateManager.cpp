@@ -21,20 +21,58 @@
 #include "pmd.h"
 
 #ifndef PATH_RenderSystem_GL
+#ifdef _DEBUG
+#	define PATH_RenderSystem_GL "RenderSystem_GL_d"
+#else
 #	define PATH_RenderSystem_GL "RenderSystem_GL"
+#endif
 #endif
 
 #ifndef PATH_Plugin_OctreeSceneManager
+#ifdef _DEBUG
+#	define PATH_Plugin_OctreeSceneManager "Plugin_OctreeSceneManager_d"
+#else
 #	define PATH_Plugin_OctreeSceneManager "Plugin_OctreeSceneManager"
+#endif
 #endif
 
 namespace pmd
 {
 AppStateManager * AppStateManager::Singleton;
 	
-AppStateManager::AppStateManager()
+AppStateManager::AppStateManager(void) :
+	_OgreRoot(0),
+	_Window(0),
+	_Timer(0),
+	_InputManager(0),
+	_Mouse(0),
+	_Keyboard(0),
+	_Shutdown(false)
 {
 	Singleton = this;
+}
+
+AppStateManager::~AppStateManager()
+{
+	if (_OgreRoot)
+		_OgreRoot->removeFrameListener(this);
+
+	if (_Window)
+		Ogre::WindowEventUtilities::removeWindowEventListener(_Window, this);
+
+	cleanupOIS();
+
+	if (_Window)
+	{
+		_Window->destroy();
+		_Window = 0;
+	}
+
+	if (_OgreRoot)
+	{
+		delete _OgreRoot;
+		_OgreRoot = 0;
+	}
 }
 
 bool AppStateManager::setup(void)
@@ -58,7 +96,12 @@ bool AppStateManager::setup(void)
 	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 	
 	setupOIS();
-	setupWindowEventListener();
+
+	//Set initial mouse clipping size
+	windowResized(_Window);
+
+	Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
+	_OgreRoot->addFrameListener(this);
 
 	return true;
 }
@@ -100,37 +143,29 @@ void AppStateManager::setupOIS(void)
 
 	_InputManager = OIS::InputManager::createInputSystem(pl);
 
-	_Keyboard = static_cast<OIS::Keyboard*>(_InputManager->createInputObject( OIS::OISKeyboard, true ));
-	_Mouse = static_cast<OIS::Mouse*>(_InputManager->createInputObject( OIS::OISMouse, true ));
+	_Keyboard = static_cast<OIS::Keyboard*>(_InputManager->createInputObject(OIS::OISKeyboard, true));
+	_Mouse = static_cast<OIS::Mouse*>(_InputManager->createInputObject(OIS::OISMouse, true));
 }
 
 void AppStateManager::cleanupOIS(void)
 {
 	if( _InputManager )
 	{
-		_InputManager->destroyInputObject(_Mouse);
-		_Mouse = 0;
+		if (_Mouse)
+		{
+			_InputManager->destroyInputObject(_Mouse);
+			_Mouse = 0;
+		}
 
-		_InputManager->destroyInputObject(_Keyboard);
-		_Keyboard = 0;
+		if (_Keyboard)
+		{
+			_InputManager->destroyInputObject(_Keyboard);
+			_Keyboard = 0;
+		}
 
 		OIS::InputManager::destroyInputSystem(_InputManager);
 		_InputManager = 0;
 	}
-
-}
-
-void AppStateManager::setupWindowEventListener(void)
-{
-	//Set initial mouse clipping size
-	windowResized(_Window);
-
-	//Register as a Window listener
-	Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
-}
-
-AppStateManager::~AppStateManager()
-{
 
 }
 
@@ -171,43 +206,22 @@ void AppStateManager::SwitchTo(AppState* NewState)
 	NewState->Enter();
 }
 
+bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
+{
+	_Keyboard->capture();
+	_Mouse->capture();
+
+	StateStack.back()->Update(evt.timeSinceLastFrame);
+
+	return !StateStack.empty();
+}
 
 void AppStateManager::MainLoop(AppState* InitialState)
 {
 	StateStack.push_back(InitialState);
 	InitialState->Enter();
 
-	float TimeSinceLastFrame = 0.001;
-	
-	_Shutdown = false;
-	while (!_Shutdown)
-	{
-		Ogre::WindowEventUtilities::messagePump();
-		if (_Window->isClosed()) _Shutdown = true;
-		if (_Window->isActive())
-		{
-			int StartTime = _Timer->getMilliseconds();
-			_Keyboard->capture();
-			_Mouse->capture();
-			
-			StateStack.back()->Update(TimeSinceLastFrame);
-			_OgreRoot->renderOneFrame(TimeSinceLastFrame);
-			
-			TimeSinceLastFrame = (_Timer->getMilliseconds() - StartTime) * 0.001f;
-			
-			if (StateStack.empty()) _Shutdown = true;
-		}
-		else
-		{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-			Sleep(1000);
-#else
-			sleep(1);
-#endif
-		}
-	}
-
-	cleanupOIS();
+	_OgreRoot->startRendering();
 }
 
 //Adjust mouse clipping area

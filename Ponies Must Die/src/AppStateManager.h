@@ -20,6 +20,7 @@
 
 #include "AppState.h"
 #include <OgreWindowEventUtilities.h>
+#include <OgreFrameListener.h>
 #include <OgreRoot.h>
 #include <OgreRenderWindow.h>
 #include <OgreTimer.h>
@@ -29,11 +30,11 @@
 namespace pmd
 {
 class AppStateManager :
-	public Ogre::WindowEventListener
+	public Ogre::WindowEventListener,
+	public Ogre::FrameListener
 {
 private:
 	void setupResources(void);
-	void setupWindowEventListener(void);
 	void setupOIS(void);
 	void cleanupOIS(void);
 
@@ -50,11 +51,11 @@ private:
 	
 	bool                   _Shutdown;
 	static AppStateManager * Singleton;
-	
-	AppStateManager();
-	~AppStateManager();
-	
+		
 public:
+	AppStateManager(void);
+	~AppStateManager();
+
 	bool setup(void);
 	void Enter(AppState * NewState);
 	void SwitchTo(AppState * NewState);
@@ -62,19 +63,19 @@ public:
 	void MainLoop(AppState * InitialState);
 	static AppStateManager& GetSingleton(void)
 	{
-		if (!Singleton) Singleton = new AppStateManager;
 		return *Singleton;
 	};
 	
-	Ogre::Root *         GetOgreRoot(void)     { return _OgreRoot; };
-	Ogre::RenderWindow * GetWindow(void)       { return _Window; };
-	OIS::InputManager *  GetInputManager(void) { return _InputManager; };
-	OIS::Mouse *         GetMouse(void)        { return _Mouse; };
-	OIS::Keyboard *      GetKeyboard(void)     { return _Keyboard; };
+	Ogre::Root *         &GetOgreRoot(void)     { return _OgreRoot; };
+	Ogre::RenderWindow * &GetWindow(void)       { return _Window; };
+	OIS::InputManager *  &GetInputManager(void) { return _InputManager; };
+	OIS::Mouse *         &GetMouse(void)        { return _Mouse; };
+	OIS::Keyboard *      &GetKeyboard(void)     { return _Keyboard; };
 	
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);
 	virtual void windowClosed(Ogre::RenderWindow* rw);
+	virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 };
 }
 

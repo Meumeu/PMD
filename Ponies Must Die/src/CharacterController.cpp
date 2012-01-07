@@ -82,7 +82,7 @@ void CharacterController::TickCallback(void)
 	{
 		//F.setY(_Mass * 15);
 		btVector3 Velocity = _Body->getLinearVelocity();
-		Velocity.setY(10);
+		Velocity.setY(5);
 		_Body->setLinearVelocity(Velocity);
 	}
 
