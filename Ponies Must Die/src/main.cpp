@@ -32,23 +32,17 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		try
-		{
-			if (!manager.setup())
-				return 1;
+		if (!manager.setup())
+			return 1;
 
-			manager.MainLoop(new pmd::Game);
-		} catch(Ogre::Exception& e)
-		{
-			throw std::exception(e.getFullDescription().c_str());
-		}
+		manager.MainLoop(new pmd::Game);
 	} catch(std::exception& e) {
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		if (manager.GetWindow())
 		{
 			manager.GetWindow()->destroy();
 			manager.GetWindow() = 0;
 		}
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		MessageBoxA(NULL, e.what(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
 		std::cerr << "An exception has occurred: " << e.what() << std::endl;
