@@ -1,9 +1,10 @@
 # Ignore thumbnails created by windows
 Thumbs.db
 
-# Ignore files build by Visual Studio
+# Ignore files built by Visual Studio
 *.obj
 *.exe
+*.dll
 *.pdb
 *.user
 *.aps
@@ -25,9 +26,13 @@ obj/
 _ReSharper*/
 [Tt]est[Rr]esult*
 ogre.cfg
+*.idb
+BuildLog.htm
 
 # Ignore cmake output
 build/
 
 # Ignore temporary files
 *~
+
+.kdev4

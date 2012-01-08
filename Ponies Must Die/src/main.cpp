@@ -26,8 +26,6 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 int main(int argc, char *argv[])
 #endif
 {
-	// Create application object
-	//pmd::Game app;
 	pmd::AppStateManager manager;
 
 	try
@@ -36,7 +34,9 @@ int main(int argc, char *argv[])
 			return 1;
 
 		manager.MainLoop(new pmd::Game);
-	} catch(std::exception& e) {
+	}
+	catch(std::exception& e)
+	{
 		if (manager.GetWindow())
 		{
 			manager.GetWindow()->destroy();
