@@ -56,51 +56,78 @@ void Game::Update(float TimeSinceLastFrame)
 	
 	if (_Keyboard->isKeyDown(OIS::KC_Z) || _Keyboard->isKeyDown(OIS::KC_W))
 	{
-		velZ = -3;
+		velZ = -1;
 	}
 	else if (_Keyboard->isKeyDown(OIS::KC_S))
 	{
-		velZ = 3;
+		velZ = 1;
 	}
 
 	if (_Keyboard->isKeyDown(OIS::KC_Q) || _Keyboard->isKeyDown(OIS::KC_A))
 	{
-		velX = -3;
+		velX = -1;
 	}
 	else if (_Keyboard->isKeyDown(OIS::KC_D))
 	{
-		velX = 3;
+		velX = 1;
 	}
-	
+
+	_Player->_TargetDirection = btVector3(
+		velX * cos(_Heading.valueRadians()) + velZ * sin(_Heading.valueRadians()),
+		0,
+		-velX * sin(_Heading.valueRadians()) + velZ * cos(_Heading.valueRadians()));
+
 	if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 	{
-		velX *= 3.5;
-		velZ *= 3.5;
+		_Player->_TargetVelocity = 10;
+	}
+	else
+	{
+		_Player->_TargetVelocity = 3;
 	}
 
-	_Player->_TargetVelocity = btVector3(velX, 0, velZ);
-	_Player->_TargetHeading = _Heading;
 	_Player->_Jump = _Keyboard->isKeyDown(OIS::KC_SPACE);
 
-	_Pitch -= Ogre::Radian(_Mouse->getMouseState().Y.rel * 0.003);
+	OIS::MouseState ms = _Mouse->getMouseState();
+	
+	_Pitch -= Ogre::Radian(ms.Y.rel * 0.003);
 	if (_Pitch.valueRadians() > M_PI / 2)
 		_Pitch = Ogre::Radian(M_PI / 2);
 	else if (_Pitch.valueRadians() < -M_PI / 2)
 		_Pitch = Ogre::Radian(-M_PI / 2);
 
-	_Heading -= _Mouse->getMouseState().X.rel * 0.003;
-
-	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
-	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
+	_Heading -= Ogre::Radian(ms.X.rel * 0.003);
+	if (_Heading.valueRadians() > M_PI)
+		_Heading -= Ogre::Radian(2 * M_PI);
+	else if (_Heading.valueRadians() < -M_PI)
+		_Heading += Ogre::Radian(2 * M_PI);
 	
+	if (abs(ms.X.rel) > 200 || abs(ms.Y.rel) > 200)
+	{
+		std::cerr << "dt=" << TimeSinceLastFrame << "\n";
+		std::cerr << "mouse movement: (" << ms.X.rel << ", " << ms.Y.rel << ")\n";
+		std::cerr << "abs pos: (" << ms.X.abs << ", " << ms.Y.abs << ")\n";
+	}
+	
+	_Camera->setOrientation(
+		Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y) *
+		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
+
 	_World->stepSimulation(TimeSinceLastFrame, 3);
+
+	_Camera->setPosition(
+		_Player->_Node->getPosition() +
+		Ogre::Vector3(
+			CameraDistance * cos(_Pitch.valueRadians()) * sin(_Heading.valueRadians()),
+			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
+			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
 	return;
 }
 
 void Game::BulletCallback(btScalar timeStep)
 {
-	_Player->TickCallback();
+	_Player->TickCallback(timeStep);
 }
 
 /*void DumpSkeleton(std::stringstream &ss, Ogre::SkeletonInstance * s, int level)
@@ -197,7 +224,7 @@ void Game::go(void)
 	PlayerEntity->setCastShadows(true);
 
 	_Player = new CharacterController(_SceneMgr, _World, PlayerEntity, 1.9, 0.4, 80);
-	_Player->_Node->attachObject(_Camera);
+	//_Player->_Node->attachObject(_Camera);
 
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));

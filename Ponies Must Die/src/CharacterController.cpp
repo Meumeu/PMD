@@ -27,6 +27,7 @@ CharacterController::CharacterController(
 	float Height,
 	float Radius,
 	float Mass) :
+	_MaxYawSpeed(2 * 2 * M_PI),
 	_Body(NULL),
 	_MotionState(
 		Ogre::Quaternion::IDENTITY,
@@ -40,9 +41,6 @@ CharacterController::CharacterController(
 
 	_Mass = Mass;
 
-	/*_Shape.calculateLocalInertia(Mass, _Inertia);
-	_Inertia.setX(0);
-	_Inertia.setZ(0);*/
 	_Inertia = btVector3(0, 0, 0);
 
 	_MotionState.setNode(_Node);
@@ -55,10 +53,6 @@ CharacterController::CharacterController(
 
 CharacterController::~CharacterController(void)
 {
-	// TODO
-//	_Node->getParentSceneNode()->removeChild(_Node->getName());
-//	delete _Node;
-
 	_World->removeRigidBody(_Body);
 	delete _Body;
 
@@ -66,21 +60,43 @@ CharacterController::~CharacterController(void)
 	delete _Node;
 }
 
-void CharacterController::TickCallback(void)
+void CharacterController::TickCallback(btScalar dt)
 {
-	btMatrix3x3 M(_Body->getOrientation());
+	btVector3 TargetVelocity(0, 0, 0);
 	btVector3 CurrentVelocity = _Body->getLinearVelocity();
-	btVector3 TargetVelocity = M * _TargetVelocity;
+	
+	if (_TargetDirection.length2() > 0.5)
+	{
+		TargetVelocity = _TargetDirection.normalized() * _TargetVelocity;
+		
+		btScalar TargetHeading = atan2(-TargetVelocity.x(), -TargetVelocity.z());
+		btScalar DeltaHeading = TargetHeading - _CurrentHeading;
+		if (DeltaHeading > M_PI)
+			DeltaHeading -= 2 * M_PI;
+		else if (DeltaHeading < -M_PI)
+			DeltaHeading += 2 * M_PI;
+		
+		if (DeltaHeading > _MaxYawSpeed * dt)
+			DeltaHeading = _MaxYawSpeed * dt;
+		else if(DeltaHeading < -_MaxYawSpeed * dt)
+			DeltaHeading = -_MaxYawSpeed * dt;
+		
+		_CurrentHeading += DeltaHeading;
+		if (_CurrentHeading > M_PI)
+			_CurrentHeading -= 2 * M_PI;
+		else if (_CurrentHeading < -M_PI)
+			_CurrentHeading += 2 * M_PI;
+	
+		btQuaternion TargetQ(btVector3(0,1,0), _CurrentHeading);
+		
+		btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
+		comtr.setRotation(TargetQ);
+	}
 	btVector3 F = 10 * _Mass * (TargetVelocity - CurrentVelocity);
 	F.setY(0);
-	
-
-	//btQuaternion CurrentQ = _Body->getOrientation();
-	btQuaternion TargetQ(btVector3(0,1,0), _TargetHeading);
 
 	if (_Jump)
 	{
-		//F.setY(_Mass * 15);
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(5);
 		_Body->setLinearVelocity(Velocity);
@@ -88,8 +104,5 @@ void CharacterController::TickCallback(void)
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
-	/*_Body->applyTorque(T);*/
-	btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
-	comtr.setRotation(TargetQ);
 }
 }

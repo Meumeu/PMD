@@ -49,6 +49,7 @@ public:
 	virtual void Update(float TimeSinceLastFrame);
 	
 	virtual bool keyPressed(const OIS::KeyEvent&);
+	virtual bool mouseMoved(const OIS::MouseEvent&);
 
 private:
 	void go(void);
@@ -68,7 +69,7 @@ private:
  	OIS::Mouse *           _Mouse;
  	OIS::Keyboard *        _Keyboard;
 
-	float                  _Heading;
+	Ogre::Radian           _Heading;
 	Ogre::Radian           _Pitch;
 
 	btCollisionConfiguration * _CollisionConfiguration;

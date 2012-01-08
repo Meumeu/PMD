@@ -41,10 +41,12 @@ public:
 		float Mass);
 	~CharacterController(void);
 
-	void TickCallback(void);
+	void TickCallback(btScalar dt);
 
-	btScalar _TargetHeading;
-	btVector3 _TargetVelocity;
+	btScalar _MaxYawSpeed;
+	btScalar _CurrentHeading;
+	btVector3 _TargetDirection;
+	float _TargetVelocity;
 	bool _Jump;
 
 	btRigidBody * _Body;

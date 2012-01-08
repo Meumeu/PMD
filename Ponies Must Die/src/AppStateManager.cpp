@@ -222,10 +222,10 @@ void AppStateManager::SwitchTo(AppState* NewState)
 
 bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 {
+	StateStack.back()->Update(evt.timeSinceLastFrame);
+
 	_Keyboard->capture();
 	_Mouse->capture();
-
-	StateStack.back()->Update(evt.timeSinceLastFrame);
 
 	return !StateStack.empty();
 }
