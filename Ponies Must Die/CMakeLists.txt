@@ -1,22 +1,6 @@
-#/*
-#-----------------------------------------------------------------------------
-#Filename:    CMakeLists.txt
-#-----------------------------------------------------------------------------
-#
-#This source file is part of the
-#   ___                 __    __ _ _    _ 
-#  /___\__ _ _ __ ___  / / /\ \ (_) | _(_)
-# //  // _` | '__/ _ \ \ \/  \/ / | |/ / |
-#/ \_// (_| | | |  __/  \  /\  /| |   <| |
-#\___/ \__, |_|  \___|   \/  \/ |_|_|\_\_|
-#      |___/                              
-#      Tutorial Framework
-#      http://www.ogre3d.org/tikiwiki/
-#-----------------------------------------------------------------------------
-#*/
 cmake_minimum_required(VERSION 2.6)
 
-project(OgreApp)
+project(poniesmustdie)
 
 if(WIN32)
 	set(CMAKE_MODULE_PATH "$ENV{OGRE_HOME}/CMake/;${CMAKE_MODULE_PATH}")
@@ -24,21 +8,13 @@ endif(WIN32)
 
 if(UNIX)
 	if(EXISTS "/usr/local/lib/OGRE/cmake")
-
 	  set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
-	  
 	elseif(EXISTS "/usr/lib/OGRE/cmake")
-
 	  set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
-
 	elseif(EXISTS "/usr/share/OGRE/cmake/modules")
-
 	  set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules;${CMAKE_MODULE_PATH}")
-
 	elseif(EXISTS "/usr/share/OGRE/cmake")
-
 	  set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/;${CMAKE_MODULE_PATH}")
-
 	else ()
 	  message(SEND_ERROR "Failed to find module path.")
 	endif()
@@ -55,11 +31,6 @@ set(CMAKE_DEBUG_POSTFIX "_d")
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
 find_package(OGRE REQUIRED)
-
-#if(NOT "${OGRE_VERSION_NAME}" STREQUAL "Cthugha")
-#  message(SEND_ERROR "You need Ogre 1.7 Cthugha to build this.")
-#endif()
-
 find_package(OIS REQUIRED)
 
 if(NOT OIS_FOUND)
@@ -417,31 +388,43 @@ include_directories( ${OIS_INCLUDE_DIRS}
 	"src/bullet"
 )
 
-add_executable(OgreApp WIN32 ${HDRS} ${SRCS})
+add_executable(poniesmustdie WIN32 ${HDRS} ${SRCS})
 
-set_target_properties(OgreApp PROPERTIES DEBUG_POSTFIX _d)
+set_target_properties(poniesmustdie PROPERTIES DEBUG_POSTFIX _d)
 
-target_link_libraries(OgreApp ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+
+if(CMAKE_COMPILER_IS_GNUCC)
+	add_definitions(-Wall)
+endif(CMAKE_COMPILER_IS_GNUCC)
+
 
 if(WIN32)
-	add_definitions(-DPATH_RenderSystem_GL=\"RenderSystem_GL.dll\" -DPATH_Plugin_OctreeSceneManager=\"Plugin_OctreeSceneManager.dll\")
+	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+		add_definitions(-DPATH_RenderSystem_GL=\"RenderSystem_GL_d.dll\")
+		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"Plugin_OctreeSceneManager_d.dll\")
+	elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		add_definitions(-DPATH_RenderSystem_GL=\"RenderSystem_GL.dll\")
+		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"Plugin_OctreeSceneManager.dll\")
+	endif()
 else()
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\" -DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG}\")
+		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\")
+		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG}\")
 	elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_REL}\" -DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_REL}\")
+		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_REL}\")
+		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_REL}\")
 	endif()
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/media)
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/etc)
 
 # post-build copy for win32
 if(WIN32 AND NOT MINGW)
-	add_custom_command( TARGET OgreApp PRE_BUILD
+	add_custom_command( TARGET poniesmustdie PRE_BUILD
 		COMMAND if not exist .\\dist\\bin mkdir .\\dist\\bin )
-	add_custom_command( TARGET OgreApp POST_BUILD
+	add_custom_command( TARGET poniesmustdie POST_BUILD
 		COMMAND copy \"$(TargetPath)\" .\\dist\\bin )
 endif(WIN32 AND NOT MINGW)
 
@@ -449,36 +432,29 @@ if(MINGW OR UNIX)
 	set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/dist/bin)
 endif(MINGW OR UNIX)
 
+
+install(TARGETS poniesmustdie
+	RUNTIME DESTINATION bin
+	CONFIGURATIONS All)
+
+configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
+	${CMAKE_INSTALL_PREFIX}/etc/resources.cfg)
+
 if(WIN32)
-	install(TARGETS OgreApp
-		RUNTIME DESTINATION bin
-		CONFIGURATIONS All)
- 
-	install(DIRECTORY ${CMAKE_SOURCE_DIR}/dist/Media
-		DESTINATION ./
-		CONFIGURATIONS Release RelWithDebInfo Debug
-	)
-
-	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
-		dist/etc/resources.cfg)
-
-	install(FILES
-		${CMAKE_SOURCE_DIR}/dist/bin/resources.cfg
-		DESTINATION bin
-	)
-
-        # NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
-        # so you'll have to change that to make it work with 1.7.1
+	# NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
+	# so you'll have to change that to make it work with 1.7.1
 	install(FILES ${OGRE_PLUGIN_DIR_REL}/OgreMain.dll
 		${OGRE_PLUGIN_DIR_REL}/RenderSystem_GL.dll
-		${OGRE_PLUGIN_DIR_REL}/libOIS.dll
+		${OGRE_PLUGIN_DIR_REL}/Plugin_OctreeSceneManager.dll
+		${OGRE_PLUGIN_DIR_REL}/OIS.dll
 		DESTINATION bin
 		CONFIGURATIONS Release RelWithDebInfo
 	)
 
 	install(FILES ${OGRE_PLUGIN_DIR_DBG}/OgreMain_d.dll
 		${OGRE_PLUGIN_DIR_DBG}/RenderSystem_GL_d.dll
-		${OGRE_PLUGIN_DIR_DBG}/libOIS_d.dll
+		${OGRE_PLUGIN_DIR_REL}/Plugin_OctreeSceneManager_d.dll
+		${OGRE_PLUGIN_DIR_DBG}/OIS_d.dll
 		DESTINATION bin
 		CONFIGURATIONS Debug
 	)
@@ -499,12 +475,6 @@ if(WIN32)
 endif(WIN32)
 
 if(UNIX)
-	install(TARGETS OgreApp
-		RUNTIME DESTINATION bin
-		CONFIGURATIONS All)
-
-	configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
-		dist/etc/resources.cfg)
 
 endif(UNIX)
 
