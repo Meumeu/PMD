@@ -175,6 +175,8 @@ void AppStateManager::Enter(AppState* NewState)
 
 	StateStack.back()->Pause();
 	StateStack.push_back(NewState);
+	_Keyboard->setEventCallback(NewState);
+	_Mouse->setEventCallback(NewState);
 	NewState->Enter();
 }
 
@@ -185,12 +187,22 @@ void AppStateManager::Exit(void)
 	AppState * LastState = StateStack.back();
 	LastState->Exit();
 	StateStack.pop_back();
-	delete LastState;
 	
 	if (!StateStack.empty())
 	{
-		StateStack.back()->Resume();
+		AppState * NewState = StateStack.back();
+		
+		_Keyboard->setEventCallback(NewState);
+		_Mouse->setEventCallback(NewState);
+		NewState->Resume();
 	}
+	else
+	{
+		_Keyboard->setEventCallback(NULL);
+		_Mouse->setEventCallback(NULL);
+	}
+
+	delete LastState;
 }
 
 void AppStateManager::SwitchTo(AppState* NewState)
@@ -203,6 +215,8 @@ void AppStateManager::SwitchTo(AppState* NewState)
 	delete LastState;
 
 	StateStack.push_back(NewState);
+	_Keyboard->setEventCallback(NewState);
+	_Mouse->setEventCallback(NewState);
 	NewState->Enter();
 }
 
@@ -219,6 +233,8 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 void AppStateManager::MainLoop(AppState* InitialState)
 {
 	StateStack.push_back(InitialState);
+	_Keyboard->setEventCallback(InitialState);
+	_Mouse->setEventCallback(InitialState);
 	InitialState->Enter();
 
 	_OgreRoot->startRendering();

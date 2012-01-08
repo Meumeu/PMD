@@ -25,7 +25,9 @@
 
 namespace pmd
 {
-class AppState
+class AppState :
+	public OIS::KeyListener,
+	public OIS::MouseListener
 {
 public:
     AppState();
@@ -36,6 +38,13 @@ public:
 	virtual void Resume(void) = 0;
 	
 	virtual void Update(float TimeSinceLastFrame) = 0;
+
+	virtual bool keyPressed(const OIS::KeyEvent&) { return true; }
+	virtual bool keyReleased(const OIS::KeyEvent&) { return true; }
+	virtual bool mouseMoved(const OIS::MouseEvent&) { return true; }
+	virtual bool mousePressed(const OIS::MouseEvent&, OIS::MouseButtonID) { return true; }
+	virtual bool mouseReleased(const OIS::MouseEvent&, OIS::MouseButtonID) { return true; }
+
 };
 }
 

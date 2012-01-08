@@ -32,11 +32,21 @@ const float CameraHeight = 1.8;
 
 namespace pmd
 {
+bool Game::keyPressed(const OIS::KeyEvent& e)
+{
+	if (e.key == OIS::KC_ESCAPE)
+	{
+		_EscPressed = true;
+	}
+	
+	return true;
+}
+
 void Game::Update(float TimeSinceLastFrame)
 {
 	if (_Window->isClosed()) return;
 
-	if (_Keyboard->isKeyDown(OIS::KC_ESCAPE))
+	if (_EscPressed)
 	{
 		AppStateManager::GetSingleton().Exit();
 		return;

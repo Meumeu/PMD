@@ -39,7 +39,8 @@ namespace pmd
 		_Solver(NULL),
 		_World(NULL),
 		
-		_Player(NULL)
+		_Player(NULL),
+		_EscPressed(false)
 	{
 	}
 

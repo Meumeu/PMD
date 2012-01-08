@@ -35,12 +35,7 @@
 
 namespace pmd
 {
-class Game :
-	/*public Ogre::FrameListener,
-	public Ogre::WindowEventListener,
-	public OIS::KeyListener,
-	public OIS::MouseListener*/
-	public AppState
+class Game : public AppState
 {
 public:
 	Game(void);
@@ -52,6 +47,8 @@ public:
 	virtual void Resume(void);
 	
 	virtual void Update(float TimeSinceLastFrame);
+	
+	virtual bool keyPressed(const OIS::KeyEvent&);
 
 private:
 	void go(void);
@@ -81,6 +78,7 @@ private:
 	btDynamicsWorld *          _World;
 
 	CharacterController * _Player;
+	bool _EscPressed;
 };
 }
 
