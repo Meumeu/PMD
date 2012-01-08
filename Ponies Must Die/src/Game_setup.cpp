@@ -23,18 +23,23 @@
 namespace pmd
 {
 	Game::Game(void) :
+		_Root(NULL),
 		_Camera(NULL),
 		_SceneMgr(NULL),
+		_Window(NULL),
 		_Viewport(NULL),
-		_Player(NULL),
-		_Pitch(0),
+		_Mouse(NULL),
+		_Keyboard(NULL),
 		_Heading(0),
+		_Pitch(0),
 
-		_CollisionConfiguration(0),
-		_Dispatcher(0),
-		_OverlappingPairCache(0),
-		_Solver(0),
-		_World(0)
+		_CollisionConfiguration(NULL),
+		_Dispatcher(NULL),
+		_OverlappingPairCache(NULL),
+		_Solver(NULL),
+		_World(NULL),
+		
+		_Player(NULL)
 	{
 	}
 

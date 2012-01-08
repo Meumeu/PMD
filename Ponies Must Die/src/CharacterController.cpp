@@ -27,13 +27,13 @@ CharacterController::CharacterController(
 	float Height,
 	float Radius,
 	float Mass) :
+	_Body(NULL),
 	_MotionState(
 		Ogre::Quaternion::IDENTITY,
 		Ogre::Vector3::ZERO,
 		Ogre::Vector3(0, Height / 2, 0),
 		0),
-	_Shape(Radius, Height-2*Radius),
-	_Body(0)
+	_Shape(Radius, Height-2*Radius)
 {
 	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
 	_Node->attachObject(Entity);
