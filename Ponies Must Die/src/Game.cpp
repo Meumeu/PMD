@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <OgreEntity.h>
 #include <OgreMeshManager.h>
+#include <boost/foreach.hpp>
 
 #include <btBulletDynamicsCommon.h>
 #include "AppStateManager.h"
@@ -102,13 +103,6 @@ void Game::Update(float TimeSinceLastFrame)
 	else if (_Heading.valueRadians() < -M_PI)
 		_Heading += Ogre::Radian(2 * M_PI);
 	
-	if (abs(ms.X.rel) > 200 || abs(ms.Y.rel) > 200)
-	{
-		std::cerr << "dt=" << TimeSinceLastFrame << "\n";
-		std::cerr << "mouse movement: (" << ms.X.rel << ", " << ms.Y.rel << ")\n";
-		std::cerr << "abs pos: (" << ms.X.abs << ", " << ms.Y.abs << ")\n";
-	}
-	
 	_Camera->setOrientation(
 		Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y) *
 		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
@@ -128,85 +122,32 @@ void Game::Update(float TimeSinceLastFrame)
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->TickCallback(timeStep);
-}
-
-/*void DumpSkeleton(std::stringstream &ss, Ogre::SkeletonInstance * s, int level)
-{
-	Ogre::Skeleton::BoneIterator bi = s->getBoneIterator();
-	while (bi.hasMoreElements())
+	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
-		for(int i = 0; i < level + 2; i++)
+		btVector3 target = _Player->_Body->getCenterOfMassPosition() - cc->_Body->getCenterOfMassPosition();
+		target.setY(0);
+		if (target.length2() > 50)
 		{
-			ss << " ";
+			cc->_TargetVelocity = 2;
+			float theta = atan2(cc->_TargetDirection.z(), cc->_TargetDirection.x());
+			theta += (rand() % 100 - 50) * 0.001;
+
+			target.setX(cos(theta));
+			target.setZ(sin(theta));
 		}
-		Ogre::Bone * b = bi.getNext();
-
-		ss << b->getName() << " " << b->getPosition() << std::endl;
-	}
-}
-
-void DumpNodes(std::stringstream &ss, Ogre::Node *n, int level)
-{
-	for(int i = 0; i < level; i++)
-	{
-		ss << " ";
-	}
-	ss << "SceneNode: " << n->getName() << " at " << n->getPosition() << std::endl;
-	
-	Ogre::SceneNode::ObjectIterator object_it = ((Ogre::SceneNode *)n)->getAttachedObjectIterator();
-	Ogre::Node::ChildNodeIterator node_it = n->getChildIterator();
-
-	Ogre::MovableObject *m;
-	while(object_it.hasMoreElements())
-	{
-		for(int i = 0; i < level + 2; i++)
+		else
 		{
-			ss << " ";
+			cc->_TargetVelocity = 5;
 		}
-		m = object_it.getNext();
-		ss << m->getMovableType() << ": " << m->getName() << std::endl;
-		if (!strcmp(m->getMovableType().c_str(), "Entity"))
-		{
-			Ogre::Entity * e = (Ogre::Entity *)m;
-			Ogre::SkeletonInstance * s = e->getSkeleton();
-			if (s)
-			{
-				DumpSkeleton(ss, s, level);
-			}
-			Ogre::AnimationStateSet * anim = e->getAllAnimationStates();
-			if (anim)
-			{
-				Ogre::AnimationStateIterator anim_it = anim->getAnimationStateIterator();
-				while (anim_it.hasMoreElements())
-				{
-					Ogre::AnimationState * st = anim_it.getNext();
-					for(int i = 0; i < level + 2; i++)
-					{
-						ss << " ";
-					}
-					ss << "Animation: " << st->getAnimationName() << std::endl;
-				}
-			}
-		}
-	}
-	
-	while(node_it.hasMoreElements())
-	{
-		DumpNodes(ss, node_it.getNext(), level + 2);
+		
+		cc->_TargetDirection = target;
+		cc->TickCallback(timeStep);
 	}
 }
-
-std::string DumpNodes(Ogre::Node *n)
-{
-	std::stringstream ss;
-	ss << std::endl << "Node Hierarchy:" << std::endl;
-	DumpNodes(ss, n, 0);
-	return ss.str();
-}*/
 
 void Game::go(void)
 {
-	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_MODULATIVE); // ombre que sur les cubes ??
+	_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	std::fstream f("../../../default_level.txt", std::fstream::in);
@@ -265,75 +206,12 @@ void Game::go(void)
 		new btBoxShape(btVector3(120, 10, 120)));
 	_World->addRigidBody(btGround);
 
-	// slope test
-	Ogre::Entity * entSlope = _SceneMgr->createEntity("Prefab_Cube");
-	entSlope->setMaterialName("Examples/Rockwall");
-	Ogre::SceneNode * nodeSlope = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-	nodeSlope->attachObject(entSlope);
-	nodeSlope->setScale(1, 1, 1);
-	nodeSlope->setPosition(170, 0, 0);
-	nodeSlope->setOrientation(Ogre::Quaternion(Ogre::Degree(30), Ogre::Vector3::UNIT_X));
-	btCollisionShape * SlopeShape = new btBoxShape(btVector3(50, 50, 50));
-	btRigidBody * SlopeBody = new btRigidBody(
-		0,
-		new btDefaultMotionState(btTransform(btQuaternion(btVector3(1,0,0), M_PI/6), btVector3(170,0,0))),
-		SlopeShape);
-	SlopeBody->setFriction(1);
-	_World->addRigidBody(SlopeBody);
-	_Player->_Body->setFriction(1);
-	
-	
-	
-	for(float y=0; y < 2; y += 0.51)
+	for (float x = -10; x < 10; x += 1)
 	{
-		for (float x = -(4.5-y)*0.6; x < (4.5-y)*0.6+0.1; x += 0.6)
-		{
-			for (float z = -(4.5-y)*0.6-20; z < (4.5-y)*0.6+0.1-20; z += 0.6)
-			{
-				Ogre::Entity * entCube = _SceneMgr->createEntity("Prefab_Cube");
-				Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-				node->attachObject(entCube);
-				node->setScale(0.005, 0.005, 0.005);
-				btCollisionShape * btCubeShape = new btBoxShape(btVector3(0.25, 0.25, 0.25));
-				//btCollisionShape * btCubeShape = new btSphereShape(0.25*sqrt(3.0f));
-				btVector3 inertia;
-				btCubeShape->calculateLocalInertia(10, inertia);
-				btRigidBody * btCube = new btRigidBody(
-					10,
-					new RigidBody<Ogre::SceneNode>(
-						Ogre::Quaternion::IDENTITY,
-						Ogre::Vector3(x, y+0.25, z),
-						Ogre::Vector3(0, 0, 0),
-						node),
-					btCubeShape,
-					inertia);
-				_World->addRigidBody(btCube);
-			}
-		}
-	}
-
-	for(float x = 0; x < 3; x += 1)
-	{
-		for(float z = 10; z < 13; z += 1)
-		{
-			Ogre::Entity * e = _SceneMgr->createEntity("robot.mesh");
-			Ogre::SceneNode * sn = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-			sn->attachObject(e);
-			sn->setScale(0.01, 0.01, 0.01);
-			btCollisionShape * shape = new btBoxShape(btVector3(0.15, 0.5, 0.15));
-			btVector3 I;
-			shape->calculateLocalInertia(5, I);
-			btRigidBody * body = new btRigidBody(
-				5,
-				new RigidBody<Ogre::SceneNode>(
-				Ogre::Quaternion::IDENTITY,
-				Ogre::Vector3(x, 0, z),
-				Ogre::Vector3(0, 0.5, 0),
-				sn),
-				shape,
-				I);
-			_World->addRigidBody(body);
-		}
+		Ogre::Entity * entity = _SceneMgr->createEntity("player.mesh");
+		CharacterController * cc = new CharacterController(_SceneMgr, _World, entity, 1.9, 0.4, 80);
+		cc->_Body->translate(btVector3(x, 0, -10));
+		_Ennemies.push_back(cc);
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");

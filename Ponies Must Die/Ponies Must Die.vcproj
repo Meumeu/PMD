@@ -65,6 +65,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="OgreMain_d.lib OIS_d.lib"
+				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
@@ -140,6 +141,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="OgreMain_d.lib OIS_d.lib BulletDynamics_Debug.lib BulletCollision_Debug.lib LinearMath_Debug.lib"
+				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
@@ -170,8 +172,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)\bin"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\obj"
+			OutputDirectory="Win32\$(ConfigurationName)\bin"
+			IntermediateDirectory="Win32\$(ConfigurationName)\obj"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -215,6 +217,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="OgreMain.lib OIS.lib"
+				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="true"
@@ -247,8 +250,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)\bin"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\obj"
+			OutputDirectory="Win64\$(ConfigurationName)\bin"
+			IntermediateDirectory="Win64\$(ConfigurationName)\obj"
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -293,6 +296,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="OgreMain.lib OIS.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib"
+				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
 				GenerateDebugInformation="false"

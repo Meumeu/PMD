@@ -46,7 +46,7 @@ public:
 	btScalar _MaxYawSpeed;
 	btScalar _CurrentHeading;
 	btVector3 _TargetDirection;
-	float _TargetVelocity;
+	btScalar _TargetVelocity;
 	bool _Jump;
 
 	btRigidBody * _Body;

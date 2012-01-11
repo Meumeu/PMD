@@ -28,25 +28,26 @@ CharacterController::CharacterController(
 	float Radius,
 	float Mass) :
 	_MaxYawSpeed(2 * 2 * M_PI),
+	_CurrentHeading(0),
+	_TargetDirection(0, 0, 0),
+	_TargetVelocity(0),
+	_Jump(false),
 	_Body(NULL),
 	_MotionState(
 		Ogre::Quaternion::IDENTITY,
 		Ogre::Vector3::ZERO,
 		Ogre::Vector3(0, Height / 2, 0),
 		0),
-	_Shape(Radius, Height-2*Radius)
+	_Shape(Radius, Height-2*Radius),
+	_Inertia(0, 0, 0),
+	_Mass(Mass),
+	_World(World)
 {
 	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
 	_Node->attachObject(Entity);
 
-	_Mass = Mass;
-
-	_Inertia = btVector3(0, 0, 0);
-
 	_MotionState.setNode(_Node);
 	_Body = new btRigidBody(Mass, &_MotionState, &_Shape, _Inertia);
-
-	_World = World;
 
 	World->addRigidBody(_Body);
 }
@@ -65,7 +66,7 @@ void CharacterController::TickCallback(btScalar dt)
 	btVector3 TargetVelocity(0, 0, 0);
 	btVector3 CurrentVelocity = _Body->getLinearVelocity();
 	
-	if (_TargetDirection.length2() > 0.5)
+	if (_TargetVelocity > 0 && _TargetDirection.length2() > 0.5)
 	{
 		TargetVelocity = _TargetDirection.normalized() * _TargetVelocity;
 		

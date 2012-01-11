@@ -49,7 +49,6 @@ public:
 	virtual void Update(float TimeSinceLastFrame);
 	
 	virtual bool keyPressed(const OIS::KeyEvent&);
-	virtual bool mouseMoved(const OIS::MouseEvent&);
 
 private:
 	void go(void);
@@ -80,6 +79,7 @@ private:
 
 	CharacterController * _Player;
 	bool _EscPressed;
+	std::vector<CharacterController*> _Ennemies;
 };
 }
 
