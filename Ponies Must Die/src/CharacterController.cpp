@@ -122,6 +122,8 @@ void CharacterController::UpdateGraphics(float dt)
 	
 	if (_TargetVelocity > 0)
 	{
+		_Animations.SetSpeed("RunBase", _TargetVelocity / 10);
+		_Animations.SetSpeed("RunTop", _TargetVelocity / 10);
 		_Animations.PushAnimation("RunBase");
 		_Animations.PushAnimation("RunTop");
 	}

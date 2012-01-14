@@ -341,6 +341,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\src\CharacterAnimation.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\src\CharacterController.cpp"
 				>
 			</File>
@@ -892,6 +896,10 @@
 			</File>
 			<File
 				RelativePath=".\src\AppStateManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\CharacterAnimation.h"
 				>
 			</File>
 			<File
