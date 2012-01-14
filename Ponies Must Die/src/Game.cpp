@@ -28,11 +28,10 @@
 #include <btBulletDynamicsCommon.h>
 #include "AppStateManager.h"
 
-const float CameraDistance = 0.8;
-const float CameraHeight = 1.8;
+const float CameraDistance = 2;
+const float CameraHeight = 1.7;
 
-namespace pmd
-{
+
 bool Game::keyPressed(const OIS::KeyEvent& e)
 {
 	if (e.key == OIS::KC_ESCAPE)
@@ -78,7 +77,11 @@ void Game::Update(float TimeSinceLastFrame)
 		0,
 		-velX * sin(_Heading.valueRadians()) + velZ * cos(_Heading.valueRadians()));
 
-	if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
+	if (velX == 0 && velZ == 0)
+	{
+		_Player->_TargetVelocity = 0;
+	}
+	else if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 	{
 		_Player->_TargetVelocity = 10;
 	}
@@ -116,12 +119,19 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
+	
+	_Player->UpdateGraphics(TimeSinceLastFrame);
+	BOOST_FOREACH(CharacterController * cc, _Ennemies)
+	{
+		cc->UpdateGraphics(TimeSinceLastFrame);
+	}
+	
 	return;
 }
 
 void Game::BulletCallback(btScalar timeStep)
 {
-	_Player->TickCallback(timeStep);
+	_Player->UpdatePhysics(timeStep);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
 		btVector3 target = _Player->_Body->getCenterOfMassPosition() - cc->_Body->getCenterOfMassPosition();
@@ -141,8 +151,22 @@ void Game::BulletCallback(btScalar timeStep)
 		}
 		
 		cc->_TargetDirection = target;
-		cc->TickCallback(timeStep);
+		cc->UpdatePhysics(timeStep);
 	}
+}
+
+CharacterController* Game::CreateCharacter(std::string MeshName, float height)
+{
+	Ogre::Entity * ent = _SceneMgr->createEntity(MeshName);
+	Ogre::AxisAlignedBox box = ent->getBoundingBox();
+	float scale = height / (box.getMaximum().y - box.getMinimum().y);
+	
+	Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+	Ogre::SceneNode * entnode = node->createChildSceneNode(Ogre::Vector3(0, -box.getMinimum().y * scale, 0));
+	entnode->scale(scale, scale, scale);
+	entnode->attachObject(ent);
+	
+	return new CharacterController(_SceneMgr, _World, ent, node, height, 0.4, 80);
 }
 
 void Game::go(void)
@@ -160,12 +184,8 @@ void Game::go(void)
 
 	Environment env(_SceneMgr, f);
 
-	Ogre::Entity * PlayerEntity = _SceneMgr->createEntity("player", "player.mesh");
-
-	PlayerEntity->setCastShadows(true);
-
-	_Player = new CharacterController(_SceneMgr, _World, PlayerEntity, 1.9, 0.4, 80);
-	//_Player->_Node->attachObject(_Camera);
+	_Player = CreateCharacter("Sinbad.mesh", 1.8);
+	
 
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
@@ -193,7 +213,6 @@ void Game::go(void)
 		plane,
 		240, 240, 100, 100, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
 
-
 	// ground
 	Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
 	entGround->setCastShadows(false);
@@ -208,12 +227,11 @@ void Game::go(void)
 
 	for (float x = -10; x < 10; x += 1)
 	{
-		Ogre::Entity * entity = _SceneMgr->createEntity("player.mesh");
-		CharacterController * cc = new CharacterController(_SceneMgr, _World, entity, 1.9, 0.4, 80);
+		CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
 		cc->_Body->translate(btVector3(x, 0, -10));
+		
 		_Ennemies.push_back(cc);
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");
-}
 }

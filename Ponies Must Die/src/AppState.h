@@ -22,16 +22,13 @@
 #include <OISKeyboard.h>
 #include <OISMouse.h>
 
-
-namespace pmd
-{
 class AppState :
 	public OIS::KeyListener,
 	public OIS::MouseListener
 {
 public:
-    AppState();
-    virtual ~AppState();
+	AppState();
+	virtual ~AppState();
 	virtual void Enter(void) = 0;
 	virtual void Exit(void) = 0;
 	virtual void Pause(void) = 0;
@@ -46,6 +43,5 @@ public:
 	virtual bool mouseReleased(const OIS::MouseEvent&, OIS::MouseButtonID) { return true; }
 
 };
-}
 
 #endif // APPSTATE_H

@@ -20,33 +20,31 @@
 #include <OgreConfigFile.h>
 #include "AppStateManager.h"
 
-namespace pmd
+Game::Game(void) :
+	_Root(NULL),
+	_Camera(NULL),
+	_SceneMgr(NULL),
+	_Window(NULL),
+	_Viewport(NULL),
+	_Mouse(NULL),
+	_Keyboard(NULL),
+	_Heading(0),
+	_Pitch(0),
+
+	_CollisionConfiguration(NULL),
+	_Dispatcher(NULL),
+	_OverlappingPairCache(NULL),
+	_Solver(NULL),
+	_World(NULL),
+	
+	_Player(NULL),
+	_EscPressed(false)
 {
-	Game::Game(void) :
-		_Root(NULL),
-		_Camera(NULL),
-		_SceneMgr(NULL),
-		_Window(NULL),
-		_Viewport(NULL),
-		_Mouse(NULL),
-		_Keyboard(NULL),
-		_Heading(0),
-		_Pitch(0),
+}
 
-		_CollisionConfiguration(NULL),
-		_Dispatcher(NULL),
-		_OverlappingPairCache(NULL),
-		_Solver(NULL),
-		_World(NULL),
-		
-		_Player(NULL),
-		_EscPressed(false)
-	{
-	}
-
-	Game::~Game()
-	{
-	}
+Game::~Game()
+{
+}
 
 void Game::Enter(void)
 {
@@ -116,6 +114,4 @@ void Game::cleanupBullet(void)
 	delete _OverlappingPairCache;
 	delete _Dispatcher;
 	delete _CollisionConfiguration;
-}
-
 }

@@ -78,6 +78,7 @@ set(HDRS
 	src/CharacterController.h
 	src/AppState.h
 	src/AppStateManager.h
+	src/CharacterAnimation.h
 
 	src/bullet/btBulletCollisionCommon.h
 	src/bullet/btBulletDynamicsCommon.h
@@ -264,6 +265,7 @@ set(SRCS
 	src/RigidBody.cpp
 	src/CharacterController.cpp
 	src/AppStateManager.cpp
+	src/CharacterAnimation.cpp
 
 	src/bullet/BulletCollision/BroadphaseCollision/btAxisSweep3.cpp
 	src/bullet/BulletCollision/BroadphaseCollision/btBroadphaseProxy.cpp

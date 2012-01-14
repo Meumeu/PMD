@@ -1,6 +1,6 @@
 /*
     <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) 2011  Guillaume Meunier <guillaume.meunier@centraliens.net>
+    Copyright (C) 2011-2012  Guillaume Meunier <guillaume.meunier@centraliens.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,9 +26,8 @@
 #include <OgreSceneManager.h>
 #include <OgreEntity.h>
 #include "RigidBody.h"
+#include "CharacterAnimation.h"
 
-namespace pmd
-{
 class CharacterController
 {
 public:
@@ -36,12 +35,14 @@ public:
 		Ogre::SceneManager * SceneMgr,
 		btDynamicsWorld * World,
 		Ogre::Entity * Entity,
+		Ogre::SceneNode * Node,
 		float Height,
 		float Radius,
 		float Mass);
 	~CharacterController(void);
 
-	void TickCallback(btScalar dt);
+	void UpdatePhysics(btScalar dt);
+	void UpdateGraphics(float dt);
 
 	btScalar _MaxYawSpeed;
 	btScalar _CurrentHeading;
@@ -56,7 +57,11 @@ public:
 	btVector3 _Inertia;
 	btScalar _Mass;
 	btDynamicsWorld * _World;
+	
+	//std::map<std::string, CharacterAnimation> _Animations;
+	CharacterAnimation _Animations;
+	
+	float IdleTime;
 };
-}
 
 #endif // CHARACTERCONTROLLER_H

@@ -33,8 +33,6 @@
 #include "CharacterController.h"
 #include "AppState.h"
 
-namespace pmd
-{
 class Game : public AppState
 {
 public:
@@ -58,6 +56,8 @@ private:
 	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
 	void BulletCallback(btScalar timeStep);
 
+	CharacterController* CreateCharacter(std::string MeshName, float height);
+	
 	Ogre::Root *           _Root;
 	Ogre::Camera *         _Camera;
 	Ogre::SceneManager *   _SceneMgr;
@@ -81,6 +81,5 @@ private:
 	bool _EscPressed;
 	std::vector<CharacterController*> _Ennemies;
 };
-}
 
 #endif // GAME_H

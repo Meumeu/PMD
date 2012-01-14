@@ -26,14 +26,14 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 int main(int argc, char *argv[])
 #endif
 {
-	pmd::AppStateManager manager;
+	AppStateManager manager;
 
 	try
 	{
 		if (!manager.setup())
 			return 1;
 
-		manager.MainLoop(new pmd::Game);
+		manager.MainLoop(new Game);
 	}
 	catch(std::exception& e)
 	{

@@ -18,12 +18,11 @@
 #include "CharacterController.h"
 #include "pmd.h"
 
-namespace pmd
-{
 CharacterController::CharacterController(
 	Ogre::SceneManager * SceneMgr,
 	btDynamicsWorld * World,
 	Ogre::Entity * Entity,
+	Ogre::SceneNode * Node,
 	float Height,
 	float Radius,
 	float Mass) :
@@ -41,15 +40,20 @@ CharacterController::CharacterController(
 	_Shape(Radius, Height-2*Radius),
 	_Inertia(0, 0, 0),
 	_Mass(Mass),
-	_World(World)
+	_World(World),
+	_Animations(Entity)
 {
-	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
-	_Node->attachObject(Entity);
+	//_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
+	//_Node->attachObject(Entity);
+	_Node = Node;
 
 	_MotionState.setNode(_Node);
 	_Body = new btRigidBody(Mass, &_MotionState, &_Shape, _Inertia);
 
 	World->addRigidBody(_Body);
+	
+	_Animations.SetWeight("IdleTop", 1);
+	_Animations.SetWeight("IdleBase", 1);
 }
 
 CharacterController::~CharacterController(void)
@@ -61,7 +65,7 @@ CharacterController::~CharacterController(void)
 	delete _Node;
 }
 
-void CharacterController::TickCallback(btScalar dt)
+void CharacterController::UpdatePhysics(btScalar dt)
 {
 	btVector3 TargetVelocity(0, 0, 0);
 	btVector3 CurrentVelocity = _Body->getLinearVelocity();
@@ -70,7 +74,7 @@ void CharacterController::TickCallback(btScalar dt)
 	{
 		TargetVelocity = _TargetDirection.normalized() * _TargetVelocity;
 		
-		btScalar TargetHeading = atan2(-TargetVelocity.x(), -TargetVelocity.z());
+		btScalar TargetHeading = atan2(TargetVelocity.x(), TargetVelocity.z());
 		btScalar DeltaHeading = TargetHeading - _CurrentHeading;
 		if (DeltaHeading > M_PI)
 			DeltaHeading -= 2 * M_PI;
@@ -92,6 +96,8 @@ void CharacterController::TickCallback(btScalar dt)
 		
 		btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
 		comtr.setRotation(TargetQ);
+		
+		IdleTime = 0;
 	}
 	btVector3 F = 10 * _Mass * (TargetVelocity - CurrentVelocity);
 	F.setY(0);
@@ -101,9 +107,43 @@ void CharacterController::TickCallback(btScalar dt)
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(5);
 		_Body->setLinearVelocity(Velocity);
+		IdleTime = 0;
 	}
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
+	
+	IdleTime += dt;
 }
+
+void CharacterController::UpdateGraphics(float dt)
+{
+	_Animations.ClearAnimations();
+	
+	if (_TargetVelocity > 0)
+	{
+		_Animations.PushAnimation("RunBase");
+		_Animations.PushAnimation("RunTop");
+	}
+	else
+	{
+		if (IdleTime < 5)
+		{
+			_Animations.PushAnimation("IdleBase");
+			_Animations.PushAnimation("IdleTop");
+		}
+		else if (IdleTime < 15)
+		{
+			_Animations.SetAnimation("Dance");
+		}
+		else
+		{
+			_Animations.PushAnimation("IdleBase");
+			_Animations.PushAnimation("IdleTop");
+			IdleTime = 0;
+		}
+	}
+	
+	_Animations.Update(dt);
 }
+

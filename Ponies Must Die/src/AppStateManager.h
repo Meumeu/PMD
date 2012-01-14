@@ -27,8 +27,6 @@
 #include <OISInputManager.h>
 #include <deque>
 
-namespace pmd
-{
 class AppStateManager :
 	public Ogre::WindowEventListener,
 	public Ogre::FrameListener
@@ -77,6 +75,5 @@ protected:
 	virtual void windowClosed(Ogre::RenderWindow* rw);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent &evt);
 };
-}
 
 #endif // APPSTATEMANAGER_H

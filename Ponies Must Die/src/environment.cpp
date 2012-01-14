@@ -26,9 +26,6 @@
 #include <fstream>
 #include <stdexcept>
 
-namespace pmd
-{
-
 Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level) : _sceneManager(sceneManager)
 {
 	while (!level.eof())
@@ -100,7 +97,5 @@ Environment::~Environment()
 	{
 		_sceneManager->destroyEntity(block._entity);
 	}
-
-}
 
 }

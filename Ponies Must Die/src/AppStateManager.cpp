@@ -36,8 +36,6 @@
 #endif
 #endif
 
-namespace pmd
-{
 AppStateManager * AppStateManager::Singleton;
 	
 AppStateManager::AppStateManager(void) :
@@ -268,6 +266,4 @@ AppState::~AppState()
 
 AppState::AppState(void)
 {
-}
-
 }

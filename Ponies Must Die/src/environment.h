@@ -26,8 +26,7 @@ namespace Ogre {
 	class SceneManager;
 	class Entity;
 }
-namespace pmd
-{
+
 class Environment
 {
 	enum orientation_t { North, South, East, West};
@@ -47,5 +46,5 @@ private:
 	Ogre::SceneManager * _sceneManager;
 	std::vector<Block> _blocks;
 };
-}
+
 #endif // ENVIRONMENT_H

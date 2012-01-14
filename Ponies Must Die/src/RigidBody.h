@@ -22,8 +22,6 @@
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 
-namespace pmd
-{
 template<class T> class RigidBody : public btMotionState
 {
 public:
@@ -44,6 +42,5 @@ private:
 	Ogre::Vector3    _Position;
 	T *              _Node;
 };
-}
 
 #endif // RIGIDBODY_H
