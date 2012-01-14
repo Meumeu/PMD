@@ -1,6 +1,6 @@
 /*
     <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) 2011  Guillaume Meunier <guillaume.meunier@centraliens.net>
+    Copyright (C) 2011-2012  Guillaume Meunier <guillaume.meunier@centraliens.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
