@@ -1,6 +1,7 @@
 /*
     <one line to give the program's name and a brief idea of what it does.>
     Copyright (C) 2011-2012  Guillaume Meunier <guillaume.meunier@centraliens.net>
+    and 2012 Patrick Nicolas <patricknicolas@laposte.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +32,7 @@ CharacterController::CharacterController(
 	_TargetDirection(0, 0, 0),
 	_TargetVelocity(0),
 	_Jump(false),
+	_GroundContact(false),
 	_Body(NULL),
 	_MotionState(
 		Ogre::Quaternion::IDENTITY,
@@ -102,7 +104,32 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	btVector3 F = 10 * _Mass * (TargetVelocity - CurrentVelocity);
 	F.setY(0);
 
-	if (_Jump)
+	// Update collision status	
+	int numManifolds = _World->getDispatcher()->getNumManifolds();
+	_GroundContact = false;
+	for (int i=0;i<numManifolds;i++)
+	{
+		btPersistentManifold* contactManifold =  _World->getDispatcher()->getManifoldByIndexInternal(i);
+		
+		if (contactManifold->getBody0() == _Body || contactManifold->getBody1() == _Body)
+		{
+			int numContacts = contactManifold->getNumContacts();
+			for (int contact=0;contact<numContacts;contact++)
+			{
+				btManifoldPoint& pt = contactManifold->getContactPoint(contact);
+				if (pt.getDistance()<0.f)
+				{
+					const btVector3& normalOnB = pt.m_normalWorldOnB;
+					if (normalOnB.getY() !=0 )
+					{
+						_GroundContact = true;
+					}
+				}
+			}
+		}
+	}
+
+	if (_Jump && _GroundContact)
 	{
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(5);

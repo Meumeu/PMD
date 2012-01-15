@@ -49,6 +49,7 @@ public:
 	btVector3 _TargetDirection;
 	btScalar _TargetVelocity;
 	bool _Jump;
+	bool _GroundContact;
 
 	btRigidBody * _Body;
 	Ogre::SceneNode * _Node;
