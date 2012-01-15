@@ -38,7 +38,7 @@ CharacterController::CharacterController(
 		Ogre::Vector3::ZERO,
 		Ogre::Vector3(0, Height / 2, 0),
 		0),
-	_Shape(Radius, Height-2*Radius),
+	_Shape(btVector3(Radius, Height / 2, Radius)),
 	_Inertia(0, 0, 0),
 	_Mass(Mass),
 	_World(World),
@@ -54,7 +54,7 @@ CharacterController::CharacterController(
 	_Body = new btRigidBody(Mass, &_MotionState, &_Shape, _Inertia);
 
 	World->addRigidBody(_Body);
-	
+
 	_Animations.SetWeight("IdleTop", 1);
 	_Animations.SetWeight("IdleBase", 1);
 
@@ -133,10 +133,16 @@ void CharacterController::UpdatePhysics(btScalar dt)
 
 	if (_Jump && _GroundContact)
 	{
+		_JumpDelay = _JumpStartDelay;
+		_Jump = false;
+	}
+
+	if (_JumpDelay > 0 && _JumpDelay - dt < 0)
+	{
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(9);
 		_Body->setLinearVelocity(Velocity);
-		_Jump = false;
+
 	}
 
 	if (!_GroundContact)

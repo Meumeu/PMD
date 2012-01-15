@@ -20,7 +20,7 @@
 
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
-#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
+#include <BulletCollision/CollisionShapes/btCylinderShape.h>
 
 #include <OgreSceneNode.h>
 #include <OgreSceneManager.h>
@@ -53,12 +53,11 @@ public:
 	btRigidBody * _Body;
 	Ogre::SceneNode * _Node;
 	RigidBody<Ogre::SceneNode> _MotionState;
-	btCapsuleShape _Shape;
+	btCylinderShape _Shape;
 	btVector3 _Inertia;
 	btScalar _Mass;
 	btDynamicsWorld * _World;
 	
-	//std::map<std::string, CharacterAnimation> _Animations;
 	CharacterAnimation _Animations;
 	
 	float _IdleTime;
