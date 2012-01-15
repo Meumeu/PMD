@@ -121,11 +121,6 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
-	
-	char buf[100];
-	sprintf(buf, "x=%f, y=%f, z=%f", _Player->_Node->getPosition().x, _Player->_Node->getPosition().y, _Player->_Node->getPosition().z);
-	Ogre::LogManager::getSingleton().logMessage(buf);
-
 	_Player->UpdateGraphics(TimeSinceLastFrame);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
