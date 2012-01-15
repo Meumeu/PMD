@@ -36,3 +36,5 @@ build/
 *~
 
 .kdev4
+
+*.orig

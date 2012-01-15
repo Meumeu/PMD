@@ -72,15 +72,13 @@ CharacterController::~CharacterController(void)
 
 void CharacterController::UpdatePhysics(btScalar dt)
 {
-	btVector3 TargetVelocity(0, 0, 0);
+	bool IsIdle = true;
 	btVector3 CurrentVelocity = _Body->getLinearVelocity();
 	
 	if (_TargetVelocity.length2() > 1)
 	{
 		btScalar TargetHeading = atan2(_TargetVelocity.x(), _TargetVelocity.z());
-		TargetVelocity = _TargetDirection.normalized() * _TargetVelocity;
 		
-		btScalar TargetHeading = atan2(TargetVelocity.x(), TargetVelocity.z());
 		btScalar DeltaHeading = TargetHeading - _CurrentHeading;
 		if (DeltaHeading > M_PI)
 			DeltaHeading -= 2 * M_PI;
@@ -103,7 +101,7 @@ void CharacterController::UpdatePhysics(btScalar dt)
 		btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
 		comtr.setRotation(TargetQ);
 		
-		_IdleTime = 0;
+		IsIdle = false;
 	}
 	btVector3 F = 10 * _Mass * (_TargetVelocity - CurrentVelocity);
 	F.setY(0);
@@ -111,20 +109,20 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	// Update collision status	
 	int numManifolds = _World->getDispatcher()->getNumManifolds();
 	_GroundContact = false;
-	for (int i=0;i<numManifolds;i++)
+	for(int i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold =  _World->getDispatcher()->getManifoldByIndexInternal(i);
 		
 		if (contactManifold->getBody0() == _Body || contactManifold->getBody1() == _Body)
 		{
 			int numContacts = contactManifold->getNumContacts();
-			for (int contact=0;contact<numContacts;contact++)
+			for(int contact=0; contact < numContacts; contact++)
 			{
 				btManifoldPoint& pt = contactManifold->getContactPoint(contact);
-				if (pt.getDistance()<0.f)
+				if (pt.getDistance() < 0.1f)
 				{
 					const btVector3& normalOnB = pt.m_normalWorldOnB;
-					if (normalOnB.getY() !=0 )
+					if (normalOnB.getY() != 0)
 					{
 						_GroundContact = true;
 					}
@@ -136,17 +134,20 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	if (_Jump && _GroundContact)
 	{
 		btVector3 Velocity = _Body->getLinearVelocity();
-		Velocity.setY(5);
+		Velocity.setY(9);
 		_Body->setLinearVelocity(Velocity);
-		_IdleTime = 0;
+		_Jump = false;
 	}
+
+	if (!_GroundContact)
+		IsIdle = false;
 
 	_JumpDelay -= dt;
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
 	
-	_IdleTime += dt;
+	_IdleTime = IsIdle ? _IdleTime + dt : 0;
 }
 
 void CharacterController::UpdateGraphics(float dt)
@@ -158,7 +159,7 @@ void CharacterController::UpdateGraphics(float dt)
 		_Animations.SetTime("JumpStart", _JumpStartDelay - _JumpDelay);
 		_Animations.PushAnimation("JumpStart");
 	}
-	else if (!touche_le_sol)
+	else if (!_GroundContact)
 	{
 		_Animations.PushAnimation("JumpLoop");
 	}
@@ -190,4 +191,3 @@ void CharacterController::UpdateGraphics(float dt)
 	
 	_Animations.Update(dt);
 }
-

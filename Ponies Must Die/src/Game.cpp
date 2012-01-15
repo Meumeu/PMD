@@ -38,6 +38,11 @@ bool Game::keyPressed(const OIS::KeyEvent& e)
 	{
 		_EscPressed = true;
 	}
+
+	if (e.key == OIS::KC_SPACE)
+	{
+		_Player->_Jump = _Player->_GroundContact;
+	}
 	
 	return true;
 }
@@ -88,8 +93,6 @@ void Game::Update(float TimeSinceLastFrame)
 	{
 		_Player->_TargetVelocity = 3 * TargetVelocity;
 	}
-
-	_Player->_Jump = _Keyboard->isKeyDown(OIS::KC_SPACE);
 
 	OIS::MouseState ms = _Mouse->getMouseState();
 	
