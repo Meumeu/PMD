@@ -232,7 +232,7 @@ void Game::go(void)
 		new btBoxShape(btVector3(120, 10, 120)));
 	_World->addRigidBody(btGround);
 
-	for (float x = -10; x < 10; x += 1)
+	for(float x = -10; x < 10; x += 1)
 	{
 		CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
 		cc->_Body->translate(btVector3(x, 0, -10));
