@@ -48,6 +48,7 @@ public:
 	btScalar _CurrentHeading;
 	btVector3 _TargetVelocity;
 	bool _Jump;
+	bool _GroundContact;
 
 	btRigidBody * _Body;
 	Ogre::SceneNode * _Node;
