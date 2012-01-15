@@ -76,6 +76,22 @@ void CharacterAnimation::SetSpeed(std::string AnimName, float Speed)
 	it->second._Speed = Speed;
 }
 
+float CharacterAnimation::GetLength(std::string AnimName)
+{
+	AnimationMap::iterator it = Animations.find(AnimName);
+	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	
+	return it->second._as->getLength();
+}
+
+void CharacterAnimation::SetTime(std::string AnimName, float t)
+{
+	AnimationMap::iterator it = Animations.find(AnimName);
+	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	
+	it->second._as->setTimePosition(t);
+}
+
 void CharacterAnimation::PushAnimation(std::string AnimName, float weight)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);

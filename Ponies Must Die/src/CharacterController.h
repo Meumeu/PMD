@@ -46,8 +46,7 @@ public:
 
 	btScalar _MaxYawSpeed;
 	btScalar _CurrentHeading;
-	btVector3 _TargetDirection;
-	btScalar _TargetVelocity;
+	btVector3 _TargetVelocity;
 	bool _Jump;
 
 	btRigidBody * _Body;
@@ -61,7 +60,9 @@ public:
 	//std::map<std::string, CharacterAnimation> _Animations;
 	CharacterAnimation _Animations;
 	
-	float IdleTime;
+	float _IdleTime;
+	float _JumpStartDelay;
+	float _JumpDelay;
 };
 
 #endif // CHARACTERCONTROLLER_H

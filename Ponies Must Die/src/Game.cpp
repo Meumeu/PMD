@@ -72,22 +72,21 @@ void Game::Update(float TimeSinceLastFrame)
 		velX = 1;
 	}
 
-	_Player->_TargetDirection = btVector3(
+	btVector3 TargetVelocity = btVector3(
 		velX * cos(_Heading.valueRadians()) + velZ * sin(_Heading.valueRadians()),
 		0,
 		-velX * sin(_Heading.valueRadians()) + velZ * cos(_Heading.valueRadians()));
 
-	if (velX == 0 && velZ == 0)
+	if (TargetVelocity != btVector3(0,0,0))
+		TargetVelocity.normalize();
+
+	if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 	{
-		_Player->_TargetVelocity = 0;
-	}
-	else if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
-	{
-		_Player->_TargetVelocity = 10;
+		_Player->_TargetVelocity = 10 * TargetVelocity;
 	}
 	else
 	{
-		_Player->_TargetVelocity = 3;
+		_Player->_TargetVelocity = 3 * TargetVelocity;
 	}
 
 	_Player->_Jump = _Keyboard->isKeyDown(OIS::KC_SPACE);
@@ -120,6 +119,10 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
 	
+	char buf[100];
+	sprintf(buf, "x=%f, y=%f, z=%f", _Player->_Node->getPosition().x, _Player->_Node->getPosition().y, _Player->_Node->getPosition().z);
+	Ogre::LogManager::getSingleton().logMessage(buf);
+
 	_Player->UpdateGraphics(TimeSinceLastFrame);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
@@ -135,22 +138,23 @@ void Game::BulletCallback(btScalar timeStep)
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
 		btVector3 target = _Player->_Body->getCenterOfMassPosition() - cc->_Body->getCenterOfMassPosition();
-		target.setY(0);
+
 		if (target.length2() > 50)
 		{
-			cc->_TargetVelocity = 2;
-			float theta = atan2(cc->_TargetDirection.z(), cc->_TargetDirection.x());
+			float theta = atan2(cc->_TargetVelocity.z(), cc->_TargetVelocity.x());
 			theta += (rand() % 100 - 50) * 0.001;
 
 			target.setX(cos(theta));
+			target.setY(0);
 			target.setZ(sin(theta));
+			cc->_TargetVelocity = 2 * target;
 		}
 		else
 		{
-			cc->_TargetVelocity = 5;
+			target.setY(0);
+			cc->_TargetVelocity = 5 * target.normalized();
 		}
 		
-		cc->_TargetDirection = target;
 		cc->UpdatePhysics(timeStep);
 	}
 }

@@ -28,8 +28,7 @@ CharacterController::CharacterController(
 	float Mass) :
 	_MaxYawSpeed(2 * 2 * M_PI),
 	_CurrentHeading(0),
-	_TargetDirection(0, 0, 0),
-	_TargetVelocity(0),
+	_TargetVelocity(0, 0, 0),
 	_Jump(false),
 	_Body(NULL),
 	_MotionState(
@@ -41,7 +40,9 @@ CharacterController::CharacterController(
 	_Inertia(0, 0, 0),
 	_Mass(Mass),
 	_World(World),
-	_Animations(Entity)
+	_Animations(Entity),
+	_IdleTime(0),
+	_JumpDelay(-1)
 {
 	//_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
 	//_Node->attachObject(Entity);
@@ -54,6 +55,8 @@ CharacterController::CharacterController(
 	
 	_Animations.SetWeight("IdleTop", 1);
 	_Animations.SetWeight("IdleBase", 1);
+
+	_JumpStartDelay = _Animations.GetLength("JumpStart");
 }
 
 CharacterController::~CharacterController(void)
@@ -67,14 +70,11 @@ CharacterController::~CharacterController(void)
 
 void CharacterController::UpdatePhysics(btScalar dt)
 {
-	btVector3 TargetVelocity(0, 0, 0);
 	btVector3 CurrentVelocity = _Body->getLinearVelocity();
 	
-	if (_TargetVelocity > 0 && _TargetDirection.length2() > 0.5)
+	if (_TargetVelocity.length2() > 1)
 	{
-		TargetVelocity = _TargetDirection.normalized() * _TargetVelocity;
-		
-		btScalar TargetHeading = atan2(TargetVelocity.x(), TargetVelocity.z());
+		btScalar TargetHeading = atan2(_TargetVelocity.x(), _TargetVelocity.z());
 		btScalar DeltaHeading = TargetHeading - _CurrentHeading;
 		if (DeltaHeading > M_PI)
 			DeltaHeading -= 2 * M_PI;
@@ -97,44 +97,61 @@ void CharacterController::UpdatePhysics(btScalar dt)
 		btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
 		comtr.setRotation(TargetQ);
 		
-		IdleTime = 0;
+		_IdleTime = 0;
 	}
-	btVector3 F = 10 * _Mass * (TargetVelocity - CurrentVelocity);
+	btVector3 F = 10 * _Mass * (_TargetVelocity - CurrentVelocity);
 	F.setY(0);
 
-	if (_Jump)
+#define touche_le_sol true // TODO
+	if (_Jump && _JumpDelay < 0 && touche_le_sol)
+	{
+		_JumpDelay = _JumpStartDelay;
+	}
+
+	if (_JumpDelay > 0 && _JumpDelay - dt <= 0)
 	{
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(5);
 		_Body->setLinearVelocity(Velocity);
-		IdleTime = 0;
+		_IdleTime = 0;
 	}
+
+	_JumpDelay -= dt;
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
 	
-	IdleTime += dt;
+	_IdleTime += dt;
 }
 
 void CharacterController::UpdateGraphics(float dt)
 {
 	_Animations.ClearAnimations();
 	
-	if (_TargetVelocity > 0)
+	if (_JumpDelay > 0)
 	{
-		_Animations.SetSpeed("RunBase", _TargetVelocity / 10);
-		_Animations.SetSpeed("RunTop", _TargetVelocity / 10);
+		_Animations.SetTime("JumpStart", _JumpStartDelay - _JumpDelay);
+		_Animations.PushAnimation("JumpStart");
+	}
+	else if (!touche_le_sol)
+	{
+		_Animations.PushAnimation("JumpLoop");
+	}
+	else if (_TargetVelocity.length2() > 0)
+	{
+		_Animations.SetSpeed("RunBase", _TargetVelocity.length() / 10);
+		_Animations.SetSpeed("RunTop", _TargetVelocity.length() / 10);
 		_Animations.PushAnimation("RunBase");
 		_Animations.PushAnimation("RunTop");
 	}
 	else
 	{
-		if (IdleTime < 5)
+		if (_IdleTime < 5)
 		{
 			_Animations.PushAnimation("IdleBase");
 			_Animations.PushAnimation("IdleTop");
 		}
-		else if (IdleTime < 15)
+		else if (_IdleTime < 15)
 		{
 			_Animations.SetAnimation("Dance");
 		}
@@ -142,7 +159,7 @@ void CharacterController::UpdateGraphics(float dt)
 		{
 			_Animations.PushAnimation("IdleBase");
 			_Animations.PushAnimation("IdleTop");
-			IdleTime = 0;
+			_IdleTime = 0;
 		}
 	}
 	

@@ -60,6 +60,9 @@ public:
 	void SetFadeSpeed(std::string AnimName, float FadeInSpeed, float FadeOutSpeed);
 	void SetSpeed(std::string AnimName, float Speed);
 	void Update(float dt);
+
+	float GetLength(std::string AnimName);
+	void SetTime(std::string AnimName, float t);
 };
 
 #endif // CHARACTERANIMATION_H
