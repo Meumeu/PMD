@@ -229,7 +229,8 @@ void Game::go(void)
 
 	for(float x = -10; x < 10; x += 1)
 	{
-		CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
+		//CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
+		CharacterController * cc = CreateCharacter("Pony.mesh", 1.8);
 		cc->_Body->translate(btVector3(x, 0, -10));
 		
 		_Ennemies.push_back(cc);

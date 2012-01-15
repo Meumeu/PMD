@@ -62,7 +62,7 @@ void CharacterAnimation::ClearAnimations(void )
 void CharacterAnimation::SetFadeSpeed(std::string AnimName, float FadeInSpeed, float FadeOutSpeed)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return; //throw std::out_of_range(AnimName + " out of range");
 
 	it->second._FadeInSpeed = FadeInSpeed;
 	it->second._FadeOutSpeed = FadeOutSpeed;
@@ -71,7 +71,7 @@ void CharacterAnimation::SetFadeSpeed(std::string AnimName, float FadeInSpeed, f
 void CharacterAnimation::SetSpeed(std::string AnimName, float Speed)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return; //throw std::out_of_range(AnimName + " out of range");
 
 	it->second._Speed = Speed;
 }
@@ -79,7 +79,7 @@ void CharacterAnimation::SetSpeed(std::string AnimName, float Speed)
 float CharacterAnimation::GetLength(std::string AnimName)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return 0; //throw std::out_of_range(AnimName + " out of range");
 	
 	return it->second._as->getLength();
 }
@@ -87,7 +87,7 @@ float CharacterAnimation::GetLength(std::string AnimName)
 void CharacterAnimation::SetTime(std::string AnimName, float t)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return; //throw std::out_of_range(AnimName + " out of range");
 	
 	it->second._as->setTimePosition(t);
 }
@@ -95,7 +95,7 @@ void CharacterAnimation::SetTime(std::string AnimName, float t)
 void CharacterAnimation::PushAnimation(std::string AnimName, float weight)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return; //throw std::out_of_range(AnimName + " out of range");
 
 	it->second._TargetWeight = weight;
 }
@@ -103,7 +103,7 @@ void CharacterAnimation::PushAnimation(std::string AnimName, float weight)
 void CharacterAnimation::SetWeight(std::string AnimName, float weight)
 {
 	AnimationMap::iterator it = Animations.find(AnimName);
-	if (it == Animations.end()) throw std::out_of_range(AnimName + " out of range");
+	if (it == Animations.end()) return; //throw std::out_of_range(AnimName + " out of range");
 
 	it->second._as->setWeight(weight);
 }
