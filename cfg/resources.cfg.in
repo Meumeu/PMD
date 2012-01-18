@@ -1,4 +1,5 @@
 [Essential]
 FileSystem=@CMAKE_SOURCE_DIR@/resources/meshes
 FileSystem=@CMAKE_SOURCE_DIR@/resources/textures
+FileSystem=@CMAKE_INSTALL_PREFIX@/share/pmd/models
 Zip=@CMAKE_SOURCE_DIR@/resources/meshes/Sinbad.zip

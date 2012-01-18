@@ -392,6 +392,9 @@ include_directories( ${OIS_INCLUDE_DIRS}
 
 add_executable(poniesmustdie WIN32 ${HDRS} ${SRCS})
 
+add_subdirectory(blender)
+add_dependencies(poniesmustdie generate_models)
+
 set_target_properties(poniesmustdie PROPERTIES DEBUG_POSTFIX _d)
 
 target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
