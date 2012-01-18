@@ -157,23 +157,38 @@ void Game::BulletCallback(btScalar timeStep)
 	}
 }
 
-CharacterController* Game::CreateCharacter(std::string MeshName, float height)
+CharacterController* Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
 {
 	Ogre::Entity * ent = _SceneMgr->createEntity(MeshName);
 	Ogre::AxisAlignedBox box = ent->getBoundingBox();
-	float scale = height / (box.getMaximum().y - box.getMinimum().y);
+	Ogre::Vector3 boxsize = box.getMaximum() - box.getMinimum();
+	Ogre::Vector3 boxcenter = (box.getMaximum() + box.getMinimum()) / 2;
+	
+	float scale = Height / boxsize.y;
+	float RadiusX = boxsize.x * scale / 2;
+	float RadiusZ = boxsize.z * scale / 2;
 	
 	Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
-	Ogre::SceneNode * entnode = node->createChildSceneNode(Ogre::Vector3(0, -box.getMinimum().y * scale, 0));
+	Ogre::SceneNode * entnode = node->createChildSceneNode(
+		Ogre::Vector3(
+			-boxcenter.x * scale,
+			-box.getMinimum().y * scale,
+			-boxcenter.z * scale));
+	
 	entnode->scale(scale, scale, scale);
 	entnode->attachObject(ent);
 	
-	return new CharacterController(_SceneMgr, _World, ent, node, height, 0.4, 80);
+	CharacterController * cc = new CharacterController(_SceneMgr, _World, ent, node, RadiusX, Height, RadiusZ, mass);
+	
+	cc->_Body->setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), heading), position + btVector3(0, Height/2, 0)));
+	cc->_CurrentHeading = heading;
+	
+	return cc;
 }
 
 void Game::go(void)
 {
-	_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
+	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	std::fstream f("../../../default_level.txt", std::fstream::in);
@@ -186,9 +201,8 @@ void Game::go(void)
 
 	Environment env(_SceneMgr, f);
 
-	_Player = CreateCharacter("Sinbad.mesh", 1.8);
+	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100);
 	
-
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
 
@@ -229,11 +243,7 @@ void Game::go(void)
 
 	for(float x = -10; x < 10; x += 1)
 	{
-		//CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
-		CharacterController * cc = CreateCharacter("Pony.mesh", 1.8);
-		cc->_Body->translate(btVector3(x, 0, -10));
-		
-		_Ennemies.push_back(cc);
+		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, btVector3(x, 0, -10)));
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");

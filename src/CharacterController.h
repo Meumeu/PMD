@@ -36,8 +36,9 @@ public:
 		btDynamicsWorld * World,
 		Ogre::Entity * Entity,
 		Ogre::SceneNode * Node,
+		float SizeX,
 		float Height,
-		float Radius,
+		float SizeZ,
 		float Mass);
 	~CharacterController(void);
 
@@ -53,7 +54,7 @@ public:
 	btRigidBody * _Body;
 	Ogre::SceneNode * _Node;
 	RigidBody<Ogre::SceneNode> _MotionState;
-	btCylinderShape _Shape;
+	btBoxShape _Shape;
 	btVector3 _Inertia;
 	btScalar _Mass;
 	btDynamicsWorld * _World;
@@ -61,8 +62,6 @@ public:
 	CharacterAnimation _Animations;
 	
 	float _IdleTime;
-	float _JumpStartDelay;
-	float _JumpDelay;
 };
 
 #endif // CHARACTERCONTROLLER_H
