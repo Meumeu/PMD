@@ -112,7 +112,7 @@ void Game::Update(float TimeSinceLastFrame)
 		Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y) *
 		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 
-	_World->stepSimulation(TimeSinceLastFrame, 3);
+	_World->stepSimulation(0.1*TimeSinceLastFrame, 3);
 
 	_Camera->setPosition(
 		_Player->_Node->getPosition() +
@@ -121,10 +121,10 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
-	_Player->UpdateGraphics(TimeSinceLastFrame);
+	_Player->UpdateGraphics(0.1*TimeSinceLastFrame);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
-		cc->UpdateGraphics(TimeSinceLastFrame);
+		cc->UpdateGraphics(0.1*TimeSinceLastFrame);
 	}
 	
 	return;
@@ -201,7 +201,8 @@ void Game::go(void)
 
 	Environment env(_SceneMgr, f);
 
-	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100);
+	btVector3 PlayerPosition(0, 0, 0);
+	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100, PlayerPosition);
 	
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
@@ -243,7 +244,8 @@ void Game::go(void)
 
 	for(float x = -10; x < 10; x += 1)
 	{
-		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, btVector3(x, 0, -10)));
+		btVector3 pos(x, 0, -10);
+		//_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");

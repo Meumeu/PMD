@@ -60,7 +60,7 @@ private:
 		std::string MeshName,
 		float HeightY,
 		float mass,
-		btVector3& position = btVector3(0, 0, 0),
+		btVector3& position,
 		float heading = 0);
 	
 	Ogre::Root *           _Root;
