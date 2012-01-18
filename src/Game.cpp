@@ -245,7 +245,7 @@ void Game::go(void)
 	for(float x = -10; x < 10; x += 1)
 	{
 		btVector3 pos(x, 0, -10);
-		//_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
+		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");
