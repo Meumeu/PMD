@@ -112,7 +112,7 @@ void Game::Update(float TimeSinceLastFrame)
 		Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y) *
 		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 
-	_World->stepSimulation(0.1*TimeSinceLastFrame, 3);
+	_World->stepSimulation(TimeSinceLastFrame, 3);
 
 	_Camera->setPosition(
 		_Player->_Node->getPosition() +
@@ -121,10 +121,10 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
-	_Player->UpdateGraphics(0.1*TimeSinceLastFrame);
+	_Player->UpdateGraphics(TimeSinceLastFrame);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
-		cc->UpdateGraphics(0.1*TimeSinceLastFrame);
+		cc->UpdateGraphics(TimeSinceLastFrame);
 	}
 	
 	return;
