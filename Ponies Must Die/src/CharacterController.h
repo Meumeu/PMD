@@ -61,8 +61,6 @@ public:
 	CharacterAnimation _Animations;
 	
 	float _IdleTime;
-	float _JumpStartDelay;
-	float _JumpDelay;
 };
 
 #endif // CHARACTERCONTROLLER_H

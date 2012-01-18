@@ -43,11 +43,8 @@ CharacterController::CharacterController(
 	_Mass(Mass),
 	_World(World),
 	_Animations(Entity),
-	_IdleTime(0),
-	_JumpDelay(-1)
+	_IdleTime(0)
 {
-	//_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
-	//_Node->attachObject(Entity);
 	_Node = Node;
 
 	_MotionState.setNode(_Node);
@@ -57,8 +54,6 @@ CharacterController::CharacterController(
 
 	_Animations.SetWeight("IdleTop", 1);
 	_Animations.SetWeight("IdleBase", 1);
-
-	_JumpStartDelay = _Animations.GetLength("JumpStart");
 }
 
 CharacterController::~CharacterController(void)
@@ -133,22 +128,15 @@ void CharacterController::UpdatePhysics(btScalar dt)
 
 	if (_Jump && _GroundContact)
 	{
-		_JumpDelay = _JumpStartDelay;
 		_Jump = false;
-	}
 
-	if (_JumpDelay > 0 && _JumpDelay - dt < 0)
-	{
 		btVector3 Velocity = _Body->getLinearVelocity();
 		Velocity.setY(9);
 		_Body->setLinearVelocity(Velocity);
-
 	}
 
 	if (!_GroundContact)
 		IsIdle = false;
-
-	_JumpDelay -= dt;
 
 	_Body->activate(true);
 	_Body->applyCentralForce(F);
@@ -160,12 +148,7 @@ void CharacterController::UpdateGraphics(float dt)
 {
 	_Animations.ClearAnimations();
 	
-	if (_JumpDelay > 0)
-	{
-		_Animations.SetTime("JumpStart", _JumpStartDelay - _JumpDelay);
-		_Animations.PushAnimation("JumpStart");
-	}
-	else if (!_GroundContact)
+	if (!_GroundContact)
 	{
 		_Animations.PushAnimation("JumpLoop");
 	}
@@ -175,6 +158,7 @@ void CharacterController::UpdateGraphics(float dt)
 		_Animations.SetSpeed("RunTop", _TargetVelocity.length() / 10);
 		_Animations.PushAnimation("RunBase");
 		_Animations.PushAnimation("RunTop");
+		_Animations.PushAnimation("my_animation");
 	}
 	else
 	{
