@@ -56,7 +56,7 @@ private:
 	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
 	void BulletCallback(btScalar timeStep);
 
-	CharacterController* CreateCharacter(std::string MeshName, float height);
+	CharacterController* CreateCharacter(std::string MeshName, float height, float mass);
 	
 	Ogre::Root *           _Root;
 	Ogre::Camera *         _Camera;

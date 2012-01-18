@@ -157,7 +157,7 @@ void Game::BulletCallback(btScalar timeStep)
 	}
 }
 
-CharacterController* Game::CreateCharacter(std::string MeshName, float height)
+CharacterController* Game::CreateCharacter(std::string MeshName, float height, float mass)
 {
 	Ogre::Entity * ent = _SceneMgr->createEntity(MeshName);
 	Ogre::AxisAlignedBox box = ent->getBoundingBox();
@@ -168,7 +168,7 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float height)
 	entnode->scale(scale, scale, scale);
 	entnode->attachObject(ent);
 	
-	return new CharacterController(_SceneMgr, _World, ent, node, height, 0.4, 80);
+	return new CharacterController(_SceneMgr, _World, ent, node, height, 0.4, mass);
 }
 
 void Game::go(void)
@@ -186,7 +186,7 @@ void Game::go(void)
 
 	Environment env(_SceneMgr, f);
 
-	_Player = CreateCharacter("Sinbad.mesh", 1.8);
+	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100);
 	
 
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
@@ -229,8 +229,7 @@ void Game::go(void)
 
 	for(float x = -10; x < 10; x += 1)
 	{
-		//CharacterController * cc = CreateCharacter("Sinbad.mesh", 1.8);
-		CharacterController * cc = CreateCharacter("Pony.mesh", 1.8);
+		CharacterController * cc = CreateCharacter("Pony.mesh", 1.2, 30);
 		cc->_Body->translate(btVector3(x, 0, -10));
 		
 		_Ennemies.push_back(cc);
