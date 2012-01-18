@@ -24,8 +24,9 @@ CharacterController::CharacterController(
 	btDynamicsWorld * World,
 	Ogre::Entity * Entity,
 	Ogre::SceneNode * Node,
+	float SizeX,
 	float Height,
-	float Radius,
+	float SizeZ,
 	float Mass) :
 	_MaxYawSpeed(2 * 2 * M_PI),
 	_CurrentHeading(0),
@@ -38,7 +39,7 @@ CharacterController::CharacterController(
 		Ogre::Vector3::ZERO,
 		Ogre::Vector3(0, Height / 2, 0),
 		0),
-	_Shape(btVector3(Radius, Height / 2, Radius)),
+	_Shape(btVector3(SizeX, Height / 2, SizeZ)),
 	_Inertia(0, 0, 0),
 	_Mass(Mass),
 	_World(World),
@@ -49,6 +50,7 @@ CharacterController::CharacterController(
 
 	_MotionState.setNode(_Node);
 	_Body = new btRigidBody(Mass, &_MotionState, &_Shape, _Inertia);
+	_Body->setFriction(0);
 
 	World->addRigidBody(_Body);
 
@@ -93,8 +95,9 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	
 		btQuaternion TargetQ(btVector3(0,1,0), _CurrentHeading);
 		
-		btTransform &comtr = (btTransform &)(_Body->getCenterOfMassTransform());
+		btTransform comtr = _Body->getCenterOfMassTransform();
 		comtr.setRotation(TargetQ);
+		_Body->setCenterOfMassTransform(comtr);
 		
 		IsIdle = false;
 	}
