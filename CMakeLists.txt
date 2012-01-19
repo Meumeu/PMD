@@ -67,7 +67,7 @@ find_package(Boost QUIET)
 
 # Set up referencing of Boost
 include_directories(${Boost_INCLUDE_DIR})
-add_definitions(BOOST_ALL_NO_LIB)
+add_definitions(-DBOOST_ALL_NO_LIB)
 set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
 
 set(HDRS
