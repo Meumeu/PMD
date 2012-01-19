@@ -108,7 +108,7 @@ void AppStateManager::setupResources(void)
 {
 	// Load resource paths from config file
 	Ogre::ConfigFile cf;
-	cf.load("../etc/resources.cfg");
+	cf.load(PATH_RESOURCES "/resources.cfg");
 
 	// Go through all sections & settings in the file
 	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();

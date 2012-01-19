@@ -422,8 +422,9 @@ else()
 	endif()
 endif()
 
+add_definitions(-DPATH_RESOURCES=\"${CMAKE_INSTALL_PREFIX}/share/pmd\")
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/etc)
 
 # post-build copy for win32
 if(WIN32 AND NOT MINGW)
@@ -443,7 +444,7 @@ install(TARGETS poniesmustdie
 	CONFIGURATIONS All)
 
 configure_file(${CMAKE_SOURCE_DIR}/src/resources.cfg.in
-	${CMAKE_INSTALL_PREFIX}/etc/resources.cfg)
+	${CMAKE_INSTALL_PREFIX}/share/pmd/resources.cfg)
 
 if(WIN32)
 	# NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
