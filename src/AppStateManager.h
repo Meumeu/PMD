@@ -54,7 +54,7 @@ public:
 	AppStateManager(void);
 	~AppStateManager();
 
-	bool setup(void);
+	bool setup(std::string HomeDir);
 	void Enter(AppState * NewState);
 	void SwitchTo(AppState * NewState);
 	void Exit(void);

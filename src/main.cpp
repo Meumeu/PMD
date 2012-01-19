@@ -19,8 +19,13 @@
 #include "Game.h"
 #include "AppStateManager.h"
 
+#include <boost/filesystem.hpp>
+#include <stdexcept>
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
+#include <shlobj.h>
+
 INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 #else
 int main(int argc, char *argv[])
@@ -30,7 +35,20 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		if (!manager.setup())
+#ifdef WINDOWS
+		char buf[MAX_PATH];
+		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, HomeDir)))
+			throw std::runtime_error("SHGetFolderPath failed");
+		std::string HomeDir = buf;
+		HomeDir += "\\PoniesMustDie\\";
+#else
+		std::string HomeDir = getenv("HOME");
+		HomeDir += "/.PoniesMustDie/";
+#endif
+	
+		boost::filesystem::create_directories(HomeDir);
+		
+		if (!manager.setup(HomeDir))
 			return 1;
 
 		manager.MainLoop(new Game);

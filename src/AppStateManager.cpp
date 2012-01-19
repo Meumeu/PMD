@@ -17,7 +17,6 @@
 
 #include <OgreConfigFile.h>
 #include "AppStateManager.h"
-#include <assert.h>
 #include "pmd.h"
 
 #ifndef PATH_RenderSystem_GL
@@ -73,9 +72,9 @@ AppStateManager::~AppStateManager()
 	}
 }
 
-bool AppStateManager::setup(void)
+bool AppStateManager::setup(std::string HomeDir)
 {
-	_OgreRoot = new Ogre::Root("", "../etc/ogre.cfg", "../ogre.log");
+	_OgreRoot = new Ogre::Root("", HomeDir + "ogre.cfg", HomeDir + "ogre.log");
 	
 	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
 	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
