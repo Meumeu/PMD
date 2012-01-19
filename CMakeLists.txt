@@ -442,7 +442,7 @@ install(TARGETS poniesmustdie
 	RUNTIME DESTINATION bin
 	CONFIGURATIONS All)
 
-configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
+configure_file(${CMAKE_SOURCE_DIR}/src/resources.cfg.in
 	${CMAKE_INSTALL_PREFIX}/etc/resources.cfg)
 
 if(WIN32)
