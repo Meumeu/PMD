@@ -56,7 +56,7 @@ if (MINGW)
 endif ()
 set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.44")
 # Components that need linking (NB does not include header-only components like bind)
-set(OGRE_BOOST_COMPONENTS thread date_time)
+set(OGRE_BOOST_COMPONENTS thread date_time filesystem system)
 find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
 if (NOT Boost_FOUND)
 	# Try again with the other type of libs
@@ -67,7 +67,7 @@ find_package(Boost QUIET)
 
 # Set up referencing of Boost
 include_directories(${Boost_INCLUDE_DIR})
-add_definitions(-DBOOST_ALL_NO_LIB)
+add_definitions(BOOST_ALL_NO_LIB)
 set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
 
 set(HDRS
@@ -397,7 +397,7 @@ add_dependencies(poniesmustdie generate_models)
 
 set_target_properties(poniesmustdie PROPERTIES DEBUG_POSTFIX _d)
 
-target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system)
 
 if(CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wall)
