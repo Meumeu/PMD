@@ -37,7 +37,7 @@
 
 AppStateManager * AppStateManager::Singleton;
 	
-AppStateManager::AppStateManager(void) :
+AppStateManager::AppStateManager(std::string HomeDir) :
 	_OgreRoot(0),
 	_Window(0),
 	_Timer(0),
@@ -46,7 +46,48 @@ AppStateManager::AppStateManager(void) :
 	_Keyboard(0),
 	_Shutdown(false)
 {
+	if (Singleton) abort();
 	Singleton = this;
+	
+	_OgreRoot = new Ogre::Root("", HomeDir + "ogre.cfg", HomeDir + "ogre.log");
+	
+	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
+	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
+	
+	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
+	{
+		exit(0);
+	}
+	
+	_Window = _OgreRoot->initialise(true, "Ponies Must Die");
+	
+	try
+	{
+		_Timer = _OgreRoot->getTimer();
+		
+		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
+
+		setupResources();
+		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+		
+		setupOIS();
+
+		//Set initial mouse clipping size
+		windowResized(_Window);
+
+		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
+		_OgreRoot->addFrameListener(this);
+	}
+	catch(std::exception& e)
+	{
+		if (_Window)
+		{
+			_Window->destroy();
+			_Window = 0;
+		}
+		
+		throw;
+	}
 }
 
 AppStateManager::~AppStateManager()
@@ -70,37 +111,6 @@ AppStateManager::~AppStateManager()
 		delete _OgreRoot;
 		_OgreRoot = 0;
 	}
-}
-
-bool AppStateManager::setup(std::string HomeDir)
-{
-	_OgreRoot = new Ogre::Root("", HomeDir + "ogre.cfg", HomeDir + "ogre.log");
-	
-	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
-	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
-	
-	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
-	{
-		return false;
-	}
-	
-	_Window = _OgreRoot->initialise(true, "Ponies Must Die");
-	_Timer = _OgreRoot->getTimer();
-	
-	Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-
-	setupResources();
-	Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-	
-	setupOIS();
-
-	//Set initial mouse clipping size
-	windowResized(_Window);
-
-	Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
-	_OgreRoot->addFrameListener(this);
-
-	return true;
 }
 
 void AppStateManager::setupResources(void)
@@ -229,12 +239,25 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 
 void AppStateManager::MainLoop(AppState* InitialState)
 {
-	StateStack.push_back(InitialState);
-	_Keyboard->setEventCallback(InitialState);
-	_Mouse->setEventCallback(InitialState);
-	InitialState->Enter();
+	try
+	{
+		StateStack.push_back(InitialState);
+		_Keyboard->setEventCallback(InitialState);
+		_Mouse->setEventCallback(InitialState);
+		InitialState->Enter();
 
-	_OgreRoot->startRendering();
+		_OgreRoot->startRendering();
+	}
+	catch(std::exception& e)
+	{
+		if (_Window)
+		{
+			_Window->destroy();
+			_Window = 0;
+		}
+		
+		throw;
+	}
 }
 
 //Adjust mouse clipping area
