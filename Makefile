@@ -8,7 +8,7 @@ OGRE_RenderSystem_GL_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS` -Isrc/bullet -Wall
+CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet -Wall
 LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\"
@@ -23,51 +23,62 @@ CXXFLAGS_DBG += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneMana
 
 BLENDER = blender
 MKDIR=mkdir
-#CP=cp
+CP=cp
 #RM=rm
+ZIP=zip -q
 
-#PREFIX ?= $(CURDIR)/dist
 CXXFLAGS += -DPATH_RESOURCES=\"$(PREFIX)/share/pmd\"
 
-SRC = $(shell find src/ -name *.cpp)
+BLENDERDIR=blender
+SRCDIR=src
+OBJDIR=obj
+
+SRC = $(shell find $(SRCDIR)/ -name *.cpp)
+BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
+BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
 ifeq ($(DEBUG),y)
-	OBJS=$(patsubst src/%,obj/%,$(patsubst %.cpp,%-dbg.o,$(SRC)))
+	OBJS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%-dbg.o,$(SRC)))
 else
-	OBJS=$(patsubst src/%,obj/%,$(patsubst %.cpp,%.o,$(SRC)))
+	OBJS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(SRC)))
 endif
 
-all: dist/bin/poniesmustdie dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material
+all: dist/bin/poniesmustdie $(BLENDERZIP)
 
 clean:
-	-$(RM) -r obj dist
+	-$(RM) -r $(OBJDIR) dist
 
-install: dist/bin/poniesmustdie dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material
+install: dist/bin/poniesmustdie $(BLENDERZIP)
 	echo Installing to $(PREFIX)
 	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
-	$(CP) obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material $(PREFIX)/share/pmd/models
-	sed -e s,@CMAKE_SOURCE_DIR@,$(CURDIR), -e s,@CMAKE_INSTALL_PREFIX@,$(PREFIX), src/resources.cfg.in > $(PREFIX)/share/pmd/resources.cfg
-
-dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material: blender/poney.blend
-	echo Generating meshes...
-	$(MKDIR) -p dist/share/pmd/models
-	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- obj/models/Pony > obj/models/pony.log 2>&1
+	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
+	$(CP) resources/meshes/Sinbad.zip resources/textures/Examples.material resources/textures/rockwall.tga $(PREFIX)/share/pmd/models
 
 dist/bin/poniesmustdie: $(OBJS)
 	echo Linking $(notdir $@)
 	$(MKDIR) -p dist/bin
 	$(CXX) $(LDFLAGS) $(OBJS) -o $@
 
-obj/%.o: src/%.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	echo Building $(notdir $@)
-	$(MKDIR) -p $(dir $(patsubst src/%,obj/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
+	$(MKDIR) -p $(dir $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$<))
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$<)) -o $@
 
-obj/%-dbg.o: src/%.cpp
+$(OBJDIR)/%-dbg.o: $(SRCDIR)/%.cpp
 	echo Building $(notdir $@)
-	$(MKDIR) -p $(dir $(patsubst src/%,obj/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
+	$(MKDIR) -p $(dir $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$<))
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$<)) -o $@
 
+dist/share/pmd/models/%.zip: $(BLENDERDIR)/%.blend
+	echo Generating $(notdir $@)
+	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)
+	$(MKDIR) -p $(dir $@)
+	$(RM) -r $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*
+	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,obj/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,obj/%.log,$@) 2>&1
+	$(RM) $@
+	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.mesh
+	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.skeleton
+	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.material
 
--include $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$(SRC)))
+-include $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$(SRC)))
