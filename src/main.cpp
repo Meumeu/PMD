@@ -35,12 +35,12 @@ int main(int argc, char *argv[])
 
 	try
 	{
-#ifdef WINDOWS
+#ifdef _WINDOWS
 		char buf[MAX_PATH];
-		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, HomeDir)))
+		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf)))
 			throw std::runtime_error("SHGetFolderPath failed");
 		std::string HomeDir = buf;
-		HomeDir += "\\PoniesMustDie\\";
+		HomeDir += "\\Ponies Must Die\\";
 #else
 		std::string HomeDir = getenv("HOME");
 		HomeDir += "/.PoniesMustDie/";
