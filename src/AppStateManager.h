@@ -35,6 +35,7 @@ private:
 	void setupResources(void);
 	void setupOIS(void);
 	void cleanupOIS(void);
+	void cleanup(void);
 
 	std::deque<AppState *> StateStack;
 	
@@ -51,7 +52,7 @@ private:
 	static AppStateManager * Singleton;
 		
 public:
-	AppStateManager(std::string HomeDir);
+	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
 
 	void Enter(AppState * NewState);

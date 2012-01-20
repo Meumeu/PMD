@@ -37,7 +37,7 @@
 
 AppStateManager * AppStateManager::Singleton;
 	
-AppStateManager::AppStateManager(std::string HomeDir) :
+AppStateManager::AppStateManager(std::string SettingsDir) :
 	_OgreRoot(0),
 	_Window(0),
 	_Timer(0),
@@ -49,7 +49,7 @@ AppStateManager::AppStateManager(std::string HomeDir) :
 	if (Singleton) abort();
 	Singleton = this;
 	
-	_OgreRoot = new Ogre::Root("", HomeDir + "ogre.cfg", HomeDir + "ogre.log");
+	_OgreRoot = new Ogre::Root("", SettingsDir + "ogre.cfg", SettingsDir + "ogre.log");
 	
 	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
 	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
@@ -58,53 +58,11 @@ AppStateManager::AppStateManager(std::string HomeDir) :
 	{
 		exit(0);
 	}
-	
-	_Window = _OgreRoot->initialise(true, "Ponies Must Die");
-	
-	try
-	{
-		_Timer = _OgreRoot->getTimer();
-		
-		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
-
-		setupResources();
-		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-		
-		setupOIS();
-
-		//Set initial mouse clipping size
-		windowResized(_Window);
-
-		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
-		_OgreRoot->addFrameListener(this);
-	}
-	catch(std::exception& e)
-	{
-		if (_Window)
-		{
-			_Window->destroy();
-			_Window = 0;
-		}
-		
-		throw;
-	}
 }
 
 AppStateManager::~AppStateManager()
 {
-	if (_OgreRoot)
-		_OgreRoot->removeFrameListener(this);
 
-	if (_Window)
-		Ogre::WindowEventUtilities::removeWindowEventListener(_Window, this);
-
-	cleanupOIS();
-
-	if (_Window)
-	{
-		_Window->destroy();
-		_Window = 0;
-	}
 
 	if (_OgreRoot)
 	{
@@ -115,9 +73,21 @@ AppStateManager::~AppStateManager()
 
 void AppStateManager::setupResources(void)
 {
+#ifdef _WINDOWS
+	char buf[MAX_PATH];
+	if (!GetModuleFileName(NULL, buf, MAX_PATH))
+		throw std::runtime_error("GetModuleFileName failed");
+	
+	char * last_slash = strrchr(buf, '\\');
+	if (last_slash) *last_slash = 0;
+
+	std::string PathResources = buf;
+#else
+	std::string PathResources = PATH_RESOURCES;
+#endif
 	// Load resource paths from config file
 	Ogre::ConfigFile cf;
-	cf.load(PATH_RESOURCES "/resources.cfg");
+	cf.load(PathResources + "/resources.cfg");
 
 	// Go through all sections & settings in the file
 	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
@@ -237,10 +207,45 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 	return !StateStack.empty();
 }
 
+void AppStateManager::cleanup()
+{
+	if (_OgreRoot)
+		_OgreRoot->removeFrameListener(this);
+
+	if (_Window)
+		Ogre::WindowEventUtilities::removeWindowEventListener(_Window, this);
+
+	cleanupOIS();
+
+	if (_Window)
+	{
+		_Window->destroy();
+		_Window = 0;
+	}
+}
+
 void AppStateManager::MainLoop(AppState* InitialState)
 {
+	_Window = _OgreRoot->initialise(true, "Ponies Must Die");
+
 	try
 	{
+		_Timer = _OgreRoot->getTimer();
+		
+		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
+
+		setupResources();
+		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
+		
+		setupOIS();
+
+		//Set initial mouse clipping size
+		windowResized(_Window);
+
+		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
+		_OgreRoot->addFrameListener(this);
+
+
 		StateStack.push_back(InitialState);
 		_Keyboard->setEventCallback(InitialState);
 		_Mouse->setEventCallback(InitialState);
@@ -248,16 +253,13 @@ void AppStateManager::MainLoop(AppState* InitialState)
 
 		_OgreRoot->startRendering();
 	}
-	catch(std::exception& e)
+	catch(...)
 	{
-		if (_Window)
-		{
-			_Window->destroy();
-			_Window = 0;
-		}
-		
+		cleanup();
 		throw;
 	}
+
+	cleanup();
 }
 
 //Adjust mouse clipping area

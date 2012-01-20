@@ -22,7 +22,11 @@ CXXFLAGS_DBG += -DPATH_RenderSystem_GL=\"$(OGRE_RenderSystem_GL_LIBRARY_DBG)\"
 CXXFLAGS_DBG += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG)\"
 
 BLENDER = blender
-PREFIX ?= $(CURDIR)/dist
+MKDIR=mkdir
+#CP=cp
+#RM=rm
+
+#PREFIX ?= $(CURDIR)/dist
 CXXFLAGS += -DPATH_RESOURCES=\"$(PREFIX)/share/pmd\"
 
 SRC = $(shell find src/ -name *.cpp)
@@ -33,35 +37,36 @@ else
 	OBJS=$(patsubst src/%,obj/%,$(patsubst %.cpp,%.o,$(SRC)))
 endif
 
-all: obj/poniesmustdie obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material
+all: dist/bin/poniesmustdie dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material
 
 clean:
-	rm -r obj
+	-$(RM) -r obj dist
 
-install: obj/poniesmustdie obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material
-	/bin/echo -e Installing to \\x1b[32m$(PREFIX)\\x1b[0m
-	mkdir -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
-	cp obj/poniesmustdie $(PREFIX)/bin/poniesmustdie
-	cp obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material $(PREFIX)/share/pmd/models
+install: dist/bin/poniesmustdie dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material
+	echo Installing to $(PREFIX)
+	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
+	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
+	$(CP) obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material $(PREFIX)/share/pmd/models
 	sed -e s,@CMAKE_SOURCE_DIR@,$(CURDIR), -e s,@CMAKE_INSTALL_PREFIX@,$(PREFIX), src/resources.cfg.in > $(PREFIX)/share/pmd/resources.cfg
 
-obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material: blender/poney.blend
+dist/share/pmd/models/Pony.mesh dist/share/pmd/models/Pony.skeleton dist/share/pmd/models/PonySkin.material dist/share/pmd/models/PonyEye.material: blender/poney.blend
 	echo Generating meshes...
-	mkdir -p obj/models
+	$(MKDIR) -p dist/share/pmd/models
 	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- obj/models/Pony > obj/models/pony.log 2>&1
 
-obj/poniesmustdie: $(OBJS)
-	/bin/echo -e Linking \\x1b[32m$(notdir $@)\\x1b[0m
+dist/bin/poniesmustdie: $(OBJS)
+	echo Linking $(notdir $@)
+	$(MKDIR) -p dist/bin
 	$(CXX) $(LDFLAGS) $(OBJS) -o $@
 
 obj/%.o: src/%.cpp
-	/bin/echo -e Building \\x1b[32m$(notdir $@)\\x1b[0m
-	mkdir -p $(dir $(patsubst src/%,obj/%,$<))
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $(patsubst src/%,obj/%,$<))
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
 
 obj/%-dbg.o: src/%.cpp
-	/bin/echo -e Building \\x1b[32m$(notdir $@)\\x1b[0m
-	mkdir -p $(dir $(patsubst src/%,obj/%,$<))
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $(patsubst src/%,obj/%,$<))
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
 
 
