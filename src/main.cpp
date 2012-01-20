@@ -31,8 +31,6 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 int main(int argc, char *argv[])
 #endif
 {
-	AppStateManager manager;
-
 	try
 	{
 #ifdef _WINDOWS
@@ -45,28 +43,22 @@ int main(int argc, char *argv[])
 		std::string HomeDir = getenv("HOME");
 		HomeDir += "/.PoniesMustDie/";
 #endif
-	
+		
 		boost::filesystem::create_directories(HomeDir);
 		
-		if (!manager.setup(HomeDir))
-			return 1;
-
-		manager.MainLoop(new Game);
+		Game * g = new Game;
+		
+		AppStateManager manager(HomeDir);
+		manager.MainLoop(g);
 	}
 	catch(std::exception& e)
 	{
-		if (manager.GetWindow())
-		{
-			manager.GetWindow()->destroy();
-			manager.GetWindow() = 0;
-		}
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		MessageBoxA(NULL, e.what(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
 		std::cerr << "An exception has occurred: " << e.what() << std::endl;
 #endif
 	}
-
 
 	return 0;
 }
