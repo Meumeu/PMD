@@ -189,7 +189,7 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 void Game::go(void)
 {
 	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
-
+/*
 #if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
 	std::fstream f("../../../default_level.txt", std::fstream::in);
 #elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
@@ -199,7 +199,7 @@ void Game::go(void)
 #endif
 	if (!f.is_open()) throw Ogre::Exception(Ogre::Exception::ERR_FILE_NOT_FOUND, "File not found", __FUNCTION__, "File not found", __FILE__, __LINE__);
 
-	Environment env(_SceneMgr, f);
+	Environment env(_SceneMgr, f);*/
 
 	btVector3 PlayerPosition(0, 0, 0);
 	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100, PlayerPosition);
@@ -245,7 +245,7 @@ void Game::go(void)
 	for(float x = -10; x < 10; x += 1)
 	{
 		btVector3 pos(x, 0, -10);
-		//_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
+		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
 	}
 
 	Ogre::LogManager::getSingleton().logMessage("Game started");

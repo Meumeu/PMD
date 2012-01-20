@@ -19,36 +19,46 @@
 #include "Game.h"
 #include "AppStateManager.h"
 
+#include <boost/filesystem.hpp>
+#include <stdexcept>
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #include <windows.h>
+#include <shlobj.h>
+
 INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 #else
 int main(int argc, char *argv[])
 #endif
 {
-	AppStateManager manager;
-
 	try
 	{
-		if (!manager.setup())
-			return 1;
-
-		manager.MainLoop(new Game);
+#ifdef _WINDOWS
+		char buf[MAX_PATH];
+		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf)))
+			throw std::runtime_error("SHGetFolderPath failed");
+		std::string HomeDir = buf;
+		HomeDir += "\\Ponies Must Die\\";
+#else
+		std::string HomeDir = getenv("HOME");
+		HomeDir += "/.PoniesMustDie/";
+#endif
+		
+		boost::filesystem::create_directories(HomeDir);
+		
+		Game * g = new Game;
+		
+		AppStateManager manager(HomeDir);
+		manager.MainLoop(g);
 	}
 	catch(std::exception& e)
 	{
-		if (manager.GetWindow())
-		{
-			manager.GetWindow()->destroy();
-			manager.GetWindow() = 0;
-		}
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		MessageBoxA(NULL, e.what(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
 		std::cerr << "An exception has occurred: " << e.what() << std::endl;
 #endif
 	}
-
 
 	return 0;
 }

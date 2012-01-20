@@ -51,10 +51,9 @@ private:
 	static AppStateManager * Singleton;
 		
 public:
-	AppStateManager(void);
+	AppStateManager(std::string HomeDir);
 	~AppStateManager();
 
-	bool setup(void);
 	void Enter(AppState * NewState);
 	void SwitchTo(AppState * NewState);
 	void Exit(void);

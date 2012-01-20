@@ -56,7 +56,7 @@ if (MINGW)
 endif ()
 set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.44")
 # Components that need linking (NB does not include header-only components like bind)
-set(OGRE_BOOST_COMPONENTS thread date_time)
+set(OGRE_BOOST_COMPONENTS thread date_time filesystem system)
 find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
 if (NOT Boost_FOUND)
 	# Try again with the other type of libs
@@ -86,7 +86,7 @@ add_dependencies(poniesmustdie generate_models)
 
 set_target_properties(poniesmustdie PROPERTIES DEBUG_POSTFIX _d)
 
-target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES})
+target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system)
 
 if(CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wall)
@@ -111,8 +111,9 @@ else()
 	endif()
 endif()
 
+add_definitions(-DPATH_RESOURCES=\"${CMAKE_INSTALL_PREFIX}/share/pmd\")
+
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/bin)
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist/etc)
 
 # post-build copy for win32
 if(WIN32 AND NOT MINGW)
@@ -131,8 +132,8 @@ install(TARGETS poniesmustdie
 	RUNTIME DESTINATION bin
 	CONFIGURATIONS All)
 
-configure_file(${CMAKE_SOURCE_DIR}/cfg/resources.cfg.in
-	${CMAKE_INSTALL_PREFIX}/etc/resources.cfg)
+configure_file(${CMAKE_SOURCE_DIR}/src/resources.cfg.in
+	${CMAKE_INSTALL_PREFIX}/share/pmd/resources.cfg)
 
 if(WIN32)
 	# NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
