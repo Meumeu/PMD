@@ -18,6 +18,7 @@
 #include <OgreConfigFile.h>
 #include "AppStateManager.h"
 #include "pmd.h"
+#include <boost/filesystem.hpp>
 
 #ifndef PATH_RenderSystem_GL
 #ifdef _DEBUG
@@ -115,25 +116,14 @@ AppStateManager::~AppStateManager()
 
 void AppStateManager::setupResources(void)
 {
-	// Load resource paths from config file
-	Ogre::ConfigFile cf;
-	cf.load(PATH_RESOURCES "/resources.cfg");
+	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
+	manager.addResourceLocation(PATH_RESOURCES"/models", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-	// Go through all sections & settings in the file
-	Ogre::ConfigFile::SectionIterator seci = cf.getSectionIterator();
-
-	Ogre::String secName, typeName, archName;
-	while (seci.hasMoreElements())
+	for (boost::filesystem::directory_iterator files(PATH_RESOURCES"/models"), end; files != end ; ++files)
 	{
-		secName = seci.peekNextKey();
-		Ogre::ConfigFile::SettingsMultiMap *settings = seci.getNext();
-		Ogre::ConfigFile::SettingsMultiMap::iterator i;
-		for (i = settings->begin(); i != settings->end(); ++i)
+		if (files->path().extension() == ".zip")
 		{
-			typeName = i->first;
-			archName = i->second;
-			Ogre::ResourceGroupManager::getSingleton().addResourceLocation(
-				archName, typeName, secName);
+			manager.addResourceLocation(files->path().string(), "Zip", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		}
 	}
 }

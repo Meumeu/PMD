@@ -132,8 +132,11 @@ install(TARGETS poniesmustdie
 	RUNTIME DESTINATION bin
 	CONFIGURATIONS All)
 
-configure_file(${CMAKE_SOURCE_DIR}/src/resources.cfg.in
-	${CMAKE_INSTALL_PREFIX}/share/pmd/resources.cfg)
+install(FILES resources/meshes/Sinbad.zip
+		resources/textures/Examples.material
+		resources/textures/r2skin.jpg
+		resources/textures/rockwall.tga
+	DESTINATION share/pmd/models)
 
 if(WIN32)
 	# NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
