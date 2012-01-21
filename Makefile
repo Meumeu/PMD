@@ -8,8 +8,8 @@ OGRE_RenderSystem_GL_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet
-LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
+CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet
+LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\"
 
