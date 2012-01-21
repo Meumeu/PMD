@@ -96,16 +96,8 @@ ifeq (,$(BLENDER))
 	echo Blender not found, set the BLENDER variable
 	exit 1
 else
-	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)
 	$(MKDIR) -p $(dir $@)
-	$(RM) -r $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*
-	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
-	$(MV) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/.material $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/$(patsubst %.zip,%,$(notdir $@)).material
-	-$(RM) $(patsubst %.zip,%-tmp.zip,$@)
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.mesh
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.skeleton
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.material
-	$(MV) $(patsubst %.zip,%-tmp.zip,$@) $@
+	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $@ #> $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
 endif
 
 -include $(patsubst %.o,%.d,$(OBJS))
