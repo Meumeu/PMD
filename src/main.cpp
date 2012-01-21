@@ -16,7 +16,7 @@
 */
 
 #include "pmd.h"
-#include "Game.h"
+#include "MainMenu.h"
 #include "AppStateManager.h"
 
 #include <boost/filesystem.hpp>
@@ -62,7 +62,8 @@ int main(int argc, char *argv[])
 		boost::filesystem::create_directories(SettingsDir);
 		
 		AppStateManager manager(SettingsDir);
-		manager.MainLoop(new Game);
+		boost::shared_ptr<MainMenu> menu(new MainMenu);
+		manager.MainLoop(menu);
 	}
 	catch(std::exception& e)
 	{

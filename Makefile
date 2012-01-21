@@ -96,8 +96,8 @@ ifeq (,$(BLENDER))
 	echo Blender not found, set the BLENDER variable
 	exit 1
 else
-	$(MKDIR) -p $(dir $@)
-	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $@ #> $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
+	$(MKDIR) -p $(dir $@) $(dir $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@))
+	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $@ > $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
 endif
 
 -include $(patsubst %.o,%.d,$(OBJS))

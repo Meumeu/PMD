@@ -139,7 +139,7 @@ void Game::BulletCallback(btScalar timeStep)
 	_Player->UpdatePhysics(timeStep);
 	BOOST_FOREACH(CharacterController * cc, _Ennemies)
 	{
-		btVector3 target = _Player->_Body->getCenterOfMassPosition() - cc->_Body->getCenterOfMassPosition();
+		btVector3 target = _Player->_Body.getCenterOfMassPosition() - cc->_Body.getCenterOfMassPosition();
 
 		if (target.length2() > 50)
 		{
@@ -169,8 +169,8 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 	Ogre::Vector3 boxcenter = (box.getMaximum() + box.getMinimum()) / 2;
 	
 	float scale = Height / boxsize.y;
-	float RadiusX = boxsize.x * scale / 2;
-	float RadiusZ = boxsize.z * scale / 2;
+	float SizeX = boxsize.x * scale / 2;
+	float SizeZ = boxsize.z * scale / 2;
 	
 	Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
 	Ogre::SceneNode * entnode = node->createChildSceneNode(
@@ -182,9 +182,9 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 	entnode->scale(scale, scale, scale);
 	entnode->attachObject(ent);
 	
-	CharacterController * cc = new CharacterController(_SceneMgr, _World, ent, node, RadiusX, Height, RadiusZ, mass);
+	CharacterController * cc = new CharacterController(_SceneMgr, _World, ent, node, SizeX, Height, SizeZ, mass);
 	
-	cc->_Body->setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), heading), position + btVector3(0, Height/2, 0)));
+	cc->_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), heading), position + btVector3(0, Height/2, 0)));
 	cc->_CurrentHeading = heading;
 	
 	return cc;

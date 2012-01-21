@@ -26,6 +26,7 @@
 #include <OgreTimer.h>
 #include <OISInputManager.h>
 #include <deque>
+#include <boost/shared_ptr.hpp>
 
 class AppStateManager :
 	public Ogre::WindowEventListener,
@@ -37,7 +38,7 @@ private:
 	void cleanupOIS(void);
 	void cleanup(void);
 
-	std::deque<AppState *> StateStack;
+	std::deque<boost::shared_ptr<AppState> > StateStack;
 	
 	Ogre::Root * _OgreRoot;
 	Ogre::RenderWindow * _Window;
@@ -51,27 +52,29 @@ private:
 	bool                   _Shutdown;
 	static AppStateManager * Singleton;
 	std::string            _SettingsDir;
+	std::string            _ResourcesDir;
 		
 public:
 	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
 
-	void Enter(AppState * NewState);
-	void SwitchTo(AppState * NewState);
-	void Exit(void);
-	void MainLoop(AppState * InitialState);
+	static void Enter(boost::shared_ptr<AppState> NewState);
+	static void SwitchTo(boost::shared_ptr<AppState> NewState);
+	static void Exit(void);
+	static void MainLoop(boost::shared_ptr<AppState> InitialState);
 	static AppStateManager& GetSingleton(void)
 	{
 		return *Singleton;
 	}
 	
-	Ogre::Root *         &GetOgreRoot(void)     { return _OgreRoot; }
-	Ogre::RenderWindow * &GetWindow(void)       { return _Window; }
-	OIS::InputManager *  &GetInputManager(void) { return _InputManager; }
-	OIS::Mouse *         &GetMouse(void)        { return _Mouse; }
-	OIS::Keyboard *      &GetKeyboard(void)     { return _Keyboard; }
+	static Ogre::Root *         GetOgreRoot(void)     { return Singleton->_OgreRoot; }
+	static Ogre::RenderWindow * GetWindow(void)       { return Singleton->_Window; }
+	static OIS::InputManager *  GetInputManager(void) { return Singleton->_InputManager; }
+	static OIS::Mouse *         GetMouse(void)        { return Singleton->_Mouse; }
+	static OIS::Keyboard *      GetKeyboard(void)     { return Singleton->_Keyboard; }
 	
-	const std::string     GetSettingsDir(void)  { return _SettingsDir; }
+	static const std::string    GetSettingsDir(void)  { return Singleton->_SettingsDir; }
+	static const std::string    GetResourcesDir(void) { return Singleton->_ResourcesDir; }
 	
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);
