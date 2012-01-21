@@ -32,7 +32,9 @@
 
 #include "CharacterController.h"
 #include "AppState.h"
+#include <BtOgreExtras.h>
 
+class Environment;
 class Game : public AppState
 {
 public:
@@ -81,6 +83,9 @@ private:
 	btBroadphaseInterface *    _OverlappingPairCache;
 	btConstraintSolver *       _Solver;
 	btDynamicsWorld *          _World;
+	Environment *              _Env;
+
+	BtOgre::DebugDrawer * _debugDrawer;
 
 	CharacterController * _Player;
 	bool _EscPressed;

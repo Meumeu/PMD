@@ -21,29 +21,39 @@
 #include <vector>
 #include <iostream>
 #include <OgreVector3.h>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
+#include <LinearMath/btDefaultMotionState.h>
 
 namespace Ogre {
 	class SceneManager;
 	class Entity;
 }
 
+class btCollisionShape;
+class btDynamicsWorld;
+
 class Environment
 {
+public:
 	enum orientation_t { North, South, East, West};
 	struct Block
 	{
 		Block(Ogre::Entity * entity, orientation_t orientation, Ogre::Vector3 position):
-			_entity(entity), _orientation(orientation), _position(position) {}
-
+		_entity(entity), _orientation(orientation), _position(position) {}
+		
 		Ogre::Entity * _entity;
 		orientation_t _orientation;
 		Ogre::Vector3 _position;
 	};
-public:
-	Environment(Ogre::SceneManager *sceneManager, std::istream &level);
+	
+	Environment(Ogre::SceneManager *sceneManager, btDynamicsWorld& world, std::istream &level);
 	~Environment();
 private:
 	Ogre::SceneManager * _sceneManager;
+	btDynamicsWorld & _world;
+	boost::shared_ptr<btCollisionShape> _btShape;
+	btDefaultMotionState _motionState;
+	boost::shared_ptr<btRigidBody> _body;
 	std::vector<Block> _blocks;
 };
 

@@ -113,6 +113,10 @@ void Game::Update(float TimeSinceLastFrame)
 		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 
 	_World->stepSimulation(TimeSinceLastFrame, 3);
+	
+#ifdef PHY_DEBUG
+	_debugDrawer->step();
+#endif
 
 	_Camera->setPosition(
 		_Player->_Node->getPosition() +
@@ -189,17 +193,13 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 void Game::go(void)
 {
 	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
-/*
-#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
-	std::fstream f("../../../default_level.txt", std::fstream::in);
-#elif OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	std::fstream f("../default_level.txt", std::fstream::in);
-#else
-#error Unsupported platform
-#endif
-	if (!f.is_open()) throw Ogre::Exception(Ogre::Exception::ERR_FILE_NOT_FOUND, "File not found", __FUNCTION__, "File not found", __FILE__, __LINE__);
 
-	Environment env(_SceneMgr, f);*/
+	//FIXME: get resource dir
+	std::fstream f("default_level.txt", std::fstream::in);
+	if (f.is_open())
+	{
+		_Env = new Environment(_SceneMgr, *_World, f);
+	}
 
 	btVector3 PlayerPosition(0, 0, 0);
 	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100, PlayerPosition);
@@ -229,7 +229,7 @@ void Game::go(void)
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
 		plane,
 		240, 240, 100, 100, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
-
+	
 	// ground
 	Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
 	entGround->setCastShadows(false);
@@ -247,6 +247,5 @@ void Game::go(void)
 		btVector3 pos(x, 0, -10);
 		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
 	}
-
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 }
