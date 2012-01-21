@@ -8,7 +8,7 @@ OGRE_RenderSystem_GL_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet -Wall
+CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet
 LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\"
@@ -26,21 +26,29 @@ MKDIR=mkdir
 CP=cp
 #RM=rm
 ZIP=zip -q
+MV=mv
 
+PREFIX=/usr/local
 CXXFLAGS += -DPATH_RESOURCES=\"$(PREFIX)/share/pmd\"
+
+ifeq ($(wildcard /usr/bin/blender),/usr/bin/blender)
+BLENDER=/usr/bin/blender
+else ifeq ($(wildcard /usr/bin/blender-2.60),/usr/bin/blender-2.60)
+BLENDER=/usr/bin/blender-2.60
+endif
 
 BLENDERDIR=blender
 SRCDIR=src
-OBJDIR=obj
+OBJDIR=objects
 
 SRC = $(shell find $(SRCDIR)/ -name *.cpp)
 BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
 BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
 ifeq ($(DEBUG),y)
-	OBJS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%-dbg.o,$(SRC)))
+	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))
 else
-	OBJS=$(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(SRC)))
+	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/release/%.o,$(SRC))
 endif
 
 all: dist/bin/poniesmustdie $(BLENDERZIP)
@@ -60,25 +68,41 @@ dist/bin/poniesmustdie: $(OBJS)
 	$(MKDIR) -p dist/bin
 	$(CXX) $(LDFLAGS) $(OBJS) -o $@
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/release/bullet/%.o: $(SRCDIR)/bullet/%.cpp
 	echo Building $(notdir $@)
-	$(MKDIR) -p $(dir $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$<)) -o $@
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
-$(OBJDIR)/%-dbg.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp
 	echo Building $(notdir $@)
-	$(MKDIR) -p $(dir $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$<)) -o $@
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
+
+$(OBJDIR)/debug/bullet/%.o: $(SRCDIR)/bullet/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
+
+$(OBJDIR)/debug/%.o: $(SRCDIR)/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
 dist/share/pmd/models/%.zip: $(BLENDERDIR)/%.blend
 	echo Generating $(notdir $@)
+ifeq (,$(BLENDER))
+	echo Blender not found, set the BLENDER variable
+	exit 1
+else
 	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)
 	$(MKDIR) -p $(dir $@)
 	$(RM) -r $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*
 	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,obj/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,obj/%.log,$@) 2>&1
-	$(RM) $@
-	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.mesh
-	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.skeleton
-	$(ZIP) -j $@ $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.material
+	-$(RM) $(patsubst %.zip,%-tmp.zip,$@)
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.mesh
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.skeleton
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.material
+	$(MV) $(patsubst %.zip,%-tmp.zip,$@) $@
+endif
 
--include $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.d,$(SRC)))
+-include $(patsubst %.o,%.d,$(OBJS))
