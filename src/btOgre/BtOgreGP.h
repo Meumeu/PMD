@@ -51,7 +51,8 @@ protected:
 
 	void addStaticVertexData(const Ogre::VertexData *vertex_data);
 
-	void addAnimatedVertexData(const Ogre::VertexData *vertex_data, 
+	void addAnimatedVertexData(
+		const Ogre::VertexData *vertex_data, 
 		const Ogre::VertexData *blended_data, 
 		const Ogre::Mesh::IndexMap *indexMap);
 
@@ -59,19 +60,19 @@ protected:
 
 
 protected:
-	Ogre::Vector3*	    mVertexBuffer;
-	unsigned int*       mIndexBuffer;
-	unsigned int        mVertexCount;
-	unsigned int        mIndexCount;
+	Ogre::Vector3* mVertexBuffer;
+	unsigned int*  mIndexBuffer;
+	unsigned int mVertexCount;
+	unsigned int mIndexCount;
 
-	Ogre::Matrix4		mTransform;
+	Ogre::Matrix4 mTransform;
 
-	Ogre::Real		    mBoundRadius;
-	Ogre::Vector3		mBounds;
+	Ogre::Real mBoundRadius;
+	Ogre::Vector3 mBounds;
 
-	BoneIndex           *mBoneIndex;
+	BoneIndex *mBoneIndex;
 
-	Ogre::Vector3		mScale;
+	Ogre::Vector3 mScale;
 };
 
 //For static (non-animated) meshes.
@@ -92,8 +93,8 @@ public:
 
 protected:
 
-	Ogre::Entity*		mEntity;
-	Ogre::SceneNode*	mNode;
+	Ogre::Entity* mEntity;
+	Ogre::SceneNode* mNode;
 };
 
 //For animated meshes.
@@ -108,22 +109,26 @@ public:
 	void addEntity(Ogre::Entity *entity,const Ogre::Matrix4 &transform = Ogre::Matrix4::IDENTITY);
 	void addMesh(const Ogre::MeshPtr &mesh, const Ogre::Matrix4 &transform);
 
-	btBoxShape* createAlignedBox(unsigned char bone, 
+	btBoxShape* createAlignedBox(
+		unsigned char bone, 
 		const Ogre::Vector3 &bonePosition,
 		const Ogre::Quaternion &boneOrientation);
 
-	btBoxShape* createOrientedBox(unsigned char bone, 
+	btBoxShape* createOrientedBox(
+		unsigned char bone, 
 		const Ogre::Vector3 &bonePosition,
 		const Ogre::Quaternion &boneOrientation);
 
 protected:
 
-	bool getBoneVertices(unsigned char bone, 
+	bool getBoneVertices(
+		unsigned char bone, 
 		unsigned int &vertex_count, 
 		Ogre::Vector3* &vertices,
 		const Ogre::Vector3 &bonePosition);
 
-	bool getOrientedBox(unsigned char bone, 
+	bool getOrientedBox(
+		unsigned char bone, 
 		const Ogre::Vector3 &bonePosition,
 		const Ogre::Quaternion &boneOrientation,
 		Ogre::Vector3 &extents,
@@ -131,11 +136,11 @@ protected:
 		Ogre::Vector3 &center);
 
 	
-	Ogre::Entity*		mEntity;
-	Ogre::SceneNode*	mNode;
+	Ogre::Entity* mEntity;
+	Ogre::SceneNode* mNode;
 
-	Ogre::Vector3       *mTransformedVerticesTemp;
-	size_t               mTransformedVerticesTempSize;
+	Ogre::Vector3 *mTransformedVerticesTemp;
+	size_t mTransformedVerticesTempSize;
 };
 
 }
