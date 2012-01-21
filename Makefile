@@ -45,6 +45,8 @@ SRC = $(shell find $(SRCDIR)/ -name *.cpp)
 BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
 BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
+OTHER_MODELS = resources/meshes/Sinbad.zip resources/textures/Examples.material resources/textures/rockwall.tga
+
 ifeq ($(DEBUG),y)
 	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))
 else
@@ -61,7 +63,7 @@ install: dist/bin/poniesmustdie $(BLENDERZIP)
 	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
 	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
-	$(CP) resources/meshes/Sinbad.zip resources/textures/Examples.material resources/textures/rockwall.tga $(PREFIX)/share/pmd/models
+	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
 
 dist/bin/poniesmustdie: $(OBJS)
 	echo Linking $(notdir $@)
@@ -94,14 +96,15 @@ ifeq (,$(BLENDER))
 	echo Blender not found, set the BLENDER variable
 	exit 1
 else
-	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)
+	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)
 	$(MKDIR) -p $(dir $@)
-	$(RM) -r $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*
-	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,obj/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,obj/%.log,$@) 2>&1
+	$(RM) -r $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*
+	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
+	$(MV) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/.material $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/$(patsubst %.zip,%,$(notdir $@)).material
 	-$(RM) $(patsubst %.zip,%-tmp.zip,$@)
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.mesh
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.skeleton
-	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,obj/%-out,$@)/*.material
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.mesh
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.skeleton
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.material
 	$(MV) $(patsubst %.zip,%-tmp.zip,$@) $@
 endif
 
