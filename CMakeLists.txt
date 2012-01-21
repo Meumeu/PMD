@@ -456,10 +456,10 @@ install(TARGETS poniesmustdie
 	RUNTIME DESTINATION bin
 	CONFIGURATIONS All)
 
-install(FILES resources/meshes/Sinbad.zip
-		resources/textures/Examples.material
-		resources/textures/r2skin.jpg
-		resources/textures/rockwall.tga
+install(FILES resources/models/Sinbad.zip
+		resources/models/Examples.material
+		resources/models/r2skin.jpg
+		resources/models/rockwall.tga
 	DESTINATION share/pmd/models)
 
 if(WIN32)
