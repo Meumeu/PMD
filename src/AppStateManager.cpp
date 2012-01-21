@@ -45,7 +45,8 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	_InputManager(0),
 	_Mouse(0),
 	_Keyboard(0),
-	_Shutdown(false)
+	_Shutdown(false),
+	_SettingsDir(SettingsDir)
 {
 	if (Singleton) abort();
 	Singleton = this;
@@ -63,8 +64,6 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 
 AppStateManager::~AppStateManager()
 {
-
-
 	if (_OgreRoot)
 	{
 		delete _OgreRoot;
