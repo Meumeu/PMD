@@ -25,8 +25,30 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
+#include <BtOgreGP.h>
 
-Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level) : _sceneManager(sceneManager)
+static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
+{
+	switch (orientation)
+	{
+		case Environment::North:
+			return Ogre::Quaternion::IDENTITY;
+		case Environment::East:
+			return Ogre::Quaternion(Ogre::Radian(-M_PI/2),Ogre::Vector3::UNIT_Y);
+		case Environment::South:
+			return Ogre::Quaternion(Ogre::Radian(M_PI)   ,Ogre::Vector3::UNIT_Y);
+		case Environment::West:
+			return Ogre::Quaternion(Ogre::Radian(M_PI/2) ,Ogre::Vector3::UNIT_Y);
+	}
+}
+static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Vector3 translation)
+{
+	Ogre::Matrix4 matrix(getQuaternion(orientation));
+	matrix.setTrans(translation);
+	return matrix;
+}
+
+Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
 {
 	while (!level.eof())
 	{
@@ -63,39 +85,28 @@ Environment::Environment (Ogre::SceneManager* sceneManager, std::istream &level)
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	//Rotation constants
-	Ogre::Quaternion
-		eastRotation  = Ogre::Quaternion(Ogre::Radian(-M_PI/2),Ogre::Vector3::UNIT_Y),
-		southRotation = Ogre::Quaternion(Ogre::Radian(M_PI)   ,Ogre::Vector3::UNIT_Y),
-		westRotation  = Ogre::Quaternion(Ogre::Radian(M_PI/2) ,Ogre::Vector3::UNIT_Y);
+	BtOgre::StaticMeshToShapeConverter converter;
 	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		block._entity->setCastShadows(false);
-		switch (block._orientation)
-		{
-			case North:
-				sg->addEntity(block._entity, block._position, Ogre::Quaternion::IDENTITY, Ogre::Vector3(0.01, 0.01, 0.01));
-				break;
-			case East:
-				sg->addEntity(block._entity, block._position, eastRotation, Ogre::Vector3(0.01, 0.01, 0.01));
-				break;
-			case South:
-				sg->addEntity(block._entity, block._position, southRotation, Ogre::Vector3(0.01, 0.01, 0.01));
-				break;
-			case West:
-				sg->addEntity(block._entity, block._position, westRotation, Ogre::Vector3(0.01, 0.01, 0.01));
-		}
+		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
+		converter.addEntity(block._entity, getMatrix4(block._orientation, block._position));
 	}
+	_btShape = boost::shared_ptr<btCollisionShape>(converter.createTrimesh());
+	_body = boost::shared_ptr<btRigidBody>(new btRigidBody(0, &_motionState, _btShape.get()));
+	_world.addRigidBody(_body.get());
 	sg->build();
 	sg->setCastShadows(true);
-}
-
-Environment::~Environment()
-{
+	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		_sceneManager->destroyEntity(block._entity);
 	}
+}
+
+Environment::~Environment()
+{
+	_world.removeRigidBody(_body.get());
 
 }

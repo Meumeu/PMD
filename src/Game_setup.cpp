@@ -19,6 +19,7 @@
 #include "Game.h"
 #include <OgreConfigFile.h>
 #include "AppStateManager.h"
+#include "environment.h"
 
 Game::Game(void) :
 	_Root(NULL),
@@ -30,7 +31,7 @@ Game::Game(void) :
 	_Keyboard(NULL),
 	_Heading(0),
 	_Pitch(0),
-	
+	_Env(NULL),
 	_EscPressed(false)
 {
 }
@@ -52,12 +53,21 @@ void Game::Enter(void)
 	_Camera->setAspectRatio(Ogre::Real(_Viewport->getActualWidth()) / Ogre::Real(_Viewport->getActualHeight()));
 
 	setupBullet();
+
+#ifdef PHYSICS_DEBUG
+	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World);
+	_World->setDebugDrawer(_debugDrawer);
+#endif
 	
 	go();
 }
 
 void Game::Exit(void)
 {
+	delete _Env;
+#ifdef PHYSICS_DEBUG
+	delete _debugDrawer;
+#endif
 	cleanupBullet();
 
 	AppStateManager::GetWindow()->removeViewport(0);
