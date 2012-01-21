@@ -30,6 +30,8 @@
 
 #include <btBulletDynamicsCommon.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include "CharacterController.h"
 #include "AppState.h"
 
@@ -56,35 +58,36 @@ private:
 	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
 	void BulletCallback(btScalar timeStep);
 
-	CharacterController* CreateCharacter(
+	boost::shared_ptr<CharacterController> CreateCharacter(
 		std::string MeshName,
 		float HeightY,
 		float mass,
 		btVector3& position,
 		float heading = 0);
 	
-	Ogre::Root *           _Root;
-	Ogre::Camera *         _Camera;
-	Ogre::SceneManager *   _SceneMgr;
- 	Ogre::RenderWindow *   _Window;
-	Ogre::Viewport *       _Viewport;
+	Ogre::Root *                                         _Root;
+	Ogre::Camera *                                       _Camera;
+	Ogre::SceneManager *                                 _SceneMgr;
+ 	Ogre::RenderWindow *                                 _Window;
+	Ogre::Viewport *                                     _Viewport;
 
 	//OIS Input devices
- 	OIS::Mouse *           _Mouse;
- 	OIS::Keyboard *        _Keyboard;
+	OIS::Mouse *                                         _Mouse;
+	OIS::Keyboard *                                      _Keyboard;
 
-	Ogre::Radian           _Heading;
-	Ogre::Radian           _Pitch;
+	Ogre::Radian                                         _Heading;
+	Ogre::Radian                                         _Pitch;
 
-	btCollisionConfiguration * _CollisionConfiguration;
-	btCollisionDispatcher *    _Dispatcher;
-	btBroadphaseInterface *    _OverlappingPairCache;
-	btConstraintSolver *       _Solver;
-	btDynamicsWorld *          _World;
+	boost::shared_ptr<btCollisionConfiguration>          _CollisionConfiguration;
+	boost::shared_ptr<btCollisionDispatcher>             _Dispatcher;
+	boost::shared_ptr<btBroadphaseInterface>             _OverlappingPairCache;
+	boost::shared_ptr<btConstraintSolver>                _Solver;
+	boost::shared_ptr<btDynamicsWorld>                   _World;
 
-	CharacterController * _Player;
-	bool _EscPressed;
-	std::vector<CharacterController*> _Ennemies;
+	boost::shared_ptr<CharacterController>               _Player;
+	std::vector<boost::shared_ptr<CharacterController> > _Ennemies;
+
+	bool                                                 _EscPressed;
 };
 
 #endif // GAME_H

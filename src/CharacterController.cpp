@@ -20,14 +20,14 @@
 #include "pmd.h"
 
 CharacterController::CharacterController(
-	Ogre::SceneManager * SceneMgr,
-	btDynamicsWorld * World,
-	Ogre::Entity * Entity,
-	Ogre::SceneNode * Node,
-	float SizeX,
-	float Height,
-	float SizeZ,
-	float Mass) :
+	Ogre::SceneManager *               SceneMgr,
+	boost::shared_ptr<btDynamicsWorld> World,
+	Ogre::Entity *                     Entity,
+	Ogre::SceneNode *                  Node,
+	float                              SizeX,
+	float                              Height,
+	float                              SizeZ,
+	float                              Mass) :
 	_MaxYawSpeed(2 * 2 * M_PI),
 	_CurrentHeading(0),
 	_TargetVelocity(0, 0, 0),
@@ -61,7 +61,6 @@ CharacterController::~CharacterController(void)
 	_World->removeRigidBody(&_Body);
 
 	_Node->getParentSceneNode()->removeChild(_Node->getName());
-	delete _Node;
 }
 
 void CharacterController::UpdatePhysics(btScalar dt)

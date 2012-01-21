@@ -28,39 +28,41 @@
 #include "RigidBody.h"
 #include "CharacterAnimation.h"
 
+#include <boost/shared_ptr.hpp>
+
 class CharacterController
 {
 public:
 	CharacterController(
-		Ogre::SceneManager * SceneMgr,
-		btDynamicsWorld * World,
-		Ogre::Entity * Entity,
-		Ogre::SceneNode * Node,
-		float SizeX,
-		float Height,
-		float SizeZ,
-		float Mass);
+		Ogre::SceneManager *               SceneMgr,
+		boost::shared_ptr<btDynamicsWorld> World,
+		Ogre::Entity *                     Entity,
+		Ogre::SceneNode *                  Node,
+		float                              SizeX,
+		float                              Height,
+		float                              SizeZ,
+		float                              Mass);
 	~CharacterController(void);
 
 	void UpdatePhysics(btScalar dt);
 	void UpdateGraphics(float dt);
 
-	btScalar _MaxYawSpeed;
-	btScalar _CurrentHeading;
-	btVector3 _TargetVelocity;
-	bool _Jump;
-	bool _GroundContact;
+	btScalar                           _MaxYawSpeed;
+	btScalar                           _CurrentHeading;
+	btVector3                          _TargetVelocity;
+	bool                               _Jump;
+	bool                               _GroundContact;
 	
-	Ogre::SceneNode * _Node;
-	RigidBody<Ogre::SceneNode> _MotionState;
-	btBoxShape _Shape;
-	btRigidBody _Body;
-	btScalar _Mass;
-	btDynamicsWorld * _World;
+	Ogre::SceneNode *                  _Node;
+	RigidBody<Ogre::SceneNode>         _MotionState;
+	btBoxShape                         _Shape;
+	btRigidBody                        _Body;
+	btScalar                           _Mass;
+	boost::shared_ptr<btDynamicsWorld> _World;
 	
-	CharacterAnimation _Animations;
+	CharacterAnimation                 _Animations;
 	
-	float _IdleTime;
+	float                              _IdleTime;
 };
 
 #endif // CHARACTERCONTROLLER_H

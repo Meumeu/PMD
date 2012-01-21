@@ -30,14 +30,7 @@ Game::Game(void) :
 	_Keyboard(NULL),
 	_Heading(0),
 	_Pitch(0),
-
-	_CollisionConfiguration(NULL),
-	_Dispatcher(NULL),
-	_OverlappingPairCache(NULL),
-	_Solver(NULL),
-	_World(NULL),
 	
-	_Player(NULL),
 	_EscPressed(false)
 {
 }
@@ -48,10 +41,10 @@ Game::~Game()
 
 void Game::Enter(void)
 {
-	_Root = AppStateManager::GetSingleton().GetOgreRoot();
-	_Window = AppStateManager::GetSingleton().GetWindow();
-	_Mouse = AppStateManager::GetSingleton().GetMouse();
-	_Keyboard = AppStateManager::GetSingleton().GetKeyboard();
+	_Root = AppStateManager::GetOgreRoot();
+	_Window = AppStateManager::GetWindow();
+	_Mouse = AppStateManager::GetMouse();
+	_Keyboard = AppStateManager::GetKeyboard();
 	
 	_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
 	_Camera = _SceneMgr->createCamera("PlayerCam");
@@ -67,9 +60,9 @@ void Game::Exit(void)
 {
 	cleanupBullet();
 
-	AppStateManager::GetSingleton().GetWindow()->removeViewport(0);
+	AppStateManager::GetWindow()->removeViewport(0);
 	_SceneMgr->destroyCamera(_Camera);
-	AppStateManager::GetSingleton().GetOgreRoot()->destroySceneManager(_SceneMgr);
+	AppStateManager::GetOgreRoot()->destroySceneManager(_SceneMgr);
 }
 
 void Game::Pause(void)
@@ -88,16 +81,16 @@ void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
 
 void Game::setupBullet(void)
 {
-	_CollisionConfiguration = new btDefaultCollisionConfiguration();
-	_Dispatcher = new btCollisionDispatcher(_CollisionConfiguration);
-	_OverlappingPairCache = new btDbvtBroadphase();
-	_Solver = new btSequentialImpulseConstraintSolver();
+	_CollisionConfiguration = boost::shared_ptr<btCollisionConfiguration>(new btDefaultCollisionConfiguration());
+	_Dispatcher = boost::shared_ptr<btCollisionDispatcher>(new btCollisionDispatcher(_CollisionConfiguration.get()));
+	_OverlappingPairCache = boost::shared_ptr<btBroadphaseInterface>(new btDbvtBroadphase());
+	_Solver = boost::shared_ptr<btConstraintSolver>(new btSequentialImpulseConstraintSolver());
 
-	_World = new btDiscreteDynamicsWorld(
-		_Dispatcher,
-		_OverlappingPairCache,
-		_Solver,
-		_CollisionConfiguration);
+	_World = boost::shared_ptr<btDynamicsWorld>(new btDiscreteDynamicsWorld(
+		_Dispatcher.get(),
+		_OverlappingPairCache.get(),
+		_Solver.get(),
+		_CollisionConfiguration.get()));
 
 	_World->setGravity(btVector3(0, -20, 0));
 
@@ -109,9 +102,4 @@ void Game::setupBullet(void)
 
 void Game::cleanupBullet(void)
 {
-	delete _World;
-	delete _Solver;
-	delete _OverlappingPairCache;
-	delete _Dispatcher;
-	delete _CollisionConfiguration;
 }

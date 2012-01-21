@@ -122,7 +122,7 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
 	_Player->UpdateGraphics(TimeSinceLastFrame);
-	BOOST_FOREACH(CharacterController * cc, _Ennemies)
+	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Ennemies)
 	{
 		cc->UpdateGraphics(TimeSinceLastFrame);
 	}
@@ -133,7 +133,7 @@ void Game::Update(float TimeSinceLastFrame)
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
-	BOOST_FOREACH(CharacterController * cc, _Ennemies)
+	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Ennemies)
 	{
 		btVector3 target = _Player->_Body.getCenterOfMassPosition() - cc->_Body.getCenterOfMassPosition();
 
@@ -157,7 +157,7 @@ void Game::BulletCallback(btScalar timeStep)
 	}
 }
 
-CharacterController* Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
+boost::shared_ptr<CharacterController> Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
 {
 	Ogre::Entity * ent = _SceneMgr->createEntity(MeshName);
 	Ogre::AxisAlignedBox box = ent->getBoundingBox();
@@ -168,7 +168,7 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 	float SizeX = boxsize.x * scale / 2;
 	float SizeZ = boxsize.z * scale / 2;
 	
-	Ogre::SceneNode * node = _SceneMgr->getRootSceneNode()->createChildSceneNode();
+	Ogre::SceneNode * node(_SceneMgr->getRootSceneNode()->createChildSceneNode());
 	Ogre::SceneNode * entnode = node->createChildSceneNode(
 		Ogre::Vector3(
 			-boxcenter.x * scale,
@@ -178,7 +178,7 @@ CharacterController* Game::CreateCharacter(std::string MeshName, float Height, f
 	entnode->scale(scale, scale, scale);
 	entnode->attachObject(ent);
 	
-	CharacterController * cc = new CharacterController(_SceneMgr, _World, ent, node, SizeX, Height, SizeZ, mass);
+	boost::shared_ptr<CharacterController> cc(new CharacterController(_SceneMgr, _World, ent, node, SizeX, Height, SizeZ, mass));
 	
 	cc->_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), heading), position + btVector3(0, Height/2, 0)));
 	cc->_CurrentHeading = heading;
