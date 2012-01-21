@@ -26,6 +26,7 @@
 #include <OgreTimer.h>
 #include <OISInputManager.h>
 #include <deque>
+#include <boost/shared_ptr.hpp>
 
 class AppStateManager :
 	public Ogre::WindowEventListener,
@@ -37,7 +38,7 @@ private:
 	void cleanupOIS(void);
 	void cleanup(void);
 
-	std::deque<AppState *> StateStack;
+	std::deque<boost::shared_ptr<AppState> > StateStack;
 	
 	Ogre::Root * _OgreRoot;
 	Ogre::RenderWindow * _Window;
@@ -57,10 +58,10 @@ public:
 	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
 
-	void Enter(AppState * NewState);
-	void SwitchTo(AppState * NewState);
-	void Exit(void);
-	void MainLoop(AppState * InitialState);
+	static void Enter(boost::shared_ptr<AppState> NewState);
+	static void SwitchTo(boost::shared_ptr<AppState> NewState);
+	static void Exit(void);
+	static void MainLoop(boost::shared_ptr<AppState> InitialState);
 	static AppStateManager& GetSingleton(void)
 	{
 		return *Singleton;

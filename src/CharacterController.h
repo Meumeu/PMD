@@ -50,12 +50,11 @@ public:
 	btVector3 _TargetVelocity;
 	bool _Jump;
 	bool _GroundContact;
-
-	btRigidBody _Body;
+	
 	Ogre::SceneNode * _Node;
 	RigidBody<Ogre::SceneNode> _MotionState;
 	btBoxShape _Shape;
-	btVector3 _Inertia;
+	btRigidBody _Body;
 	btScalar _Mass;
 	btDynamicsWorld * _World;
 	

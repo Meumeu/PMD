@@ -136,54 +136,51 @@ void AppStateManager::cleanupOIS(void)
 
 }
 
-void AppStateManager::Enter(AppState* NewState)
+void AppStateManager::Enter(boost::shared_ptr<AppState> NewState)
 {
-	assert(!StateStack.empty());
+	assert(!Singleton->StateStack.empty());
 
-	StateStack.back()->Pause();
-	StateStack.push_back(NewState);
-	_Keyboard->setEventCallback(NewState);
-	_Mouse->setEventCallback(NewState);
+	Singleton->StateStack.back()->Pause();
+	Singleton->StateStack.push_back(NewState);
+	Singleton->_Keyboard->setEventCallback(NewState.get());
+	Singleton->_Mouse->setEventCallback(NewState.get());
 	NewState->Enter();
 }
 
 void AppStateManager::Exit(void)
 {
-	assert(!StateStack.empty());
+	assert(!Singleton->StateStack.empty());
 
-	AppState * LastState = StateStack.back();
+	boost::shared_ptr<AppState> LastState = Singleton->StateStack.back();
 	LastState->Exit();
-	StateStack.pop_back();
+	Singleton->StateStack.pop_back();
 	
-	if (!StateStack.empty())
+	if (!Singleton->StateStack.empty())
 	{
-		AppState * NewState = StateStack.back();
+		boost::shared_ptr<AppState> NewState = Singleton->StateStack.back();
 		
-		_Keyboard->setEventCallback(NewState);
-		_Mouse->setEventCallback(NewState);
+		Singleton->_Keyboard->setEventCallback(NewState.get());
+		Singleton->_Mouse->setEventCallback(NewState.get());
 		NewState->Resume();
 	}
 	else
 	{
-		_Keyboard->setEventCallback(NULL);
-		_Mouse->setEventCallback(NULL);
+		Singleton->_Keyboard->setEventCallback(NULL);
+		Singleton->_Mouse->setEventCallback(NULL);
 	}
-
-	delete LastState;
 }
 
-void AppStateManager::SwitchTo(AppState* NewState)
+void AppStateManager::SwitchTo(boost::shared_ptr<AppState> NewState)
 {
-	assert(!StateStack.empty());
+	assert(!Singleton->StateStack.empty());
 
-	AppState * LastState = StateStack.back();
+	boost::shared_ptr<AppState> LastState = Singleton->StateStack.back();
 	LastState->Exit();
-	StateStack.pop_back();
-	delete LastState;
+	Singleton->StateStack.pop_back();
 
-	StateStack.push_back(NewState);
-	_Keyboard->setEventCallback(NewState);
-	_Mouse->setEventCallback(NewState);
+	Singleton->StateStack.push_back(NewState);
+	Singleton->_Keyboard->setEventCallback(NewState.get());
+	Singleton->_Mouse->setEventCallback(NewState.get());
 	NewState->Enter();
 }
 
@@ -214,42 +211,41 @@ void AppStateManager::cleanup()
 	}
 }
 
-void AppStateManager::MainLoop(AppState* InitialState)
+void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 {
-	_Window = _OgreRoot->initialise(true, "Ponies Must Die");
+	Singleton->_Window = Singleton->_OgreRoot->initialise(true, "Ponies Must Die");
 
 	try
 	{
-		_Timer = _OgreRoot->getTimer();
+		Singleton->_Timer = Singleton->_OgreRoot->getTimer();
 		
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
-		setupResources();
+		Singleton->setupResources();
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 		
-		setupOIS();
+		Singleton->setupOIS();
 
 		//Set initial mouse clipping size
-		windowResized(_Window);
+		Singleton->windowResized(Singleton->_Window);
 
-		Ogre::WindowEventUtilities::addWindowEventListener(_Window, this);
-		_OgreRoot->addFrameListener(this);
+		Ogre::WindowEventUtilities::addWindowEventListener(Singleton->_Window, Singleton);
+		Singleton->_OgreRoot->addFrameListener(Singleton);
 
-
-		StateStack.push_back(InitialState);
-		_Keyboard->setEventCallback(InitialState);
-		_Mouse->setEventCallback(InitialState);
+		Singleton->StateStack.push_back(InitialState);
+		Singleton->_Keyboard->setEventCallback(InitialState.get());
+		Singleton->_Mouse->setEventCallback(InitialState.get());
 		InitialState->Enter();
 
-		_OgreRoot->startRendering();
+		Singleton->_OgreRoot->startRendering();
 	}
 	catch(...)
 	{
-		cleanup();
+		Singleton->cleanup();
 		throw;
 	}
 
-	cleanup();
+	Singleton->cleanup();
 }
 
 //Adjust mouse clipping area
