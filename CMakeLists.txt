@@ -76,7 +76,7 @@ find_package(Boost QUIET)
 # Set up referencing of Boost
 include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
-set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${CEGUI_LIBRARIES})
+set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${CEGUI-OGRE_LIBRARIES})
 
 set (HDRS
 	src/AppStateManager.h
@@ -403,6 +403,7 @@ set(SRCS
 
 include_directories( ${OIS_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
+	${CEGUI-OGRE_INCLUDE_DIRS}
 	"src/bullet"
 	"src/btOgre"
 )
@@ -431,11 +432,11 @@ if(WIN32)
 	endif()
 else()
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\")
-		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG}\")
+		get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_DBG} PATH)
+		add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
 	elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		add_definitions(-DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_REL}\")
-		add_definitions(-DPATH_Plugin_OctreeSceneManager=\"${OGRE_Plugin_OctreeSceneManager_LIBRARY_REL}\")
+		get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_REL} PATH)
+		add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
 	endif()
 endif()
 
