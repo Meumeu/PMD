@@ -21,6 +21,10 @@ CXXFLAGS_DBG = -g
 CXXFLAGS_DBG += -DPATH_RenderSystem_GL=\"$(OGRE_RenderSystem_GL_LIBRARY_DBG)\"
 CXXFLAGS_DBG += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG)\"
 
+ifeq (y,$(PHYSICS_DEBUG))
+CXXFLAGS += -DPHYSICS_DEBUG
+endif
+
 BLENDER = blender
 MKDIR=mkdir
 CP=cp

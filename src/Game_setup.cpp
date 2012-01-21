@@ -54,7 +54,7 @@ void Game::Enter(void)
 	setupBullet();
 
 #ifdef PHYSICS_DEBUG
-	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World);
+	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World.get());
 	_World->setDebugDrawer(_debugDrawer);
 #endif
 	
