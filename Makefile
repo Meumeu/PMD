@@ -8,7 +8,7 @@ OGRE_RenderSystem_GL_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 OGRE_Plugin_OctreeSceneManager_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS` -Isrc/bullet -Wall
+CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet
 LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\"
@@ -22,47 +22,90 @@ CXXFLAGS_DBG += -DPATH_RenderSystem_GL=\"$(OGRE_RenderSystem_GL_LIBRARY_DBG)\"
 CXXFLAGS_DBG += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG)\"
 
 BLENDER = blender
-PREFIX ?= $(CURDIR)/dist
+MKDIR=mkdir
+CP=cp
+#RM=rm
+ZIP=zip -q
+MV=mv
+
+PREFIX=/usr/local
 CXXFLAGS += -DPATH_RESOURCES=\"$(PREFIX)/share/pmd\"
 
-SRC = $(shell find src/ -name *.cpp)
-
-ifeq ($(DEBUG),y)
-	OBJS=$(patsubst src/%,obj/%,$(patsubst %.cpp,%-dbg.o,$(SRC)))
-else
-	OBJS=$(patsubst src/%,obj/%,$(patsubst %.cpp,%.o,$(SRC)))
+ifeq ($(wildcard /usr/bin/blender),/usr/bin/blender)
+BLENDER=/usr/bin/blender
+else ifeq ($(wildcard /usr/bin/blender-2.60),/usr/bin/blender-2.60)
+BLENDER=/usr/bin/blender-2.60
 endif
 
-all: obj/poniesmustdie obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material
+BLENDERDIR=blender
+SRCDIR=src
+OBJDIR=objects
+
+SRC = $(shell find $(SRCDIR)/ -name *.cpp)
+BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
+BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
+
+OTHER_MODELS = resources/meshes/Sinbad.zip resources/textures/Examples.material resources/textures/rockwall.tga
+
+ifeq ($(DEBUG),y)
+	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))
+else
+	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/release/%.o,$(SRC))
+endif
+
+all: dist/bin/poniesmustdie $(BLENDERZIP)
 
 clean:
-	rm -r obj
+	-$(RM) -r $(OBJDIR) dist
 
-install: obj/poniesmustdie obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material
-	/bin/echo -e Installing to \\x1b[32m$(PREFIX)\\x1b[0m
-	mkdir -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
-	cp obj/poniesmustdie $(PREFIX)/bin/poniesmustdie
-	cp obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material $(PREFIX)/share/pmd/models
-	sed -e s,@CMAKE_SOURCE_DIR@,$(CURDIR), -e s,@CMAKE_INSTALL_PREFIX@,$(PREFIX), src/resources.cfg.in > $(PREFIX)/share/pmd/resources.cfg
+install: dist/bin/poniesmustdie $(BLENDERZIP)
+	echo Installing to $(PREFIX)
+	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
+	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
+	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
+	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
 
-obj/models/Pony.mesh obj/models/Pony.skeleton obj/models/PonySkin.material obj/models/PonyEye.material: blender/poney.blend
-	echo Generating meshes...
-	mkdir -p obj/models
-	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- obj/models/Pony > obj/models/pony.log 2>&1
-
-obj/poniesmustdie: $(OBJS)
-	/bin/echo -e Linking \\x1b[32m$(notdir $@)\\x1b[0m
+dist/bin/poniesmustdie: $(OBJS)
+	echo Linking $(notdir $@)
+	$(MKDIR) -p dist/bin
 	$(CXX) $(LDFLAGS) $(OBJS) -o $@
 
-obj/%.o: src/%.cpp
-	/bin/echo -e Building \\x1b[32m$(notdir $@)\\x1b[0m
-	mkdir -p $(dir $(patsubst src/%,obj/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
+$(OBJDIR)/release/bullet/%.o: $(SRCDIR)/bullet/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
-obj/%-dbg.o: src/%.cpp
-	/bin/echo -e Building \\x1b[32m$(notdir $@)\\x1b[0m
-	mkdir -p $(dir $(patsubst src/%,obj/%,$<))
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$<)) -o $@
+$(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
+$(OBJDIR)/debug/bullet/%.o: $(SRCDIR)/bullet/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
--include $(patsubst src/%,obj/%,$(patsubst %.cpp,%.d,$(SRC)))
+$(OBJDIR)/debug/%.o: $(SRCDIR)/%.cpp
+	echo Building $(notdir $@)
+	$(MKDIR) -p $(dir $@)
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
+
+dist/share/pmd/models/%.zip: $(BLENDERDIR)/%.blend
+	echo Generating $(notdir $@)
+ifeq (,$(BLENDER))
+	echo Blender not found, set the BLENDER variable
+	exit 1
+else
+	$(MKDIR) -p $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)
+	$(MKDIR) -p $(dir $@)
+	$(RM) -r $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*
+	$(BLENDER) -b $< -P tools/io_export_ogreDotScene.py -P tools/export.py -- $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out/,$@) > $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%.log,$@) 2>&1
+	$(MV) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/.material $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/$(patsubst %.zip,%,$(notdir $@)).material
+	-$(RM) $(patsubst %.zip,%-tmp.zip,$@)
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.mesh
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.skeleton
+	$(ZIP) -j $(patsubst %.zip,%-tmp.zip,$@) $(patsubst dist/share/pmd/%.zip,$(OBJDIR)/%-out,$@)/*.material
+	$(MV) $(patsubst %.zip,%-tmp.zip,$@) $@
+endif
+
+-include $(patsubst %.o,%.d,$(OBJS))

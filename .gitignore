@@ -38,3 +38,6 @@ build/
 .kdev4
 
 *.orig
+dist/
+objects/
+*.zip

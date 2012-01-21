@@ -37,19 +37,32 @@ int main(int argc, char *argv[])
 		char buf[MAX_PATH];
 		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf)))
 			throw std::runtime_error("SHGetFolderPath failed");
-		std::string HomeDir = buf;
-		HomeDir += "\\Ponies Must Die\\";
+		std::string SettingsDir = buf;
+		SettingsDir += "\\Ponies Must Die\\";
 #else
-		std::string HomeDir = getenv("HOME");
-		HomeDir += "/.PoniesMustDie/";
+		std::string SettingsDir;
+		char * EnvVar;
+		
+		if ((EnvVar = getenv("XDG_CONFIG_HOME")))
+		{
+			SettingsDir = EnvVar;
+			SettingsDir += "/PoniesMustDie/";
+		}
+		else if ((EnvVar = getenv("HOME")))
+		{
+			SettingsDir = EnvVar;
+			SettingsDir += "/.config/PoniesMustDie/";
+		}
+		else
+		{
+			throw std::runtime_error("XDG_CONFIG_HOME and HOME not defined");
+		}
 #endif
 		
-		boost::filesystem::create_directories(HomeDir);
+		boost::filesystem::create_directories(SettingsDir);
 		
-		Game * g = new Game;
-		
-		AppStateManager manager(HomeDir);
-		manager.MainLoop(g);
+		AppStateManager manager(SettingsDir);
+		manager.MainLoop(new Game);
 	}
 	catch(std::exception& e)
 	{

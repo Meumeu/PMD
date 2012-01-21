@@ -35,6 +35,7 @@ private:
 	void setupResources(void);
 	void setupOIS(void);
 	void cleanupOIS(void);
+	void cleanup(void);
 
 	std::deque<AppState *> StateStack;
 	
@@ -49,9 +50,10 @@ private:
 	
 	bool                   _Shutdown;
 	static AppStateManager * Singleton;
+	std::string            _SettingsDir;
 		
 public:
-	AppStateManager(std::string HomeDir);
+	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
 
 	void Enter(AppState * NewState);
@@ -61,13 +63,15 @@ public:
 	static AppStateManager& GetSingleton(void)
 	{
 		return *Singleton;
-	};
+	}
 	
-	Ogre::Root *         &GetOgreRoot(void)     { return _OgreRoot; };
-	Ogre::RenderWindow * &GetWindow(void)       { return _Window; };
-	OIS::InputManager *  &GetInputManager(void) { return _InputManager; };
-	OIS::Mouse *         &GetMouse(void)        { return _Mouse; };
-	OIS::Keyboard *      &GetKeyboard(void)     { return _Keyboard; };
+	Ogre::Root *         &GetOgreRoot(void)     { return _OgreRoot; }
+	Ogre::RenderWindow * &GetWindow(void)       { return _Window; }
+	OIS::InputManager *  &GetInputManager(void) { return _InputManager; }
+	OIS::Mouse *         &GetMouse(void)        { return _Mouse; }
+	OIS::Keyboard *      &GetKeyboard(void)     { return _Keyboard; }
+	
+	const std::string     GetSettingsDir(void)  { return _SettingsDir; }
 	
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);
