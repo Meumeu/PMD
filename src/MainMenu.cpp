@@ -19,10 +19,10 @@
 #include "MainMenu.h"
 #include "AppStateManager.h"
 
-#include <CEGUI/CEGUI.h>
-#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
-#include <CEGUI/CEGUIImageset.h>
-#include <CEGUI/CEGUIScheme.h>
+#include <CEGUI.h>
+#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
+#include <CEGUIImageset.h>
+#include <CEGUIScheme.h>
 #include "Game.h"
 
 void MainMenu::Enter(void)
@@ -36,11 +36,11 @@ void MainMenu::Enter(void)
 	
 	CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 	
-	CEGUI::Imageset::setDefaultResourceGroup("Imagesets");
-	CEGUI::Font::setDefaultResourceGroup("Fonts");
-	CEGUI::Scheme::setDefaultResourceGroup("Schemes");
-	CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
-	CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
+	CEGUI::Imageset::setDefaultResourceGroup("GUI");
+	CEGUI::Font::setDefaultResourceGroup("GUI");
+	CEGUI::Scheme::setDefaultResourceGroup("GUI");
+	CEGUI::WidgetLookManager::setDefaultResourceGroup("GUI");
+	CEGUI::WindowManager::setDefaultResourceGroup("GUI");
 	
 	CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
 	CEGUI::ImagesetManager::getSingleton().create("TaharezLook.imageset");
@@ -162,19 +162,11 @@ MainMenu::MainMenu(void): AppState(),
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
 	std::string resources = AppStateManager::GetSingleton().GetResourcesDir();
 	
-	manager.addResourceLocation(resources + "/imagesets", "FileSystem", "Imagesets");
-	manager.addResourceLocation(resources + "/fonts",     "FileSystem", "Fonts");
-	manager.addResourceLocation(resources + "/schemes",   "FileSystem", "Schemes");
-	manager.addResourceLocation(resources + "/looknfeel", "FileSystem", "LookNFeel");
-	manager.addResourceLocation(resources + "/layouts",   "FileSystem", "Layouts");
+	manager.addResourceLocation(resources + "/gui", "FileSystem", "GUI");
 }
 
 MainMenu::~MainMenu()
 {
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
-	manager.clearResourceGroup("Imagesets");
-	manager.clearResourceGroup("Fonts");
-	manager.clearResourceGroup("Schemes");
-	manager.clearResourceGroup("LookNFeel");
-	manager.clearResourceGroup("Layouts");
+	manager.clearResourceGroup("GUI");
 }
