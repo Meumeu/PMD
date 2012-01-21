@@ -20,20 +20,8 @@
 #include "pmd.h"
 #include <boost/filesystem.hpp>
 
-#ifndef PATH_RenderSystem_GL
-#ifdef _DEBUG
-#	define PATH_RenderSystem_GL "RenderSystem_GL_d"
-#else
-#	define PATH_RenderSystem_GL "RenderSystem_GL"
-#endif
-#endif
-
-#ifndef PATH_Plugin_OctreeSceneManager
-#ifdef _DEBUG
-#	define PATH_Plugin_OctreeSceneManager "Plugin_OctreeSceneManager_d"
-#else
-#	define PATH_Plugin_OctreeSceneManager "Plugin_OctreeSceneManager"
-#endif
+#if !defined(OGRE_PLUGINS_DIR) && !defined(_WINDOWS)
+#error OGRE_PLUGINS_DIR not defined
 #endif
 
 AppStateManager * AppStateManager::Singleton;
@@ -52,15 +40,7 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	Singleton = this;
 	
 	_OgreRoot = new Ogre::Root("", SettingsDir + "ogre.cfg", SettingsDir + "ogre.log");
-	
-	_OgreRoot->loadPlugin(PATH_RenderSystem_GL);
-	_OgreRoot->loadPlugin(PATH_Plugin_OctreeSceneManager);
-	
-	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
-	{
-		exit(0);
-	}
-	
+
 #ifdef _WINDOWS
 	char buf[MAX_PATH];
 	if (!GetModuleFileName(NULL, buf, MAX_PATH))
@@ -68,11 +48,28 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	
 	char * last_slash = strrchr(buf, '\\');
 	if (last_slash) *last_slash = 0;
-
 	_ResourcesDir = buf;
 #else
 	_ResourcesDir = PATH_RESOURCES;
 #endif
+	
+#ifdef _WINDOWS
+#	ifdef _DEBUG
+	_OgreRoot->loadPlugin(_ResourcesDir + "/RenderSystem_GL_d.dll");
+	_OgreRoot->loadPlugin(_ResourcesDir + "/Plugin_OctreeSceneManager_d.dll");
+#	else
+	_OgreRoot->loadPlugin(_ResourcesDir + "/RenderSystem_GL.dll");
+	_OgreRoot->loadPlugin(_ResourcesDir + "/Plugin_OctreeSceneManager.dll");
+#	endif
+#else
+	_OgreRoot->loadPlugin(OGRE_PLUGINS_DIR "/RenderSystem_GL.so");
+	_OgreRoot->loadPlugin(OGRE_PLUGINS_DIR "/Plugin_OctreeSceneManager.so");
+#endif
+	
+	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
+	{
+		exit(0);
+	}
 }
 
 AppStateManager::~AppStateManager()

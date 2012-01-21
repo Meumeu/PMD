@@ -466,6 +466,17 @@ install(FILES resources/models/Sinbad.zip
 		resources/models/rockwall.tga
 	DESTINATION share/pmd/models)
 
+install(FILES resources/gui/DejaVuSans-10.font
+		resources/gui/DejaVuSans.ttf
+		resources/gui/MainMenu.layout
+		resources/gui/TaharezLook.imageset
+		resources/gui/TaharezLook.looknfeel
+		resources/gui/TaharezLook.scheme
+		resources/gui/TaharezLook.tga
+		resources/gui/TaharezLookWidgetAliases.scheme
+		resources/gui/TaharezLookWidgets.scheme
+	DESTINATION share/pmd/gui)
+
 if(WIN32)
 	# NOTE: for the 1.7.1 sdk the OIS dll is called OIS.dll instead of libOIS.dll
 	# so you'll have to change that to make it work with 1.7.1

@@ -44,8 +44,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;PATH_RenderSystem_GL=\&quot;RenderSystem_GL_d\&quot;;PATH_Plugin_OctreeSceneManager=\&quot;Plugin_OctreeSceneManager_d\&quot;"
+				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\cegui\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -64,10 +64,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain_d.lib OIS_d.lib"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib CEGUIBase_d.lib CEGUIOgreRenderer_d.lib"
 				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -121,7 +121,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;PATH_RenderSystem_GL=\&quot;RenderSystem_GL_d\&quot;;PATH_Plugin_OctreeSceneManager=\&quot;Plugin_OctreeSceneManager_d\&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -140,10 +140,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain_d.lib OIS_d.lib BulletDynamics_Debug.lib BulletCollision_Debug.lib LinearMath_Debug.lib"
+				AdditionalDependencies="OgreMain_d.lib OIS_d.lib CEGUIBase_d.lib CEGUIOgreRenderer_d.lib"
 				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="17"
@@ -197,8 +197,8 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;PATH_RenderSystem_GL=\&quot;RenderSystem_GL\&quot;;PATH_Plugin_OctreeSceneManager=\&quot;Plugin_OctreeSceneManager\&quot;"
+				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\cegui\include&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -216,10 +216,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain.lib OIS.lib"
+				AdditionalDependencies="OgreMain.lib OIS.lib CEGUIBase.lib CEGUIOgreRenderer.lib"
 				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\lib&quot;"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -277,7 +277,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="&quot;$(BULLET_HOME)\src&quot;;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;&quot;$(OGRE_HOME)\boost_1_44&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;PATH_RenderSystem_GL=\&quot;RenderSystem_GL\&quot;;PATH_Plugin_OctreeSceneManager=\&quot;Plugin_OctreeSceneManager\&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
@@ -295,10 +295,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="OgreMain.lib OIS.lib BulletDynamics.lib BulletCollision.lib LinearMath.lib"
+				AdditionalDependencies="OgreMain.lib OIS.lib CEGUIBase.lib CEGUIOgreRenderer.lib"
 				OutputFile="$(OutDir)\poniesmustdie.exe"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\boost_1_44\lib&quot;;&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;&quot;$(BULLET_HOME)\build\lib\$(ConfigurationName)&quot;"
+				AdditionalLibraryDirectories="&quot;$(OGRE_HOME)\lib\$(ConfigurationName)&quot;;D:\Dev\boost_1_48_0\stage\lib;&quot;D:\Dev\CEGUI-SDK-0.7.5-vc9\lib&quot;"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -362,6 +362,10 @@
 			</File>
 			<File
 				RelativePath="src\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\MainMenu.cpp"
 				>
 			</File>
 			<File
@@ -884,6 +888,14 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="btOgre"
+				>
+				<File
+					RelativePath=".\src\btOgre\BtOgre.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -912,6 +924,10 @@
 			</File>
 			<File
 				RelativePath="src\Game.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\MainMenu.h"
 				>
 			</File>
 			<File
@@ -1673,6 +1689,22 @@
 						>
 					</File>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="btOgre"
+				>
+				<File
+					RelativePath=".\src\btOgre\BtOgreExtras.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\btOgre\BtOgreGP.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\btOgre\BtOgrePG.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

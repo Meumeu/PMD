@@ -19,7 +19,7 @@
 #ifndef MAINMENU_H
 #define MAINMENU_H
 
-#include <CEGUI/CEGUIInputEvent.h>
+#include <CEGUIInputEvent.h>
 
 #include "AppState.h"
 

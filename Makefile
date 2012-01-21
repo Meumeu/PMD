@@ -40,6 +40,15 @@ BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
 BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
 OTHER_MODELS = resources/models/Sinbad.zip resources/models/Examples.material resources/models/rockwall.tga
+GUI_FILES = resources/gui/DejaVuSans-10.font \
+	resources/gui/DejaVuSans.ttf \
+	resources/gui/MainMenu.layout \
+	resources/gui/TaharezLook.imageset \
+	resources/gui/TaharezLook.looknfeel \
+	resources/gui/TaharezLook.scheme \
+	resources/gui/TaharezLook.tga \
+	resources/gui/TaharezLookWidgetAliases.scheme \
+	resources/gui/TaharezLookWidgets.scheme
 
 ifeq ($(DEBUG),y)
 	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))
@@ -54,10 +63,11 @@ clean:
 
 install: dist/bin/poniesmustdie $(BLENDERZIP)
 	echo Installing to $(PREFIX)
-	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models
+	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models $(PREFIX)/share/pmd/gui
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
 	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
 	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
+	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
 
 dist/bin/poniesmustdie: $(OBJS)
 	echo Linking $(notdir $@)
