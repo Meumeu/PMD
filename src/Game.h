@@ -34,7 +34,7 @@
 
 #include "CharacterController.h"
 #include "AppState.h"
-#include <BtOgreExtras.h>
+#include "btOgre/BtOgreExtras.h"
 
 class Environment;
 class Game : public AppState
@@ -87,15 +87,15 @@ private:
 	boost::shared_ptr<btDynamicsWorld>                   _World;
 
 	boost::shared_ptr<CharacterController>               _Player;
-	std::vector<boost::shared_ptr<CharacterController> > _Ennemies;
+	std::vector<boost::shared_ptr<CharacterController> > _Enemies;
 
-	Environment *                                       _Env;
+	boost::shared_ptr<Environment>                       _Env;
 
 #ifdef PHYSICS_DEBUG
-	BtOgre::DebugDrawer *                               _debugDrawer;
+	BtOgre::DebugDrawer *                                _debugDrawer;
 #endif
 
-	bool                                                _EscPressed;
+	bool                                                 _EscPressed;
 };
 
 #endif // GAME_H

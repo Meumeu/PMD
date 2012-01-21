@@ -31,7 +31,6 @@ Game::Game(void) :
 	_Keyboard(NULL),
 	_Heading(0),
 	_Pitch(0),
-	_Env(NULL),
 	_EscPressed(false)
 {
 }
@@ -55,7 +54,7 @@ void Game::Enter(void)
 	setupBullet();
 
 #ifdef PHYSICS_DEBUG
-	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World);
+	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World.get());
 	_World->setDebugDrawer(_debugDrawer);
 #endif
 	
@@ -64,12 +63,14 @@ void Game::Enter(void)
 
 void Game::Exit(void)
 {
-	delete _Env;
 #ifdef PHYSICS_DEBUG
 	delete _debugDrawer;
 #endif
 	cleanupBullet();
 
+	_Player = boost::shared_ptr<CharacterController>();
+	_Enemies.clear();
+	
 	AppStateManager::GetWindow()->removeViewport(0);
 	_SceneMgr->destroyCamera(_Camera);
 	AppStateManager::GetOgreRoot()->destroySceneManager(_SceneMgr);

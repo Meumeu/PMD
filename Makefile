@@ -3,23 +3,17 @@
 
 OGRE_PLUGINS_DIR=`pkg-config OGRE --variable=plugindir`
 
-OGRE_RenderSystem_GL_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
-OGRE_RenderSystem_GL_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/RenderSystem_GL.so
-OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
-OGRE_Plugin_OctreeSceneManager_LIBRARY_REL = $(OGRE_PLUGINS_DIR)/Plugin_OctreeSceneManager.so
-
 CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet
 LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
 
-CXXFLAGS += -DPATH_RenderSystem_GL=\"${OGRE_RenderSystem_GL_LIBRARY_DBG}\"
+CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
 
 CXXFLAGS_REL = -O3 -DNDEBUG
-CXXFLAGS_REL += -DPATH_RenderSystem_GL=\"$(OGRE_RenderSystem_GL_LIBRARY_REL)\"
-CXXFLAGS_REL += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneManager_LIBRARY_REL)\"
-
 CXXFLAGS_DBG = -g
-CXXFLAGS_DBG += -DPATH_RenderSystem_GL=\"$(OGRE_RenderSystem_GL_LIBRARY_DBG)\"
-CXXFLAGS_DBG += -DPATH_Plugin_OctreeSceneManager=\"$(OGRE_Plugin_OctreeSceneManager_LIBRARY_DBG)\"
+
+ifeq (y,$(PHYSICS_DEBUG))
+CXXFLAGS += -DPHYSICS_DEBUG
+endif
 
 BLENDER = blender
 MKDIR=mkdir
@@ -45,7 +39,7 @@ SRC = $(shell find $(SRCDIR)/ -name *.cpp)
 BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
 BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
-OTHER_MODELS = resources/meshes/Sinbad.zip resources/textures/Examples.material resources/textures/rockwall.tga
+OTHER_MODELS = resources/models/Sinbad.zip resources/models/Examples.material resources/models/rockwall.tga
 
 ifeq ($(DEBUG),y)
 	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))

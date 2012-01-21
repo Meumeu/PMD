@@ -26,6 +26,12 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+	add_definitions(-D_DEBUG)
+else()
+	add_definitions(-DNDEBUG)
+endif()
+
 set(CMAKE_DEBUG_POSTFIX "_d")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
@@ -454,10 +460,10 @@ install(TARGETS poniesmustdie
 	RUNTIME DESTINATION bin
 	CONFIGURATIONS All)
 
-install(FILES resources/meshes/Sinbad.zip
-		resources/textures/Examples.material
-		resources/textures/r2skin.jpg
-		resources/textures/rockwall.tga
+install(FILES resources/models/Sinbad.zip
+		resources/models/Examples.material
+		resources/models/r2skin.jpg
+		resources/models/rockwall.tga
 	DESTINATION share/pmd/models)
 
 if(WIN32)
