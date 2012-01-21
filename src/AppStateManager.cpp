@@ -60,6 +60,19 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	{
 		exit(0);
 	}
+	
+#ifdef _WINDOWS
+	char buf[MAX_PATH];
+	if (!GetModuleFileName(NULL, buf, MAX_PATH))
+		throw std::runtime_error("GetModuleFileName failed");
+	
+	char * last_slash = strrchr(buf, '\\');
+	if (last_slash) *last_slash = 0;
+
+	_ResourcesDir = buf;
+#else
+	_ResourcesDir = PATH_RESOURCES;
+#endif
 }
 
 AppStateManager::~AppStateManager()
@@ -73,24 +86,10 @@ AppStateManager::~AppStateManager()
 
 void AppStateManager::setupResources(void)
 {
-#ifdef _WINDOWS
-	char buf[MAX_PATH];
-	if (!GetModuleFileName(NULL, buf, MAX_PATH))
-		throw std::runtime_error("GetModuleFileName failed");
-	
-	char * last_slash = strrchr(buf, '\\');
-	if (last_slash) *last_slash = 0;
-
-	std::string PathResources = buf;
-	PathResources += "/models";
-#else
-	std::string PathResources = PATH_RESOURCES "/models";
-#endif
-
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
-	manager.addResourceLocation(PathResources, "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	manager.addResourceLocation(_ResourcesDir + "/models", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
-	for (boost::filesystem::directory_iterator files(PathResources), end; files != end ; ++files)
+	for (boost::filesystem::directory_iterator files(_ResourcesDir + "/models"), end; files != end ; ++files)
 	{
 		if (files->path().extension() == ".zip")
 		{

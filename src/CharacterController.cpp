@@ -33,7 +33,7 @@ CharacterController::CharacterController(
 	_TargetVelocity(0, 0, 0),
 	_Jump(false),
 	_GroundContact(false),
-	_Body(NULL),
+	_Body(Mass, &_MotionState, &_Shape, _Inertia),
 	_MotionState(
 		Ogre::Quaternion::IDENTITY,
 		Ogre::Vector3::ZERO,
@@ -49,10 +49,9 @@ CharacterController::CharacterController(
 	_Node = Node;
 
 	_MotionState.setNode(_Node);
-	_Body = new btRigidBody(Mass, &_MotionState, &_Shape, _Inertia);
-	_Body->setFriction(0);
+	_Body.setFriction(0);
 
-	World->addRigidBody(_Body);
+	World->addRigidBody(&_Body);
 
 	_Animations.SetWeight("IdleTop", 1);
 	_Animations.SetWeight("IdleBase", 1);
@@ -60,8 +59,7 @@ CharacterController::CharacterController(
 
 CharacterController::~CharacterController(void)
 {
-	_World->removeRigidBody(_Body);
-	delete _Body;
+	_World->removeRigidBody(&_Body);
 
 	_Node->getParentSceneNode()->removeChild(_Node->getName());
 	delete _Node;
@@ -70,7 +68,7 @@ CharacterController::~CharacterController(void)
 void CharacterController::UpdatePhysics(btScalar dt)
 {
 	bool IsIdle = true;
-	btVector3 CurrentVelocity = _Body->getLinearVelocity();
+	btVector3 CurrentVelocity = _Body.getLinearVelocity();
 	
 	if (_TargetVelocity.length2() > 1)
 	{
@@ -95,9 +93,9 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	
 		btQuaternion TargetQ(btVector3(0,1,0), _CurrentHeading);
 		
-		btTransform comtr = _Body->getCenterOfMassTransform();
+		btTransform comtr = _Body.getCenterOfMassTransform();
 		comtr.setRotation(TargetQ);
-		_Body->setCenterOfMassTransform(comtr);
+		_Body.setCenterOfMassTransform(comtr);
 		
 		IsIdle = false;
 	}
@@ -111,7 +109,7 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	{
 		btPersistentManifold* contactManifold =  _World->getDispatcher()->getManifoldByIndexInternal(i);
 		
-		if (contactManifold->getBody0() == _Body || contactManifold->getBody1() == _Body)
+		if (contactManifold->getBody0() == &_Body || contactManifold->getBody1() == &_Body)
 		{
 			int numContacts = contactManifold->getNumContacts();
 			for(int contact=0; contact < numContacts; contact++)
@@ -133,16 +131,16 @@ void CharacterController::UpdatePhysics(btScalar dt)
 	{
 		_Jump = false;
 
-		btVector3 Velocity = _Body->getLinearVelocity();
+		btVector3 Velocity = _Body.getLinearVelocity();
 		Velocity.setY(9);
-		_Body->setLinearVelocity(Velocity);
+		_Body.setLinearVelocity(Velocity);
 	}
 
 	if (!_GroundContact)
 		IsIdle = false;
 
-	_Body->activate(true);
-	_Body->applyCentralForce(F);
+	_Body.activate(true);
+	_Body.applyCentralForce(F);
 	
 	_IdleTime = IsIdle ? _IdleTime + dt : 0;
 }

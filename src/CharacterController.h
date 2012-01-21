@@ -51,7 +51,7 @@ public:
 	bool _Jump;
 	bool _GroundContact;
 
-	btRigidBody * _Body;
+	btRigidBody _Body;
 	Ogre::SceneNode * _Node;
 	RigidBody<Ogre::SceneNode> _MotionState;
 	btBoxShape _Shape;

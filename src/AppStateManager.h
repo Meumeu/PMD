@@ -51,6 +51,7 @@ private:
 	bool                   _Shutdown;
 	static AppStateManager * Singleton;
 	std::string            _SettingsDir;
+	std::string            _ResourcesDir;
 		
 public:
 	AppStateManager(std::string SettingsDir);
@@ -65,13 +66,14 @@ public:
 		return *Singleton;
 	}
 	
-	Ogre::Root *         &GetOgreRoot(void)     { return _OgreRoot; }
-	Ogre::RenderWindow * &GetWindow(void)       { return _Window; }
-	OIS::InputManager *  &GetInputManager(void) { return _InputManager; }
-	OIS::Mouse *         &GetMouse(void)        { return _Mouse; }
-	OIS::Keyboard *      &GetKeyboard(void)     { return _Keyboard; }
+	static Ogre::Root *         GetOgreRoot(void)     { return Singleton->_OgreRoot; }
+	static Ogre::RenderWindow * GetWindow(void)       { return Singleton->_Window; }
+	static OIS::InputManager *  GetInputManager(void) { return Singleton->_InputManager; }
+	static OIS::Mouse *         GetMouse(void)        { return Singleton->_Mouse; }
+	static OIS::Keyboard *      GetKeyboard(void)     { return Singleton->_Keyboard; }
 	
-	const std::string     GetSettingsDir(void)  { return _SettingsDir; }
+	static const std::string    GetSettingsDir(void)  { return Singleton->_SettingsDir; }
+	static const std::string    GetResourcesDir(void) { return Singleton->_ResourcesDir; }
 	
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);
