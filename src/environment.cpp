@@ -25,7 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
-#include <BtOgreGP.h>
+#include "btOgre/BtOgreGP.h"
 
 static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
 {
@@ -40,6 +40,8 @@ static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
 		case Environment::West:
 			return Ogre::Quaternion(Ogre::Radian(M_PI/2) ,Ogre::Vector3::UNIT_Y);
 	}
+	
+	throw std::runtime_error("Invalid Environment::orientation_t");
 }
 static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Vector3 translation)
 {

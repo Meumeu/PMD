@@ -126,7 +126,7 @@ void Game::Update(float TimeSinceLastFrame)
 			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
 
 	_Player->UpdateGraphics(TimeSinceLastFrame);
-	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Ennemies)
+	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
 		cc->UpdateGraphics(TimeSinceLastFrame);
 	}
@@ -137,7 +137,7 @@ void Game::Update(float TimeSinceLastFrame)
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
-	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Ennemies)
+	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
 		btVector3 target = _Player->_Body.getCenterOfMassPosition() - cc->_Body.getCenterOfMassPosition();
 
@@ -198,7 +198,7 @@ void Game::go(void)
 	std::fstream f("default_level.txt", std::fstream::in);
 	if (f.is_open())
 	{
-		_Env = new Environment(_SceneMgr, *_World, f);
+		_Env = boost::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));
 	}
 
 	btVector3 PlayerPosition(0, 0, 0);
@@ -245,7 +245,7 @@ void Game::go(void)
 	for(float x = -10; x < 10; x += 1)
 	{
 		btVector3 pos(x, 0, -10);
-		_Ennemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
+		_Enemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
 	}
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 }
