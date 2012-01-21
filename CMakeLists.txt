@@ -32,6 +32,8 @@ set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
 find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
+pkg_check_modules(CEGUI-OGRE REQUIRED CEGUI-OGRE)
+use_pkgconfig(CEGUI_PKGC CEGUI-OGRE)
 
 if(NOT OIS_FOUND)
 	message(SEND_ERROR "Failed to find OIS.")
@@ -68,7 +70,7 @@ find_package(Boost QUIET)
 # Set up referencing of Boost
 include_directories(${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
-set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES})
+set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${CEGUI_LIBRARIES})
 
 set (HDRS
 	src/AppStateManager.h
@@ -79,6 +81,7 @@ set (HDRS
 	src/CharacterAnimation.h
 	src/AppState.h
 	src/RigidBody.h
+	src/MainMenu.h
 
 	src/btOgre/BtOgreGP.h
 	src/btOgre/BtOgrePG.h
@@ -270,6 +273,7 @@ set(SRCS
 	src/environment.cpp
 	src/Game_setup.cpp
 	src/main.cpp
+	src/MainMenu.cpp
 
 	src/btOgre/BtOgre.cpp
 
