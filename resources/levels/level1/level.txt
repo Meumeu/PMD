@@ -1,1 +1,3 @@
-Pony.mesh 0 2 10 N
+wall.mesh 0 0 10 N
+wall.mesh 3 0 10 N
+wall.mesh 6 0 10 W
