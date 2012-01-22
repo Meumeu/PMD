@@ -26,11 +26,34 @@
 #include <boost/foreach.hpp>
 
 #include <btBulletDynamicsCommon.h>
+#include <btBulletCollisionCommon.h>
 #include "AppStateManager.h"
 
 const float CameraDistance = 2;
 const float CameraHeight = 1.7;
 
+class CameraCollisionCallback : public btCollisionWorld::RayResultCallback
+{
+public:
+	CameraCollisionCallback(btRigidBody * player) :  _hitfraction(1), _player(player) {};
+	virtual ~CameraCollisionCallback() {};
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	{
+		if (rayResult.m_collisionObject != _player)
+		{
+			if (rayResult.m_hitFraction < _hitfraction)
+			{
+				_hitfraction = rayResult.m_hitFraction;
+			}
+		}
+		return 0;
+	}
+
+	float _hitfraction;
+
+private:
+	btRigidBody * _player;
+};
 
 bool Game::keyPressed(const OIS::KeyEvent& e)
 {
@@ -117,19 +140,33 @@ void Game::Update(float TimeSinceLastFrame)
 #ifdef PHYSICS_DEBUG
 	_debugDrawer->step();
 #endif
-
-	_Camera->setPosition(
-		_Player->_Node->getPosition() +
-		Ogre::Vector3(
-			CameraDistance * cos(_Pitch.valueRadians()) * sin(_Heading.valueRadians()),
-			CameraHeight - CameraDistance * sin(_Pitch.valueRadians()),
-			CameraDistance * cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians())));
-
+	
 	_Player->UpdateGraphics(TimeSinceLastFrame);
 	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
 		cc->UpdateGraphics(TimeSinceLastFrame);
 	}
+	
+	btVector3 CamDirection(
+		 cos(_Pitch.valueRadians()) * sin(_Heading.valueRadians()),
+		-sin(_Pitch.valueRadians()),
+		 cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians()));
+	
+	btVector3 Cam1(
+		_Player->_Node->getPosition().x,
+		_Player->_Node->getPosition().y + CameraHeight,
+		_Player->_Node->getPosition().z);
+	
+	btVector3 Cam2 = Cam1 + CameraDistance * CamDirection;
+	
+	CameraCollisionCallback CamCallback(&_Player->_Body);
+	
+	_World->rayTest(Cam1, Cam2, CamCallback);
+	Ogre::Vector3 CameraPosition(
+		Cam1.x() + CamCallback._hitfraction * CameraDistance * CamDirection.x(),
+		Cam1.y() + CamCallback._hitfraction * CameraDistance * CamDirection.y(),
+		Cam1.z() + CamCallback._hitfraction * CameraDistance * CamDirection.z());
+	_Camera->setPosition(CameraPosition);
 	
 	return;
 }
