@@ -36,8 +36,6 @@ if (PHYSICS_DEBUG STREQUAL "y")
 	add_definitions(-DPHYSICS_DEBUG)
 endif()
 
-set(CMAKE_DEBUG_POSTFIX "_d")
-
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
 
 find_package(OGRE REQUIRED)
@@ -416,8 +414,6 @@ add_executable(poniesmustdie WIN32 ${HDRS} ${SRCS})
 
 add_subdirectory(blender)
 add_dependencies(poniesmustdie generate_models)
-
-set_target_properties(poniesmustdie PROPERTIES DEBUG_POSTFIX _d)
 
 target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system)
 
