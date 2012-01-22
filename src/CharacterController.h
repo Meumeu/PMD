@@ -36,12 +36,11 @@ public:
 	CharacterController(
 		Ogre::SceneManager *               SceneMgr,
 		boost::shared_ptr<btDynamicsWorld> World,
-		Ogre::Entity *                     Entity,
-		Ogre::SceneNode *                  Node,
-		float                              SizeX,
+		std::string                        MeshName,
 		float                              Height,
-		float                              SizeZ,
-		float                              Mass);
+		float                              Mass,
+		btVector3&                         Position,
+		float                              Heading);
 	~CharacterController(void);
 
 	void UpdatePhysics(btScalar dt);
@@ -55,6 +54,10 @@ public:
 	
 	Ogre::SceneNode *                  _Node;
 	RigidBody<Ogre::SceneNode>         _MotionState;
+	Ogre::Entity *                     _Entity;
+	Ogre::Vector3                      _MeshSize;
+	Ogre::Vector3                      _MeshCenter;
+	float                              _Scale;
 	btBoxShape                         _Shape;
 	btRigidBody                        _Body;
 	btScalar                           _Mass;
