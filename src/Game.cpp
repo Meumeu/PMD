@@ -194,8 +194,9 @@ void Game::go(void)
 {
 	//_SceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE);
 
-	//FIXME: get resource dir
-	std::fstream f("default_level.txt", std::fstream::in);
+	const std::string level(AppStateManager::GetResourcesDir()+"/levels/level1");
+	AppStateManager::AddResourceDirectory(level);
+	std::fstream f((level+"/level.txt").c_str(), std::fstream::in);
 	if (f.is_open())
 	{
 		_Env = boost::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));

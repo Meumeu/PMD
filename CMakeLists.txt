@@ -32,6 +32,10 @@ else()
 	add_definitions(-DNDEBUG)
 endif()
 
+if (PHYSICS_DEBUG STREQUAL "y")
+	add_definitions(-DPHYSICS_DEBUG)
+endif()
+
 set(CMAKE_DEBUG_POSTFIX "_d")
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/dist")
@@ -466,6 +470,10 @@ install(FILES resources/models/Sinbad.zip
 		resources/models/r2skin.jpg
 		resources/models/rockwall.tga
 	DESTINATION share/pmd/models)
+
+install(
+	DIRECTORY resources/levels
+	DESTINATION share/pmd)
 
 install(FILES resources/gui/DejaVuSans-10.font
 		resources/gui/DejaVuSans.ttf

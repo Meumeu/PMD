@@ -81,19 +81,26 @@ AppStateManager::~AppStateManager()
 	}
 }
 
-void AppStateManager::setupResources(void)
+void AppStateManager::AddResourceDirectory(const std::string& path)
 {
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
-	manager.addResourceLocation(_ResourcesDir + "/models", "FileSystem", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
-	for (boost::filesystem::directory_iterator files(_ResourcesDir + "/models"), end; files != end ; ++files)
+	manager.addResourceLocation(path, "FileSystem", path);
+	
+	for (boost::filesystem::directory_iterator files(path), end; files != end ; ++files)
 	{
 		if (files->path().extension() == ".zip")
 		{
-			manager.addResourceLocation(files->path().string(), "Zip", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			manager.addResourceLocation(files->path().string(), "Zip", path);
 		}
 	}
 }
+
+void AppStateManager::RemoveResourceDirectory(const std::string& path)
+{
+	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
+	manager.destroyResourceGroup(path);
+}
+
 
 void AppStateManager::setupOIS(void)
 {
@@ -218,7 +225,7 @@ void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 		
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
-		Singleton->setupResources();
+		AddResourceDirectory(Singleton->_ResourcesDir + "/models");//default resources
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
 		
 		Singleton->setupOIS();

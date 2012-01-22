@@ -33,7 +33,6 @@ class AppStateManager :
 	public Ogre::FrameListener
 {
 private:
-	void setupResources(void);
 	void setupOIS(void);
 	void cleanupOIS(void);
 	void cleanup(void);
@@ -57,6 +56,9 @@ private:
 public:
 	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
+
+	static void AddResourceDirectory(std::string const& path);
+	static void RemoveResourceDirectory(std::string const& path);
 
 	static void Enter(boost::shared_ptr<AppState> NewState);
 	static void SwitchTo(boost::shared_ptr<AppState> NewState);
