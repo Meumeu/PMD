@@ -86,7 +86,7 @@ void MainMenu::Enter(void)
 
 bool MainMenu::Options(const CEGUI::EventArgs& e)
 {
-	throw 28;
+	throw std::runtime_error("Unimplemented");
 }
 
 bool MainMenu::StartGame(const CEGUI::EventArgs& e)
@@ -189,6 +189,8 @@ MainMenu::MainMenu(void): AppState(),
 
 MainMenu::~MainMenu()
 {
-	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
-	manager.clearResourceGroup("GUI");
+	if (Ogre::Root::getSingletonPtr())
+	{
+		Ogre::ResourceGroupManager::getSingleton().clearResourceGroup("GUI");
+	}
 }

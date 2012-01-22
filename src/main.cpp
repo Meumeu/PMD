@@ -17,19 +17,25 @@
 
 #include "pmd.h"
 #include "MainMenu.h"
+#include "Game.h"
 #include "AppStateManager.h"
 
 #include <boost/filesystem.hpp>
 #include <stdexcept>
 
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#ifdef _WINDOWS
 #include <windows.h>
 #include <shlobj.h>
 
+int main(int argc, char *argv[]);
+
 INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
-#else
-int main(int argc, char *argv[])
+{
+	return main(0, 0);
+}
 #endif
+
+int main(int argc, char *argv[])
 {
 	try
 	{
@@ -63,11 +69,12 @@ int main(int argc, char *argv[])
 		
 		AppStateManager manager(SettingsDir);
 		boost::shared_ptr<MainMenu> menu(new MainMenu);
+		//boost::shared_ptr<Game> menu(new Game);
 		manager.MainLoop(menu);
 	}
 	catch(std::exception& e)
 	{
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#ifdef _WINDOWS
 		MessageBoxA(NULL, e.what(), "An exception has occurred!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #else
 		std::cerr << "An exception has occurred: " << e.what() << std::endl;
