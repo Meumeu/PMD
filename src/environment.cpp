@@ -87,17 +87,17 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	BtOgre::StaticMeshToShapeConverter converter;
 	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		block._entity->setCastShadows(false);
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
-		converter.addEntity(block._entity, getMatrix4(block._orientation, block._position));
+		BtOgre::StaticMeshToShapeConverter converter(block._entity, getMatrix4(block._orientation, block._position));
+
+		BtItems btStuff(converter);
+		_btItems.push_back(btStuff);
+		_world.addRigidBody(btStuff.getBody());
 	}
-	_btShape = boost::shared_ptr<btCollisionShape>(converter.createTrimesh());
-	_body = boost::shared_ptr<btRigidBody>(new btRigidBody(0, &_motionState, _btShape.get()));
-	_world.addRigidBody(_body.get());
 	sg->build();
 	sg->setCastShadows(true);
 	
@@ -109,6 +109,17 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
-	_world.removeRigidBody(_body.get());
+	BOOST_FOREACH(BtItems & btStuff, _btItems)
+	{
+		_world.removeRigidBody(btStuff.getBody());
+	}
 
 }
+
+Environment::BtItems::BtItems(BtOgre::StaticMeshToShapeConverter& converter)
+{
+	_btShape = boost::shared_ptr<btCollisionShape>(converter.createTrimesh());
+	_motionState = boost::shared_ptr<btDefaultMotionState>(new btDefaultMotionState());
+	_body = boost::shared_ptr<btRigidBody>(new btRigidBody(0, _motionState.get(), _btShape.get()));
+}
+
