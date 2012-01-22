@@ -163,31 +163,7 @@ void Game::BulletCallback(btScalar timeStep)
 
 boost::shared_ptr<CharacterController> Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
 {
-	Ogre::Entity * ent = _SceneMgr->createEntity(MeshName);
-	Ogre::AxisAlignedBox box = ent->getBoundingBox();
-	Ogre::Vector3 boxsize = box.getMaximum() - box.getMinimum();
-	Ogre::Vector3 boxcenter = (box.getMaximum() + box.getMinimum()) / 2;
-	
-	float scale = Height / boxsize.y;
-	float SizeX = boxsize.x * scale / 2;
-	float SizeZ = boxsize.z * scale / 2;
-	
-	Ogre::SceneNode * node(_SceneMgr->getRootSceneNode()->createChildSceneNode());
-	Ogre::SceneNode * entnode = node->createChildSceneNode(
-		Ogre::Vector3(
-			-boxcenter.x * scale,
-			-box.getMinimum().y * scale,
-			-boxcenter.z * scale));
-	
-	entnode->scale(scale, scale, scale);
-	entnode->attachObject(ent);
-	
-	boost::shared_ptr<CharacterController> cc(new CharacterController(_SceneMgr, _World, ent, node, SizeX, Height, SizeZ, mass));
-	
-	cc->_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), heading), position + btVector3(0, Height/2, 0)));
-	cc->_CurrentHeading = heading;
-	
-	return cc;
+	return boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, MeshName, Height, mass, position, heading));
 }
 
 void Game::go(void)
@@ -203,7 +179,7 @@ void Game::go(void)
 	}
 
 	btVector3 PlayerPosition(0, 0, 0);
-	_Player = CreateCharacter("Sinbad.mesh", 1.8, 100, PlayerPosition);
+	_Player = boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Sinbad.mesh", 1.8, 100, PlayerPosition, 0));
 	
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
@@ -246,7 +222,7 @@ void Game::go(void)
 	for(float x = -10; x < 10; x += 1)
 	{
 		btVector3 pos(x, 0, -10);
-		_Enemies.push_back(CreateCharacter("Pony.mesh", 1.2, 30, pos));
+		_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
 	}
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 }

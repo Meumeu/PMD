@@ -22,12 +22,11 @@
 CharacterController::CharacterController(
 	Ogre::SceneManager *               SceneMgr,
 	boost::shared_ptr<btDynamicsWorld> World,
-	Ogre::Entity *                     Entity,
-	Ogre::SceneNode *                  Node,
-	float                              SizeX,
+	std::string                        MeshName,
 	float                              Height,
-	float                              SizeZ,
-	float                              Mass) :
+	float                              Mass,
+	btVector3&                         Position,
+	float                              Heading) :
 	_MaxYawSpeed(2 * 2 * M_PI),
 	_CurrentHeading(0),
 	_TargetVelocity(0, 0, 0),
@@ -38,15 +37,33 @@ CharacterController::CharacterController(
 		Ogre::Vector3::ZERO,
 		Ogre::Vector3(0, Height / 2, 0),
 		0),
-	_Shape(btVector3(SizeX, Height / 2, SizeZ)),
+	_Entity(SceneMgr->createEntity(MeshName)),
+	_MeshSize(_Entity->getBoundingBox().getMaximum() - _Entity->getBoundingBox().getMinimum()),
+	_MeshCenter((_Entity->getBoundingBox().getMaximum() + _Entity->getBoundingBox().getMinimum()) / 2),
+	_Scale(Height / _MeshSize.y),
+	_Shape(btVector3(
+		_Scale * _MeshSize.x / 2,
+		Height / 2,
+		_Scale * _MeshSize.z / 2)),
 	_Body(Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
 	_Mass(Mass),
 	_World(World),
-	_Animations(Entity),
+	_Animations(_Entity),
 	_IdleTime(0)
 {
-	_Node = Node;
-
+	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
+	Ogre::SceneNode * entnode = _Node->createChildSceneNode(
+		Ogre::Vector3(
+			-_MeshCenter.x * _Scale,
+			-_Entity->getBoundingBox().getMinimum().y * _Scale,
+			-_MeshCenter.z * _Scale));
+	
+	entnode->scale(_Scale, _Scale, _Scale);
+	entnode->attachObject(_Entity);
+	
+	_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), Heading), Position + btVector3(0, Height / 2, 0)));
+	_CurrentHeading = Heading;
+	
 	_MotionState.setNode(_Node);
 	_Body.setFriction(0);
 
