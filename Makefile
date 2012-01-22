@@ -50,6 +50,8 @@ GUI_FILES = resources/gui/DejaVuSans-10.font \
 	resources/gui/TaharezLookWidgetAliases.scheme \
 	resources/gui/TaharezLookWidgets.scheme
 
+LEVEL_FILES = resources/levels/level1/level.txt
+
 ifeq ($(DEBUG),y)
 	OBJS=$(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/debug/%.o,$(SRC))
 else
@@ -63,11 +65,12 @@ clean:
 
 install: dist/bin/poniesmustdie $(BLENDERZIP)
 	echo Installing to $(PREFIX)
-	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models $(PREFIX)/share/pmd/gui
+	$(MKDIR) -p $(PREFIX)/bin $(PREFIX)/share/pmd/models $(PREFIX)/share/pmd/gui $(PREFIX)/share/pmd/levels
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
 	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
 	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
 	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
+	$(CP) -r resources/levels/* $(PREFIX)/share/pmd/levels
 
 dist/bin/poniesmustdie: $(OBJS)
 	echo Linking $(notdir $@)

@@ -1,29 +1,16 @@
-<?xml version="1.0" ?>
-<GUILayout>
-    <Window Type="DefaultWindow" Name="toto">
-        <Window Type="TaharezLook/FrameWindow" Name="Main">
-                <Property Name="RelativeMinSize" Value="w:0.2 h:0.2" />
-                <Property Name="RelativeMaxSize" Value="w:1.0 h:1.0" />
-                <Property Name="Position" Value="x:0.0 y:0.0" />
-                <Property Name="Size" Value="w:1.0 h:1.0" />
-                <Property Name="Text" Value="MyProject" />
-                <Property Name="CloseButtonEnabled" Value="False" />
- 
-            <Window Type="TaharezLook/Button" Name="cmdQuit">
-                <Property Name="Text" Value="Quit" />
-                    <Property Name="Position" Value="x:0.4 y:0.7" />
-                    <Property Name="Size" Value="w:0.2 h:0.07" />
-            </Window>
-            <Window Type="TaharezLook/Button" Name="cmdOptions">
-                    <Property Name="Position" Value="x:0.4 y:0.6" />
-                    <Property Name="Size" Value="w:0.2 h:0.07" />
-                <Property Name="Text" Value="Options" />
-            </Window>
-            <Window Type="TaharezLook/Button" Name="cmdInstantAction">
-                    <Property Name="Position" Value="x:0.4 y:0.5" />
-                    <Property Name="Size" Value="w:0.2 h:0.07" />
-                <Property Name="Text" Value="InstantAction" />
-            </Window>
-            </Window>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout >
+    <Window Type="DefaultWindow" Name="MainMenu" >
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" />
+        <Window Type="TaharezLook/Button" Name="MainMenu/Start" >
+            <Property Name="UnifiedAreaRect" Value="{{0.35,0},{0.63,0},{0.65,0},{0.7,0}}" />
         </Window>
+        <Window Type="TaharezLook/Button" Name="MainMenu/Options" >
+            <Property Name="UnifiedAreaRect" Value="{{0.35,0},{0.73,0},{0.65,0},{0.8,0}}" />
+        </Window>
+        <Window Type="TaharezLook/Button" Name="MainMenu/Quit" >
+            <Property Name="UnifiedAreaRect" Value="{{0.35,0},{0.83,0},{0.65,0},{0.9,0}}" />
+        </Window>
+    </Window>
 </GUILayout>

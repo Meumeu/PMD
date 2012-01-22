@@ -19,10 +19,19 @@
 #include "MainMenu.h"
 #include "AppStateManager.h"
 
-#include <CEGUI.h>
 #include <RendererModules/Ogre/CEGUIOgreRenderer.h>
 #include <CEGUIImageset.h>
 #include <CEGUIScheme.h>
+#include <CEGUIWindowManager.h>
+#include <CEGUISystem.h>
+#include <CEGUIFont.h>
+#include <CEGUIWidgetModule.h>
+#include <CEGUISchemeManager.h>
+#include <CEGUIImagesetManager.h>
+#include <CEGUIFontManager.h>
+
+#include <CEGUI.h>
+
 #include "Game.h"
 
 void MainMenu::Enter(void)
@@ -30,6 +39,10 @@ void MainMenu::Enter(void)
 	_Root = AppStateManager::GetSingleton().GetOgreRoot();
 	_Window = AppStateManager::GetSingleton().GetWindow();
 	
+	_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
+	Ogre::Camera * Camera = _SceneMgr->createCamera("PlayerCam");
+	
+	_Window->addViewport(Camera, -1);
 	
 	_Renderer = &CEGUI::OgreRenderer::bootstrapSystem(*_Window);
 	CEGUI::System * GuiSystem = CEGUI::System::getSingletonPtr();
@@ -51,15 +64,36 @@ void MainMenu::Enter(void)
 	GuiSystem->setDefaultMouseCursor((CEGUI::utf8*)"TaharezLook", (CEGUI::utf8*)"MouseArrow");
 	
 	// set the mouse cursor initially in the middle of the screen
-	//GuiSystem->injectMousePosition((float)_Window->getWidth() / 2.0f, (float)_Window->getHeight() / 2.0f);
-	
-	CEGUI::Window* root = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root");
+	GuiSystem->injectMousePosition((float)_Window->getWidth() / 2.0f, (float)_Window->getHeight() / 2.0f);
 	
 	CEGUI::Window* menu = CEGUI::WindowManager::getSingleton().loadWindowLayout("MainMenu.layout");
+	CEGUI::System::getSingleton().setGUISheet(menu);
 	
-	root->addChildWindow(menu);
+	CEGUI::PushButton * btn;
 	
-	CEGUI::System::getSingleton().setGUISheet(root);
+	btn = (CEGUI::PushButton *)CEGUI::WindowManager::getSingleton().getWindow("MainMenu/Start");
+	btn->setText((CEGUI::utf8 *)"Démarrer");
+	btn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MainMenu::StartGame, this));
+
+	btn = (CEGUI::PushButton *)CEGUI::WindowManager::getSingleton().getWindow("MainMenu/Options");
+	btn->setText((CEGUI::utf8 *)"Options");
+	btn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MainMenu::Options, this));
+
+	btn = (CEGUI::PushButton *)CEGUI::WindowManager::getSingleton().getWindow("MainMenu/Quit");
+	btn->setText((CEGUI::utf8 *)"Quitter");
+	btn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MainMenu::Quit, this));
+}
+
+bool MainMenu::Options(const CEGUI::EventArgs& e)
+{
+	throw 28;
+}
+
+bool MainMenu::StartGame(const CEGUI::EventArgs& e)
+{
+	boost::shared_ptr<AppState> g(new Game);
+	AppStateManager::GetSingleton().Enter(g);
+	return true;
 }
 
 void MainMenu::Exit(void)
@@ -79,9 +113,6 @@ void MainMenu::Resume(void)
 
 bool MainMenu::keyPressed(const OIS::KeyEvent& e)
 {
-	if (e.key == OIS::KC_ESCAPE)
-		mShutDown = true;
-	
 	CEGUI::System::getSingleton().injectKeyDown(e.key);
 	CEGUI::System::getSingleton().injectChar(e.text);
 
@@ -116,8 +147,8 @@ CEGUI::MouseButton MainMenu::convertButton(OIS::MouseButtonID buttonID)
 
 bool MainMenu::mouseMoved(const OIS::MouseEvent& e)
 {
-	//CEGUI::System::getSingleton().injectMouseMove(e.state.X.rel, e.state.Y.rel);
-	CEGUI::System::getSingleton().injectMousePosition(e.state.X.abs, e.state.Y.abs);
+	CEGUI::System::getSingleton().injectMouseMove(e.state.X.rel, e.state.Y.rel);
+	//CEGUI::System::getSingleton().injectMousePosition(e.state.X.abs, e.state.Y.abs);
 	if (e.state.Z.rel)
 		CEGUI::System::getSingleton().injectMouseWheelChange(e.state.Z.rel / 120.0);
 	
@@ -136,20 +167,11 @@ bool MainMenu::mouseReleased(const OIS::MouseEvent& , OIS::MouseButtonID id)
 	return true;
 }
 
-
 void MainMenu::Update(float dt)
 {
-	OIS::Keyboard * Keyboard = AppStateManager::GetSingleton().GetKeyboard();
-	if (mShutDown)
+	if (_Shutdown)
 	{
 		AppStateManager::GetSingleton().Exit();
-		return;
-	}
-	
-	if (Keyboard->isKeyDown(OIS::KC_SPACE))
-	{
-		boost::shared_ptr<AppState> g(new Game);
-		AppStateManager::GetSingleton().Enter(g);
 		return;
 	}
 	
@@ -157,7 +179,7 @@ void MainMenu::Update(float dt)
 }
 
 MainMenu::MainMenu(void): AppState(),
-	mShutDown(false)
+	_Shutdown(false)
 {
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
 	std::string resources = AppStateManager::GetSingleton().GetResourcesDir();

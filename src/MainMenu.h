@@ -60,16 +60,20 @@ private:
  	Ogre::RenderWindow *   _Window;
 	Ogre::Viewport *       _Viewport;
 	
-	CEGUI::OgreRenderer * _Renderer;
+	CEGUI::OgreRenderer *  _Renderer;
 	
 	static CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID);
 	
-	bool mShutDown;
-	bool quit(const CEGUI::EventArgs &e)
+	bool _Shutdown;
+	
+	bool Quit(const CEGUI::EventArgs &e)
 	{
-		mShutDown = true;
+		_Shutdown = true;
 		return true;
 	}
+	
+	bool Options(const CEGUI::EventArgs &e);
+	bool StartGame(const CEGUI::EventArgs &e);
 };
 
 #endif // MAINMENU_H
