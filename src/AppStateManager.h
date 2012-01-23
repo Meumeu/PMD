@@ -52,6 +52,7 @@ private:
 	static AppStateManager * Singleton;
 	std::string            _SettingsDir;
 	std::string            _ResourcesDir;
+	std::string            _LogDir;
 		
 public:
 	AppStateManager(std::string SettingsDir);
@@ -64,10 +65,10 @@ public:
 	static void SwitchTo(boost::shared_ptr<AppState> NewState);
 	static void Exit(void);
 	static void MainLoop(boost::shared_ptr<AppState> InitialState);
-	static AppStateManager& GetSingleton(void)
+	/*static AppStateManager& GetSingleton(void)
 	{
 		return *Singleton;
-	}
+	}*/
 	
 	static Ogre::Root *         GetOgreRoot(void)     { return Singleton->_OgreRoot; }
 	static Ogre::RenderWindow * GetWindow(void)       { return Singleton->_Window; }
@@ -77,6 +78,7 @@ public:
 	
 	static const std::string    GetSettingsDir(void)  { return Singleton->_SettingsDir; }
 	static const std::string    GetResourcesDir(void) { return Singleton->_ResourcesDir; }
+	static const std::string    GetLogDir(void)       { return Singleton->_LogDir; }
 	
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);

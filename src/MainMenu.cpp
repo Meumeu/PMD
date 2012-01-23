@@ -36,18 +36,20 @@
 
 void MainMenu::Enter(void)
 {
-	_Root = AppStateManager::GetSingleton().GetOgreRoot();
-	_Window = AppStateManager::GetSingleton().GetWindow();
+	_Root = AppStateManager::GetOgreRoot();
+	_Window = AppStateManager::GetWindow();
 	
 	_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
 	Ogre::Camera * Camera = _SceneMgr->createCamera("PlayerCam");
 	
 	_Window->addViewport(Camera, -1);
 	
+	new CEGUI::DefaultLogger;
+	CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
+	CEGUI::Logger::getSingleton().setLogFilename(AppStateManager::GetLogDir() + "/cegui.log");
+	
 	_Renderer = &CEGUI::OgreRenderer::bootstrapSystem(*_Window);
 	CEGUI::System * GuiSystem = CEGUI::System::getSingletonPtr();
-	
-	CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 	
 	CEGUI::Imageset::setDefaultResourceGroup("GUI");
 	CEGUI::Font::setDefaultResourceGroup("GUI");
@@ -66,8 +68,20 @@ void MainMenu::Enter(void)
 	// set the mouse cursor initially in the middle of the screen
 	GuiSystem->injectMousePosition((float)_Window->getWidth() / 2.0f, (float)_Window->getHeight() / 2.0f);
 	
-	CEGUI::Window* menu = CEGUI::WindowManager::getSingleton().loadWindowLayout("MainMenu.layout");
-	CEGUI::System::getSingleton().setGUISheet(menu);
+	CEGUI::Window * root = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root");
+	
+	float Height = _Window->getHeight();
+	float Width = _Window->getWidth();
+	if (Height * 4.0 / 3.0 < Width) Width = Height * 4.0 / 3.0;
+	else if (Height * 4.0 / 3.0 > Width) Height = Width * 3.0 / 4.0;
+	
+	root->setSize(CEGUI::UVector2(CEGUI::UDim(0.0, Width), CEGUI::UDim(0.0, Height)));
+	root->setPosition(CEGUI::UVector2(CEGUI::UDim(0.5, -Width / 2.0), CEGUI::UDim(0.5, -Height / 2.0)));
+	
+	CEGUI::Window * menu = CEGUI::WindowManager::getSingleton().loadWindowLayout("MainMenu.layout");
+	root->addChildWindow(menu);
+	
+	CEGUI::System::getSingleton().setGUISheet(root);
 	
 	CEGUI::PushButton * btn;
 	
@@ -92,7 +106,7 @@ bool MainMenu::Options(const CEGUI::EventArgs& e)
 bool MainMenu::StartGame(const CEGUI::EventArgs& e)
 {
 	boost::shared_ptr<AppState> g(new Game);
-	AppStateManager::GetSingleton().Enter(g);
+	AppStateManager::Enter(g);
 	return true;
 }
 
@@ -171,7 +185,7 @@ void MainMenu::Update(float dt)
 {
 	if (_Shutdown)
 	{
-		AppStateManager::GetSingleton().Exit();
+		AppStateManager::Exit();
 		return;
 	}
 	
@@ -182,7 +196,7 @@ MainMenu::MainMenu(void): AppState(),
 	_Shutdown(false)
 {
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
-	std::string resources = AppStateManager::GetSingleton().GetResourcesDir();
+	std::string resources = AppStateManager::GetResourcesDir();
 	
 	manager.addResourceLocation(resources + "/gui", "FileSystem", "GUI");
 }

@@ -20,8 +20,16 @@
 #include "pmd.h"
 #include <boost/filesystem.hpp>
 
-#if !defined(OGRE_PLUGINS_DIR) && !defined(_WINDOWS)
+#ifndef _WINDOWS
+
+#ifndef OGRE_PLUGINS_DIR
 #error OGRE_PLUGINS_DIR not defined
+#endif
+
+#ifndef PATH_RESOURCES
+#error PATH_RESOURCES not defined
+#endif
+
 #endif
 
 AppStateManager * AppStateManager::Singleton;
@@ -39,7 +47,6 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	if (Singleton) abort();
 	Singleton = this;
 	
-	_OgreRoot = new Ogre::Root("", SettingsDir + "ogre.cfg", SettingsDir + "ogre.log");
 
 #ifdef _WINDOWS
 	char buf[MAX_PATH];
@@ -49,9 +56,13 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	char * last_slash = strrchr(buf, '\\');
 	if (last_slash) *last_slash = 0;
 	_ResourcesDir = buf;
+	_LogDir = buf;
 #else
 	_ResourcesDir = PATH_RESOURCES;
+	_LogDir = "/tmp";
 #endif
+	
+	_OgreRoot = new Ogre::Root("", SettingsDir + "ogre.cfg", _LogDir + "/ogre.log");
 	
 #ifdef _WINDOWS
 #	ifdef _DEBUG

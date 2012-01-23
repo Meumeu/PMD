@@ -76,7 +76,7 @@ void Game::Update(float TimeSinceLastFrame)
 
 	if (_EscPressed)
 	{
-		AppStateManager::GetSingleton().Exit();
+		AppStateManager::Exit();
 		return;
 	}
 
@@ -157,15 +157,15 @@ void Game::Update(float TimeSinceLastFrame)
 		_Player->_Node->getPosition().y + CameraHeight,
 		_Player->_Node->getPosition().z);
 	
-	btVector3 Cam2 = Cam1 + CameraDistance * CamDirection;
+	btVector3 Cam2 = Cam1 + CameraDistance * 1.2 * CamDirection;
 	
 	CameraCollisionCallback CamCallback(&_Player->_Body);
 	
 	_World->rayTest(Cam1, Cam2, CamCallback);
 	Ogre::Vector3 CameraPosition(
-		Cam1.x() + CamCallback._hitfraction * CameraDistance * CamDirection.x(),
-		Cam1.y() + CamCallback._hitfraction * CameraDistance * CamDirection.y(),
-		Cam1.z() + CamCallback._hitfraction * CameraDistance * CamDirection.z());
+		Cam1.x() + CamCallback._hitfraction * CameraDistance * CamDirection.x() / 1.2,
+		Cam1.y() + CamCallback._hitfraction * CameraDistance * CamDirection.y() / 1.2,
+		Cam1.z() + CamCallback._hitfraction * CameraDistance * CamDirection.z() / 1.2);
 	_Camera->setPosition(CameraPosition);
 	
 	return;
