@@ -15,10 +15,29 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <OgreConfigFile.h>
 #include "AppStateManager.h"
 #include "pmd.h"
+
+#include <OgreConfigFile.h>
+#include <OgreRoot.h>
+#include <OgreRenderWindow.h>
+
+#include <OIS/OISInputManager.h>
+
 #include <boost/filesystem.hpp>
+
+#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
+#include <CEGUIImageset.h>
+#include <CEGUIScheme.h>
+#include <CEGUIWindowManager.h>
+#include <CEGUISystem.h>
+#include <CEGUIFont.h>
+#include <CEGUIWidgetModule.h>
+#include <CEGUISchemeManager.h>
+#include <CEGUIImagesetManager.h>
+#include <CEGUIFontManager.h>
+
+#include <CEGUI.h>
 
 #ifndef _WINDOWS
 
@@ -148,7 +167,6 @@ void AppStateManager::cleanupOIS(void)
 		OIS::InputManager::destroyInputSystem(_InputManager);
 		_InputManager = 0;
 	}
-
 }
 
 void AppStateManager::Enter(boost::shared_ptr<AppState> NewState)
@@ -211,6 +229,18 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 
 void AppStateManager::cleanup()
 {
+	if (_CeguiRootWindow)
+	{
+		_CeguiRootWindow->destroy();
+		_CeguiRootWindow = 0;
+	}
+	
+	if (_CeguiRenderer)
+	{
+		_CeguiRenderer->destroySystem();
+		_CeguiRenderer = 0;
+	}
+	
 	if (_OgreRoot)
 		_OgreRoot->removeFrameListener(this);
 
@@ -243,6 +273,42 @@ void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 
 		//Set initial mouse clipping size
 		Singleton->windowResized(Singleton->_Window);
+		
+		new CEGUI::DefaultLogger;
+		CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
+		CEGUI::Logger::getSingleton().setLogFilename(Singleton->_LogDir + "/cegui.log");
+		
+		Singleton->_CeguiRenderer = &CEGUI::OgreRenderer::bootstrapSystem(*Singleton->_Window);
+		CEGUI::System * GuiSystem = CEGUI::System::getSingletonPtr();
+		
+		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Singleton->_ResourcesDir + "/gui", "FileSystem", "GUI");
+		CEGUI::Imageset::setDefaultResourceGroup("GUI");
+		CEGUI::Font::setDefaultResourceGroup("GUI");
+		CEGUI::Scheme::setDefaultResourceGroup("GUI");
+		CEGUI::WidgetLookManager::setDefaultResourceGroup("GUI");
+		CEGUI::WindowManager::setDefaultResourceGroup("GUI");
+		
+		CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
+		CEGUI::ImagesetManager::getSingleton().create("TaharezLook.imageset");
+
+		CEGUI::FontManager::getSingleton().create("DejaVuSans-10.font");
+		CEGUI::System::getSingleton().setDefaultFont("DejaVuSans-10");
+		
+		GuiSystem->setDefaultMouseCursor((CEGUI::utf8*)"TaharezLook", (CEGUI::utf8*)"MouseArrow");
+		
+		// set the mouse cursor initially in the middle of the screen
+		GuiSystem->injectMousePosition((float)Singleton->_Window->getWidth() / 2.0f, (float)Singleton->_Window->getHeight() / 2.0f);
+		
+		Singleton->_CeguiRootWindow = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root");
+		CEGUI::System::getSingleton().setGUISheet(Singleton->_CeguiRootWindow);
+		
+		float Height = Singleton->_Window->getHeight();
+		float Width = Singleton->_Window->getWidth();
+		if (Height * 4.0 / 3.0 < Width) Width = Height * 4.0 / 3.0;
+		else if (Height * 4.0 / 3.0 > Width) Height = Width * 3.0 / 4.0;
+		
+		Singleton->_CeguiRootWindow->setSize(CEGUI::UVector2(CEGUI::UDim(0.0, Width), CEGUI::UDim(0.0, Height)));
+		Singleton->_CeguiRootWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0.5, -Width / 2.0), CEGUI::UDim(0.5, -Height / 2.0)));
 
 		Ogre::WindowEventUtilities::addWindowEventListener(Singleton->_Window, Singleton);
 		Singleton->_OgreRoot->addFrameListener(Singleton);
@@ -282,6 +348,24 @@ void AppStateManager::windowClosed(Ogre::RenderWindow* rw)
 	if( rw == _Window )
 	{
 		cleanupOIS();
+	}
+}
+
+CEGUI::MouseButton AppStateManager::convertButton(OIS::MouseButtonID buttonID)
+{
+	switch (buttonID)
+	{
+	case OIS::MB_Left:
+		return CEGUI::LeftButton;
+	
+	case OIS::MB_Right:
+		return CEGUI::RightButton;
+	
+	case OIS::MB_Middle:
+		return CEGUI::MiddleButton;
+	
+	default:
+		return CEGUI::LeftButton;
 	}
 }
 

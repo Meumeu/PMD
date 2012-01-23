@@ -21,14 +21,20 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletCollision/CollisionShapes/btCylinderShape.h>
+#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
 
-#include <OgreSceneNode.h>
-#include <OgreSceneManager.h>
-#include <OgreEntity.h>
+#include <OGRE/OgreVector3.h>
+
 #include "RigidBody.h"
 #include "CharacterAnimation.h"
 
 #include <boost/shared_ptr.hpp>
+
+namespace Ogre
+{
+	class SceneNode;
+	class Entity;
+}
 
 class CharacterController
 {
@@ -59,6 +65,7 @@ public:
 	Ogre::Vector3                      _MeshCenter;
 	float                              _Scale;
 	btBoxShape                         _Shape;
+	//btCapsuleShape                     _Shape;
 	btRigidBody                        _Body;
 	btScalar                           _Mass;
 	boost::shared_ptr<btDynamicsWorld> _World;

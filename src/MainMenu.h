@@ -54,15 +54,9 @@ public:
 	virtual bool mouseReleased(const OIS::MouseEvent&, OIS::MouseButtonID);
 	
 private:
-	Ogre::Root *           _Root;
 	Ogre::Camera *         _Camera;
 	Ogre::SceneManager *   _SceneMgr;
- 	Ogre::RenderWindow *   _Window;
 	Ogre::Viewport *       _Viewport;
-	
-	CEGUI::OgreRenderer *  _Renderer;
-	
-	static CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID);
 	
 	bool _Shutdown;
 	

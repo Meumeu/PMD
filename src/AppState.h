@@ -18,7 +18,6 @@
 #ifndef APPSTATE_H
 #define APPSTATE_H
 
-#include <OgreFrameListener.h>
 #include <OISKeyboard.h>
 #include <OISMouse.h>
 

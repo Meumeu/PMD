@@ -19,6 +19,9 @@
 #include "CharacterController.h"
 #include "pmd.h"
 
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreEntity.h>
+
 CharacterController::CharacterController(
 	Ogre::SceneManager *               SceneMgr,
 	boost::shared_ptr<btDynamicsWorld> World,
@@ -45,13 +48,17 @@ CharacterController::CharacterController(
 		_Scale * _MeshSize.x / 2,
 		Height / 2,
 		_Scale * _MeshSize.z / 2)),
+	//_Shape(Height - _Scale * _MeshSize.z, _Scale * _MeshSize.z / 2),
 	_Body(Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
 	_Mass(Mass),
 	_World(World),
 	_Animations(_Entity),
 	_IdleTime(0)
 {
-	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode();
+	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode(
+		Ogre::Vector3(Position.x(), Position.y(), Position.z()),
+		Ogre::Quaternion(Ogre::Radian(Heading), Ogre::Vector3::UNIT_Y));
+	
 	Ogre::SceneNode * entnode = _Node->createChildSceneNode(
 		Ogre::Vector3(
 			-_MeshCenter.x * _Scale,
