@@ -29,6 +29,7 @@
 
 #include "OgreToBullet.h"
 
+#include <Recast.h>
 
 void OgreConverter::AddVertices(Ogre::VertexData * data)
 {
@@ -83,11 +84,6 @@ void OgreConverter::AddIndexData(Ogre::IndexData * data, int offset)
 	}
 }
 
-btVector3 OgreConverter::Ogre2Bullet(Ogre::Vector3& v)
-{
-	return btVector3(v.x, v.y, v.z);
-}
-
 OgreConverter::OgreConverter(Ogre::Entity& entity)
 {
 	if (entity.getMesh()->sharedVertexData)
@@ -110,9 +106,14 @@ OgreConverter::OgreConverter(Ogre::Entity& entity)
 	}
 }
 
-void OgreConverter::AddToTriMesh(Ogre::Matrix4& transform, btTriangleMesh& trimesh)
+static btVector3 Ogre2Bullet(Ogre::Vector3 const& v)
 {
-	BOOST_FOREACH(Face& i, Faces)
+	return btVector3(v.x, v.y, v.z);
+}
+
+void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const
+{
+	BOOST_FOREACH(Face const& i, Faces)
 	{
 		Ogre::Vector3 v1 = transform * Vertices[i.VertexIndices[0]];
 		Ogre::Vector3 v2 = transform * Vertices[i.VertexIndices[1]];
@@ -124,3 +125,26 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4& transform, btTriangleMesh& trime
 			Ogre2Bullet(v3));
 	}
 }
+
+static void Vector3ToFloatArray(Ogre::Vector3 const& v, float *point)
+{
+	point[0] = v.x;
+	point[1] = v.y;
+	point[2] = v.z;
+}
+
+void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, rcHeightfield& heightField, unsigned char areaID, int flagMergeThr) const
+{
+	rcContext dummyCtx(false);
+	float p1[3], p2[3], p3[3];
+	
+	BOOST_FOREACH(Face const& i, Faces)
+	{
+		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[0]], p1);
+		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[1]], p2);
+		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[2]], p3);
+
+		rcRasterizeTriangle(&dummyCtx, p1, p2, p3, areaID, heightField, flagMergeThr);
+	}
+}
+

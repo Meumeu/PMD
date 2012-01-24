@@ -90,6 +90,7 @@ set (HDRS
 	src/AppState.h
 	src/RigidBody.h
 	src/MainMenu.h
+	src/OgreToBullet.h
 
 	src/btOgre/BtOgreGP.h
 	src/btOgre/BtOgrePG.h
@@ -282,6 +283,7 @@ set(SRCS
 	src/Game_setup.cpp
 	src/main.cpp
 	src/MainMenu.cpp
+	src/OgreToBullet.cpp
 
 	src/btOgre/BtOgre.cpp
 

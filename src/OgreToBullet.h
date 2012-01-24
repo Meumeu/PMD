@@ -24,6 +24,7 @@ using boost::uint32_t;
 #include <stdint.h>
 #endif
 
+#include <OgreVector3.h>
 namespace Ogre
 {
 	class VertexData;
@@ -33,6 +34,8 @@ namespace Ogre
 }
 
 class btTriangleMesh;
+
+struct rcHeightfield;
 
 class OgreConverter
 {
@@ -46,9 +49,9 @@ class OgreConverter
 
 	void AddVertices(Ogre::VertexData * data);
 	void AddIndexData(Ogre::IndexData * data, int offset);
-	static btVector3 OgreConverter::Ogre2Bullet(Ogre::Vector3& v);
 
 public:
 	OgreConverter(Ogre::Entity& entity);
-	void AddToTriMesh(Ogre::Matrix4& transform, btTriangleMesh& trimesh);
+	void AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const;
+	void AddToHeightField(Ogre::Matrix4 const& transform, rcHeightfield& heightField, unsigned char areaID, int flagMergeThr) const;
 };
