@@ -55,20 +55,9 @@ public:
 	Environment(Ogre::SceneManager *sceneManager, btDynamicsWorld& world, std::istream &level);
 	~Environment();
 private:
-	/*class BtItems
-	{
-	public:
-		BtItems(BtOgre::StaticMeshToShapeConverter& converter);
-		btRigidBody* getBody() {return _body.get();}
-	private:
-		boost::shared_ptr<btCollisionShape> _btShape;
-		boost::shared_ptr<btDefaultMotionState> _motionState;
-		boost::shared_ptr<btRigidBody> _body;
-	};*/
 	Ogre::SceneManager * _sceneManager;
 	btDynamicsWorld & _world;
 	std::vector<Block> _blocks;
-	//std::vector<BtItems> _btItems;
 	btTriangleMesh _TriMesh;
 	boost::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
 

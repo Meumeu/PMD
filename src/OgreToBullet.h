@@ -49,6 +49,6 @@ class OgreConverter
 	static btVector3 OgreConverter::Ogre2Bullet(Ogre::Vector3& v);
 
 public:
-	OgreConverter(Ogre::Entity * entity);
+	OgreConverter(Ogre::Entity& entity);
 	void AddToTriMesh(Ogre::Matrix4& transform, btTriangleMesh& trimesh);
 };
