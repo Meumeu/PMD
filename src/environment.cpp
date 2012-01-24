@@ -97,16 +97,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		block._entity->setCastShadows(false);
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
-		OgreConverter converter(block._entity);
+		OgreConverter converter(*block._entity);
 		converter.AddToTriMesh(getMatrix4(block._orientation, block._position), _TriMesh);
-
-		/*BtOgre::StaticMeshToShapeConverter converter(block._entity, getMatrix4(block._orientation, block._position));
-
-		btTriangleMesh mesh;
-
-		BtItems btStuff(converter);
-		_btItems.push_back(btStuff);
-		_world.addRigidBody(btStuff.getBody());*/
 	}
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
@@ -126,17 +118,4 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
-/*	BOOST_FOREACH(BtItems & btStuff, _btItems)
-	{
-		_world.removeRigidBody(btStuff.getBody());
-	}*/
-
 }
-
-/*Environment::BtItems::BtItems(BtOgre::StaticMeshToShapeConverter& converter)
-{
-	_btShape = boost::shared_ptr<btCollisionShape>(converter.createTrimesh());
-	_motionState = boost::shared_ptr<btDefaultMotionState>(new btDefaultMotionState());
-	_body = boost::shared_ptr<btRigidBody>(new btRigidBody(0, _motionState.get(), _btShape.get()));
-}*/
-

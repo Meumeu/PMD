@@ -88,16 +88,16 @@ btVector3 OgreConverter::Ogre2Bullet(Ogre::Vector3& v)
 	return btVector3(v.x, v.y, v.z);
 }
 
-OgreConverter::OgreConverter(Ogre::Entity * entity)
+OgreConverter::OgreConverter(Ogre::Entity& entity)
 {
-	if (entity->getMesh()->sharedVertexData)
+	if (entity.getMesh()->sharedVertexData)
 	{
-		AddVertices(entity->getMesh()->sharedVertexData);
+		AddVertices(entity.getMesh()->sharedVertexData);
 	}
 
-	for(unsigned int i = 0; i < entity->getNumSubEntities(); i++)
+	for(unsigned int i = 0; i < entity.getNumSubEntities(); i++)
 	{
-		Ogre::SubMesh * submesh = entity->getSubEntity(i)->getSubMesh();
+		Ogre::SubMesh * submesh = entity.getSubEntity(i)->getSubMesh();
 		if (submesh->useSharedVertices)
 		{
 			AddIndexData(submesh->indexData, 0);
