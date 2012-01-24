@@ -410,7 +410,11 @@ include_directories( ${OIS_INCLUDE_DIRS}
 	"src/btOgre"
 )
 
-add_executable(poniesmustdie WIN32 ${HDRS} ${SRCS})
+add_subdirectory(src/Recast)
+INCLUDE_DIRECTORIES(src/Recast/Include)
+
+add_executable(poniesmustdie WIN32 ${HDRS} ${recast_HDRS} ${SRCS}
+${recast_SRCS})
 
 add_subdirectory(blender)
 add_dependencies(poniesmustdie generate_models)
