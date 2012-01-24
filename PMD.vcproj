@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
+				AdditionalIncludeDirectories="src\Recast\Include;src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION;PHYSICS_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
+				AdditionalIncludeDirectories="src\Recast\Include;src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION;PHYSICS_DEBUG"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -197,7 +197,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
+				AdditionalIncludeDirectories="src\Recast\Include;src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -276,7 +276,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
+				AdditionalIncludeDirectories="src\Recast\Include;src\bullet;&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -369,7 +369,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\OgreToBullet.cpp"
+				RelativePath=".\src\OgreConverter.cpp"
 				>
 			</File>
 			<File
@@ -900,6 +900,26 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="Recast"
+				>
+				<Filter
+					Name="Include"
+					>
+					<File
+						RelativePath=".\src\Recast\Include\Recast.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Include\RecastAlloc.h"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Include\RecastAssert.h"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -935,7 +955,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\src\OgreToBullet.h"
+				RelativePath=".\src\OgreConverter.h"
 				>
 			</File>
 			<File
@@ -1713,6 +1733,54 @@
 					RelativePath=".\src\btOgre\BtOgrePG.h"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="Recast"
+				>
+				<Filter
+					Name="Source"
+					>
+					<File
+						RelativePath=".\src\Recast\Source\Recast.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastAlloc.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastArea.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastContour.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastFilter.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastLayers.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastMesh.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastMeshDetail.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastRasterization.cpp"
+						>
+					</File>
+					<File
+						RelativePath=".\src\Recast\Source\RecastRegion.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

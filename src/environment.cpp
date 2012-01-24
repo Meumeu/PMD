@@ -25,7 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
-#include "OgreToBullet.h"
+#include "OgreConverter.h"
 #include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 #include "bullet/btBulletDynamicsCommon.h"

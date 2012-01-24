@@ -15,6 +15,9 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef OGRECONVERTER_H
+#define OGRECONVERTER_H
+
 #include <vector>
 #ifdef _WINDOWS
 #include <boost/cstdint.hpp>
@@ -55,3 +58,5 @@ public:
 	void AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const;
 	void AddToHeightField(Ogre::Matrix4 const& transform, rcHeightfield& heightField, unsigned char areaID, int flagMergeThr) const;
 };
+
+#endif

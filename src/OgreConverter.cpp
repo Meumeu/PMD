@@ -27,7 +27,7 @@
 
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 
-#include "OgreToBullet.h"
+#include "OgreConverter.h"
 
 #include <Recast.h>
 

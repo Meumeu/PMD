@@ -3,7 +3,7 @@
 
 OGRE_PLUGINS_DIR=`pkg-config OGRE --variable=plugindir`
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet
+CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include
 LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
