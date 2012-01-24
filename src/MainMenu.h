@@ -60,12 +60,7 @@ private:
 	
 	bool _Shutdown;
 	
-	bool Quit(const CEGUI::EventArgs &e)
-	{
-		_Shutdown = true;
-		return true;
-	}
-	
+	bool Quit(const CEGUI::EventArgs &e);
 	bool Options(const CEGUI::EventArgs &e);
 	bool StartGame(const CEGUI::EventArgs &e);
 };

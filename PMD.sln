@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ponies Must Die", "PMD.vcproj", "{EB446817-586B-44F4-B376-9ACA5BD7D451}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tests", "tests\tests.vcproj", "{D057090F-169E-4E33-B053-711820D598C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,12 @@ Global
 		{EB446817-586B-44F4-B376-9ACA5BD7D451}.Release|Win32.Build.0 = Release|Win32
 		{EB446817-586B-44F4-B376-9ACA5BD7D451}.Release|x64.ActiveCfg = Release|x64
 		{EB446817-586B-44F4-B376-9ACA5BD7D451}.Release|x64.Build.0 = Release|x64
+		{D057090F-169E-4E33-B053-711820D598C1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{D057090F-169E-4E33-B053-711820D598C1}.Debug|Win32.Build.0 = Debug|Win32
+		{D057090F-169E-4E33-B053-711820D598C1}.Debug|x64.ActiveCfg = Debug|Win32
+		{D057090F-169E-4E33-B053-711820D598C1}.Release|Win32.ActiveCfg = Release|Win32
+		{D057090F-169E-4E33-B053-711820D598C1}.Release|Win32.Build.0 = Release|Win32
+		{D057090F-169E-4E33-B053-711820D598C1}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

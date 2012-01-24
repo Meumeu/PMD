@@ -19,18 +19,10 @@
 #include "MainMenu.h"
 #include "AppStateManager.h"
 
-#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
-#include <CEGUIImageset.h>
-#include <CEGUIScheme.h>
 #include <CEGUIWindowManager.h>
 #include <CEGUISystem.h>
-#include <CEGUIFont.h>
-#include <CEGUIWidgetModule.h>
-#include <CEGUISchemeManager.h>
-#include <CEGUIImagesetManager.h>
-#include <CEGUIFontManager.h>
-
-#include <CEGUI.h>
+#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
+#include <elements/CEGUIPushButton.h>
 
 #include "Game.h"
 
@@ -68,6 +60,12 @@ bool MainMenu::StartGame(const CEGUI::EventArgs& e)
 {
 	boost::shared_ptr<AppState> g(new Game);
 	AppStateManager::Enter(g);
+	return true;
+}
+
+bool MainMenu::Quit(const CEGUI::EventArgs &e)
+{
+	_Shutdown = true;
 	return true;
 }
 

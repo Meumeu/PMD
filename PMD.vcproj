@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)\bin"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\obj"
+			OutputDirectory="Win32\$(ConfigurationName)\bin"
+			IntermediateDirectory="Win32\$(ConfigurationName)\obj"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -96,8 +96,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)\bin"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\obj"
+			OutputDirectory="Win64\$(ConfigurationName)\bin"
+			IntermediateDirectory="Win64\$(ConfigurationName)\obj"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -366,6 +366,10 @@
 			</File>
 			<File
 				RelativePath=".\src\MainMenu.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OgreToBullet.cpp"
 				>
 			</File>
 			<File
@@ -928,6 +932,10 @@
 			</File>
 			<File
 				RelativePath=".\src\MainMenu.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\OgreToBullet.h"
 				>
 			</File>
 			<File

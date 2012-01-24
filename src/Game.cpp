@@ -30,6 +30,7 @@
 #include "AppStateManager.h"
 
 const float CameraDistance = 2;
+const float CameraMargin = 0.01;
 const float CameraHeight = 1.7;
 
 class CameraCollisionCallback : public btCollisionWorld::RayResultCallback
@@ -46,7 +47,7 @@ public:
 				_hitfraction = rayResult.m_hitFraction;
 			}
 		}
-		return 0;
+		return rayResult.m_hitFraction;
 	}
 
 	float _hitfraction;
@@ -157,15 +158,15 @@ void Game::Update(float TimeSinceLastFrame)
 		_Player->_Node->getPosition().y + CameraHeight,
 		_Player->_Node->getPosition().z);
 	
-	btVector3 Cam2 = Cam1 + CameraDistance * 1.2 * CamDirection;
+	btVector3 Cam2 = Cam1 + (CameraDistance + CameraMargin) * CamDirection;
 	
 	CameraCollisionCallback CamCallback(&_Player->_Body);
 	
 	_World->rayTest(Cam1, Cam2, CamCallback);
 	Ogre::Vector3 CameraPosition(
-		Cam1.x() + CamCallback._hitfraction * CameraDistance * CamDirection.x() / 1.2,
-		Cam1.y() + CamCallback._hitfraction * CameraDistance * CamDirection.y() / 1.2,
-		Cam1.z() + CamCallback._hitfraction * CameraDistance * CamDirection.z() / 1.2);
+		Cam1.x() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.x() / 1.2,
+		Cam1.y() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.y() / 1.2,
+		Cam1.z() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.z() / 1.2);
 	_Camera->setPosition(CameraPosition);
 	
 	return;
@@ -174,6 +175,14 @@ void Game::Update(float TimeSinceLastFrame)
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
+	char buf[100];
+	btRigidBody& body = this->_Player->_Body;
+	sprintf(buf, "x=%0.4f, y=%0.4f, z=%0.4f",
+		body.getCenterOfMassPosition().x(),
+		body.getCenterOfMassPosition().y(),
+		body.getCenterOfMassPosition().z());
+	Ogre::LogManager::getSingleton().logMessage(buf);
+
 	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
 		btVector3 target = _Player->_Body.getCenterOfMassPosition() - cc->_Body.getCenterOfMassPosition();
@@ -248,11 +257,11 @@ void Game::go(void)
 	Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
 	entGround->setCastShadows(false);
 	entGround->setMaterialName("Examples/Rockwall");
-	_SceneMgr->getRootSceneNode()->createChildSceneNode()->attachObject(entGround);
+	_SceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(0, -0.5, 0))->attachObject(entGround);
 
 	btRigidBody * btGround = new btRigidBody(
 		0,
-		new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10, 0))),
+		new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10.5, 0))),
 		new btBoxShape(btVector3(120, 10, 120)));
 	_World->addRigidBody(btGround);
 
@@ -261,5 +270,12 @@ void Game::go(void)
 		btVector3 pos(x, 0, -10);
 		_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
 	}
+
+	/*for(float x = -10; x < 10; x += 0.4)
+	{
+		btRigidBody * body = new btRigidBody(0, new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(x, -1+x/20, -15))),
+			new btBoxShape(btVector3(0.2,2,2)));
+		_World->addRigidBody(body);
+	}*/
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 }

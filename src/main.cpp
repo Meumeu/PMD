@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 #else
 		std::cerr << "An exception has occurred: " << e.what() << std::endl;
 #endif
+		return 1;
 	}
 
 	return 0;
