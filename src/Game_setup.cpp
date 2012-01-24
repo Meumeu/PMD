@@ -66,10 +66,11 @@ void Game::Exit(void)
 #ifdef PHYSICS_DEBUG
 	delete _debugDrawer;
 #endif
-	cleanupBullet();
-
+	
 	_Player = boost::shared_ptr<CharacterController>();
 	_Enemies.clear();
+	_Env = boost::shared_ptr<Environment>();
+	cleanupBullet();
 	
 	AppStateManager::GetWindow()->removeViewport(0);
 	_SceneMgr->destroyCamera(_Camera);

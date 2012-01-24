@@ -15,8 +15,8 @@
 */
 
 
-#include "environment.h"
 #include "pmd.h"
+#include "environment.h"
 
 #include <boost/foreach.hpp>
 #include <OgreEntity.h>
@@ -25,7 +25,12 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
-#include "btOgre/BtOgreGP.h"
+//#include "btOgre/BtOgreGP.h"
+#include "OgreToBullet.h"
+#include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
+#include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
+#include "bullet/btBulletDynamicsCommon.h"
+#include "bullet/btBulletCollisionCommon.h"
 
 static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
 {
@@ -87,17 +92,29 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		block._entity->setCastShadows(false);
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
-		BtOgre::StaticMeshToShapeConverter converter(block._entity, getMatrix4(block._orientation, block._position));
+
+		OgreConverter converter(block._entity);
+		converter.AddToTriMesh(getMatrix4(block._orientation, block._position), _TriMesh);
+
+		/*BtOgre::StaticMeshToShapeConverter converter(block._entity, getMatrix4(block._orientation, block._position));
+
+		btTriangleMesh mesh;
 
 		BtItems btStuff(converter);
 		_btItems.push_back(btStuff);
-		_world.addRigidBody(btStuff.getBody());
+		_world.addRigidBody(btStuff.getBody());*/
 	}
+
+	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
+
+	btMotionState * motionstate = new btDefaultMotionState();
+	btRigidBody * body = new btRigidBody(0, motionstate, _TriMeshShape.get());
+	_world.addRigidBody(body);
+
 	sg->build();
 	sg->setCastShadows(true);
 	
@@ -109,17 +126,17 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
-	BOOST_FOREACH(BtItems & btStuff, _btItems)
+/*	BOOST_FOREACH(BtItems & btStuff, _btItems)
 	{
 		_world.removeRigidBody(btStuff.getBody());
-	}
+	}*/
 
 }
 
-Environment::BtItems::BtItems(BtOgre::StaticMeshToShapeConverter& converter)
+/*Environment::BtItems::BtItems(BtOgre::StaticMeshToShapeConverter& converter)
 {
 	_btShape = boost::shared_ptr<btCollisionShape>(converter.createTrimesh());
 	_motionState = boost::shared_ptr<btDefaultMotionState>(new btDefaultMotionState());
 	_body = boost::shared_ptr<btRigidBody>(new btRigidBody(0, _motionState.get(), _btShape.get()));
-}
+}*/
 
