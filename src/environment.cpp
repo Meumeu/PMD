@@ -77,7 +77,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	{
 		std::string MeshName;
 		std::string Orientation;
-		int x, y, z;
+		float x, y, z;
 
 		level >> MeshName >> x >> y >> z >> Orientation;
 
@@ -103,7 +103,11 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
 			Entity->setCastShadows(true);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
-			boundingBox.merge(Entity->getBoundingBox());
+			Ogre::Matrix4 transform = getMatrix4(o, Ogre::Vector3(x,y,z));
+
+			const Ogre::Vector3 * corners = Entity->getBoundingBox().getAllCorners();
+			for(int i = 0; i < 8; i++)
+				boundingBox.merge(transform * corners[i]);
 		}
 	}
 
