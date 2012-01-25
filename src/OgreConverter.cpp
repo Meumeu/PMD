@@ -25,7 +25,7 @@
 #include <OgreSubEntity.h>
 #include <OgreSubMesh.h>
 
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 
 #include "OgreConverter.h"
 

@@ -28,15 +28,16 @@
 #include <OISKeyboard.h>
 #include <OISMouse.h>
 
-#include <btBulletDynamicsCommon.h>
+#include "bullet/btBulletDynamicsCommon.h"
 
 #include <boost/shared_ptr.hpp>
 
-#include "CharacterController.h"
 #include "AppState.h"
 #include "btOgre/BtOgreExtras.h"
 
 class Environment;
+class CharacterController;
+
 class Game : public AppState
 {
 public:

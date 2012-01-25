@@ -19,15 +19,16 @@
 #include "Game.h"
 #include "RigidBody.h"
 #include "environment.h"
+#include "AppStateManager.h"
+#include "CharacterController.h"
 
 #include <stdio.h>
 #include <OgreEntity.h>
 #include <OgreMeshManager.h>
 #include <boost/foreach.hpp>
 
-#include <btBulletDynamicsCommon.h>
-#include <btBulletCollisionCommon.h>
-#include "AppStateManager.h"
+#include "bullet/btBulletDynamicsCommon.h"
+#include "bullet/btBulletCollisionCommon.h"
 
 const float CameraDistance = 2;
 const float CameraMargin = 0.01;

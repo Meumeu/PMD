@@ -18,7 +18,7 @@
 #ifndef RIGIDBODY_H
 #define RIGIDBODY_H
 
-#include <LinearMath/btMotionState.h>
+#include "bullet/LinearMath/btMotionState.h"
 #include <OgreQuaternion.h>
 #include <OgreVector3.h>
 

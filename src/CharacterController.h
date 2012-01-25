@@ -19,12 +19,13 @@
 #define CHARACTERCONTROLLER_H
 
 #include "pmd.h"
-#include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <BulletDynamics/Dynamics/btDynamicsWorld.h>
-#include <BulletCollision/CollisionShapes/btCylinderShape.h>
-#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
+#include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
+#include "bullet/BulletDynamics/Dynamics/btDynamicsWorld.h"
+#include "bullet/BulletCollision/CollisionShapes/btCylinderShape.h"
+#include "bullet/BulletCollision/CollisionShapes/btCapsuleShape.h"
 
 #include <OGRE/OgreVector3.h>
+#include <OGRE/OgreSceneNode.h>
 
 #include "RigidBody.h"
 #include "CharacterAnimation.h"
@@ -33,7 +34,6 @@
 
 namespace Ogre
 {
-	class SceneNode;
 	class Entity;
 }
 

@@ -21,10 +21,10 @@
 #include <vector>
 #include <iostream>
 #include <OgreVector3.h>
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
-#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
-#include <BulletDynamics/Dynamics/btRigidBody.h>
-#include <LinearMath/btDefaultMotionState.h>
+#include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
+#include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
+#include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
+#include "bullet/LinearMath/btDefaultMotionState.h"
 
 namespace Ogre {
 class SceneManager;
