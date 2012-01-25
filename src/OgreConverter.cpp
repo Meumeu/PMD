@@ -126,7 +126,7 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 	}
 }
 
-static void Vector3ToFloatArray(Ogre::Vector3 const& v, float *point)
+void OgreConverter::Vector3ToFloatArray(Ogre::Vector3 const& v, float *point)
 {
 	point[0] = v.x;
 	point[1] = v.y;
