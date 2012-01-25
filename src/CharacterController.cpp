@@ -53,7 +53,8 @@ CharacterController::CharacterController(
 	_Body(_Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
 	_World(World),
 	_Animations(_Entity),
-	_IdleTime(0)
+	_IdleTime(0),
+	_CoG(0, Height / 2, 0)
 {
 	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode(
 		Ogre::Vector3(Position.x(), Position.y(), Position.z()),
@@ -68,7 +69,7 @@ CharacterController::CharacterController(
 	entnode->scale(_Scale, _Scale, _Scale);
 	entnode->attachObject(_Entity);
 	
-	_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), Heading), Position + btVector3(0, Height / 2, 0)));
+	_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), Heading), Position + btVector3(0, _CoG.y, 0)));
 	_CurrentHeading = Heading;
 	
 	_MotionState.setNode(_Node);

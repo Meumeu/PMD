@@ -66,7 +66,7 @@ public:
 	}
 	Ogre::Vector3 GetPosition(void)
 	{
-		return Ogre::Vector3(_Body.getCenterOfMassPosition().x(), _Body.getCenterOfMassPosition().y(), _Body.getCenterOfMassPosition().z());
+		return _Node->getPosition();
 	}
 	float GetHeading(void)
 	{
@@ -100,6 +100,7 @@ private:
 	CharacterAnimation                 _Animations;
 	
 	float                              _IdleTime;
+	Ogre::Vector3                      _CoG;
 };
 
 #endif // CHARACTERCONTROLLER_H
