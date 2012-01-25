@@ -214,7 +214,9 @@ bool rcCreateHeightfield(rcContext* /*ctx*/, rcHeightfield& hf, int width, int h
 {
 	// TODO: VC complains about unref formal variable, figure out a way to handle this better.
 //	rcAssert(ctx);
-	
+
+	memset(&hf, 0, sizeof(hf));
+
 	hf.width = width;
 	hf.height = height;
 	rcVcopy(hf.bmin, bmin);
