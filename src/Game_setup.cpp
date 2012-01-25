@@ -114,4 +114,6 @@ void Game::setupBullet(void)
 
 void Game::cleanupBullet(void)
 {
+	_World = boost::shared_ptr<btDynamicsWorld>();
+	_Dispatcher = boost::shared_ptr<btCollisionDispatcher>();
 }

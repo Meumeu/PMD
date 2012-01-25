@@ -31,6 +31,7 @@
 #include "bullet/btBulletDynamicsCommon.h"
 #include "bullet/btBulletCollisionCommon.h"
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
+#include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -116,16 +117,16 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
 
-	btMotionState * motionstate = new btDefaultMotionState();
-	btRigidBody * body = new btRigidBody(0, motionstate, _TriMeshShape.get());
+	btRigidBody::btRigidBodyConstructionInfo rbci(0, 0, _TriMeshShape.get());
+	_EnvBody = boost::shared_ptr<btRigidBody>(new btRigidBody(rbci));
 
-	_world.addRigidBody(body);
+	_world.addRigidBody(_EnvBody.get());
 
 	btTriangleInfoMap * triinfomap = new btTriangleInfoMap();
 	btGenerateInternalEdgeInfo(_TriMeshShape.get(), triinfomap);
 	gContactAddedCallback = CustomMaterialCombinerCallback;
-	body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT);
-	body->setContactProcessingThreshold(0);
+	_EnvBody->setCollisionFlags(_EnvBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT);
+	_EnvBody->setContactProcessingThreshold(0);
 
 
 	sg->build();
@@ -139,4 +140,5 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
+	_world.removeRigidBody(_EnvBody.get());
 }

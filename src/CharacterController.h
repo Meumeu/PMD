@@ -18,6 +18,7 @@
 #ifndef CHARACTERCONTROLLER_H
 #define CHARACTERCONTROLLER_H
 
+#include "pmd.h"
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletCollision/CollisionShapes/btCylinderShape.h>
@@ -51,7 +52,33 @@ public:
 
 	void UpdatePhysics(btScalar dt);
 	void UpdateGraphics(float dt);
+	void SetVelocity(Ogre::Vector3 Velocity)
+	{
+		_TargetVelocity = btVector3(Velocity.x, Velocity.y, Velocity.z);
+	}
+	Ogre::Vector3 GetVelocity(void)
+	{
+		return Ogre::Vector3(_TargetVelocity.x(), _TargetVelocity.y(), _TargetVelocity.z());
+	}
+	void Jump(void)
+	{
+		_Jump = _GroundContact;
+	}
+	Ogre::Vector3 GetPosition(void)
+	{
+		return Ogre::Vector3(_Body.getCenterOfMassPosition().x(), _Body.getCenterOfMassPosition().y(), _Body.getCenterOfMassPosition().z());
+	}
+	float GetHeading(void)
+	{
+		return _CurrentHeading;
+	}
+	const btRigidBody * GetBody(void)
+	{
+		return &_Body;
+	}
 
+
+private:
 	btScalar                           _MaxYawSpeed;
 	btScalar                           _CurrentHeading;
 	btVector3                          _TargetVelocity;

@@ -19,9 +19,6 @@
 #define PMD_H
 
 #ifdef _MSC_VER
-#pragma warning(disable:4305)
-#pragma warning(disable:4244)
-
 #define M_PI 3.1415926535897932384626433832795
 #endif
 

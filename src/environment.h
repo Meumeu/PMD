@@ -26,10 +26,6 @@
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <LinearMath/btDefaultMotionState.h>
 
-namespace BtOgre {
-class StaticMeshToShapeConverter;
-}
-
 namespace Ogre {
 class SceneManager;
 class Entity;
@@ -56,10 +52,11 @@ public:
 	~Environment();
 private:
 	Ogre::SceneManager * _sceneManager;
-	btDynamicsWorld & _world;
+	btDynamicsWorld& _world;
 	std::vector<Block> _blocks;
 	btTriangleMesh _TriMesh;
 	boost::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
+	boost::shared_ptr<btRigidBody> _EnvBody;
 
 };
 

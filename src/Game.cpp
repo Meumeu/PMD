@@ -36,7 +36,7 @@ const float CameraHeight = 1.7;
 class CameraCollisionCallback : public btCollisionWorld::RayResultCallback
 {
 public:
-	CameraCollisionCallback(btRigidBody * player) :  _hitfraction(1), _player(player) {};
+	CameraCollisionCallback(const btRigidBody * player) :  _hitfraction(1), _player(player) {};
 	virtual ~CameraCollisionCallback() {};
 	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
 	{
@@ -53,7 +53,7 @@ public:
 	float _hitfraction;
 
 private:
-	btRigidBody * _player;
+	const btRigidBody * _player;
 };
 
 bool Game::keyPressed(const OIS::KeyEvent& e)
@@ -65,7 +65,7 @@ bool Game::keyPressed(const OIS::KeyEvent& e)
 
 	if (e.key == OIS::KC_SPACE)
 	{
-		_Player->_Jump = _Player->_GroundContact;
+		_Player->Jump();
 	}
 	
 	return true;
@@ -101,21 +101,21 @@ void Game::Update(float TimeSinceLastFrame)
 		velX = 1;
 	}
 
-	btVector3 TargetVelocity = btVector3(
+	Ogre::Vector3 TargetVelocity = Ogre::Vector3(
 		velX * cos(_Heading.valueRadians()) + velZ * sin(_Heading.valueRadians()),
 		0,
 		-velX * sin(_Heading.valueRadians()) + velZ * cos(_Heading.valueRadians()));
 
-	if (TargetVelocity != btVector3(0,0,0))
-		TargetVelocity.normalize();
+	if (TargetVelocity != Ogre::Vector3(0,0,0))
+		TargetVelocity.normalise();
 
 	if (_Keyboard->isKeyDown(OIS::KC_LSHIFT))
 	{
-		_Player->_TargetVelocity = 10 * TargetVelocity;
+		_Player->SetVelocity(10 * TargetVelocity);
 	}
 	else
 	{
-		_Player->_TargetVelocity = 3 * TargetVelocity;
+		_Player->SetVelocity(3 * TargetVelocity);
 	}
 
 	OIS::MouseState ms = _Mouse->getMouseState();
@@ -154,13 +154,13 @@ void Game::Update(float TimeSinceLastFrame)
 		 cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians()));
 	
 	btVector3 Cam1(
-		_Player->_Node->getPosition().x,
-		_Player->_Node->getPosition().y + CameraHeight,
-		_Player->_Node->getPosition().z);
+		_Player->GetPosition().x,
+		_Player->GetPosition().y + CameraHeight,
+		_Player->GetPosition().z);
 	
 	btVector3 Cam2 = Cam1 + (CameraDistance + CameraMargin) * CamDirection;
 	
-	CameraCollisionCallback CamCallback(&_Player->_Body);
+	CameraCollisionCallback CamCallback(_Player->GetBody());
 	
 	_World->rayTest(Cam1, Cam2, CamCallback);
 	Ogre::Vector3 CameraPosition(
@@ -175,32 +175,33 @@ void Game::Update(float TimeSinceLastFrame)
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
-	char buf[100];
+	/*char buf[100];
 	btRigidBody& body = this->_Player->_Body;
 	sprintf(buf, "x=%0.4f, y=%0.4f, z=%0.4f",
 		body.getCenterOfMassPosition().x(),
 		body.getCenterOfMassPosition().y(),
 		body.getCenterOfMassPosition().z());
-	Ogre::LogManager::getSingleton().logMessage(buf);
+	Ogre::LogManager::getSingleton().logMessage(buf);*/
 
 	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
-		btVector3 target = _Player->_Body.getCenterOfMassPosition() - cc->_Body.getCenterOfMassPosition();
+		Ogre::Vector3 target = _Player->GetPosition() - cc->GetPosition();
 
-		if (target.length2() > 50)
+		if (target.length() > 7)
 		{
-			float theta = atan2(cc->_TargetVelocity.z(), cc->_TargetVelocity.x());
+			float theta = atan2(cc->GetVelocity().z, cc->GetVelocity().x);
 			theta += (rand() % 100 - 50) * 0.001;
 
-			target.setX(cos(theta));
-			target.setY(0);
-			target.setZ(sin(theta));
-			cc->_TargetVelocity = 2 * target;
+			target.x = cos(theta);
+			target.y = 0;
+			target.z = sin(theta);
+			cc->SetVelocity(2 * target);
 		}
 		else
 		{
-			target.setY(0);
-			cc->_TargetVelocity = 5 * target.normalized();
+			target.y = 0;
+			target.normalise();
+			cc->SetVelocity(5 * target);
 		}
 		
 		cc->UpdatePhysics(timeStep);
