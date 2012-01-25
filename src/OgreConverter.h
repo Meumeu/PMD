@@ -57,6 +57,8 @@ public:
 	OgreConverter(Ogre::Entity& entity);
 	void AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const;
 	void AddToHeightField(Ogre::Matrix4 const& transform, rcHeightfield& heightField, unsigned char areaID, int flagMergeThr) const;
+	
+	static void Vector3ToFloatArray(Ogre::Vector3 const& v, float *point);
 };
 
 #endif

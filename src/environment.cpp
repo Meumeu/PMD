@@ -31,6 +31,7 @@
 #include "bullet/btBulletDynamicsCommon.h"
 #include "bullet/btBulletCollisionCommon.h"
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
+#include "Recast.h"
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -70,6 +71,7 @@ static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Ve
 
 Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
 {
+	Ogre::AxisAlignedBox boundingBox;
 	while (!level.eof())
 	{
 		std::string MeshName;
@@ -100,10 +102,21 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
 			Entity->setCastShadows(true);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
+			boundingBox.merge(Entity->getBoundingBox());
 		}
 	}
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
+
+	rcHeightfield heightfield;
+	rcContext context(false);
+	float bboxMin[3], bboxMax[3];
+	OgreConverter::Vector3ToFloatArray(boundingBox.getMinimum(), bboxMin);
+	OgreConverter::Vector3ToFloatArray(boundingBox.getMaximum(), bboxMax);
+	float cellSize = 0.3f, cellHeight = 0.2f; //FIXME: value tweaking ?
+	int width, height;
+	rcCalcGridSize(bboxMin, bboxMax, cellSize, &width, &height);
+	rcCreateHeightfield(&context, heightfield, width, height, bboxMin, bboxMax, cellSize, cellHeight);
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
@@ -111,7 +124,9 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
 		OgreConverter converter(*block._entity);
-		converter.AddToTriMesh(getMatrix4(block._orientation, block._position), _TriMesh);
+		Ogre::Matrix4 transform = getMatrix4(block._orientation, block._position);
+		converter.AddToTriMesh(transform, _TriMesh);
+		converter.AddToHeightField(transform, heightfield, 0, 1);//FIXME: adjust values
 	}
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
