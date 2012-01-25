@@ -30,6 +30,20 @@
 #include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 #include "bullet/btBulletDynamicsCommon.h"
 #include "bullet/btBulletCollisionCommon.h"
+#include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
+
+static bool CustomMaterialCombinerCallback(
+	btManifoldPoint& cp,
+	const btCollisionObject* colObj0,
+	int partId0,
+	int index0,
+	const btCollisionObject* colObj1,
+	int partId1,
+	int index1)
+{
+	btAdjustInternalEdgeContacts(cp,colObj1,colObj0, partId1,index1);
+	return false;
+}
 
 static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
 {
@@ -104,7 +118,15 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	btMotionState * motionstate = new btDefaultMotionState();
 	btRigidBody * body = new btRigidBody(0, motionstate, _TriMeshShape.get());
+
 	_world.addRigidBody(body);
+
+	btTriangleInfoMap * triinfomap = new btTriangleInfoMap();
+	btGenerateInternalEdgeInfo(_TriMeshShape.get(), triinfomap);
+	gContactAddedCallback = CustomMaterialCombinerCallback;
+	body->setCollisionFlags(body->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT);
+	body->setContactProcessingThreshold(0);
+
 
 	sg->build();
 	sg->setCastShadows(true);

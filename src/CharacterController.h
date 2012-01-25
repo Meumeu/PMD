@@ -66,8 +66,8 @@ public:
 	float                              _Scale;
 	btBoxShape                         _Shape;
 	//btCapsuleShape                     _Shape;
-	btRigidBody                        _Body;
 	btScalar                           _Mass;
+	btRigidBody                        _Body;
 	boost::shared_ptr<btDynamicsWorld> _World;
 	
 	CharacterAnimation                 _Animations;

@@ -49,8 +49,8 @@ CharacterController::CharacterController(
 		Height / 2,
 		_Scale * _MeshSize.z / 2)),
 	//_Shape(Height - _Scale * _MeshSize.z, _Scale * _MeshSize.z / 2),
-	_Body(Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
 	_Mass(Mass),
+	_Body(_Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
 	_World(World),
 	_Animations(_Entity),
 	_IdleTime(0)
@@ -72,7 +72,6 @@ CharacterController::CharacterController(
 	_CurrentHeading = Heading;
 	
 	_MotionState.setNode(_Node);
-	_Body.setFriction(0);
 
 	World->addRigidBody(&_Body);
 
