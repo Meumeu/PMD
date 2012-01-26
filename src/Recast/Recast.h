@@ -1,5 +1,7 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
+// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -18,8 +20,9 @@
  
 #ifndef RECAST_H
 #define RECAST_H
+#include <cmath>
 
-#include <math.h>
+#include <OgreAxisAlignedBox.h>
 
 namespace Recast
 {
@@ -257,35 +260,51 @@ static const int RC_SPANS_PER_POOL = 2048;
 
 /// Represents a span in a heightfield.
 /// @see rcHeightfield
-struct rcSpan
+struct Span
 {
-	unsigned int smin : 13;			///< The lower limit of the span. [Limit: < #smax]
-	unsigned int smax : 13;			///< The upper limit of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT]
-	unsigned int area : 6;			///< The area id assigned to the span.
-	rcSpan* next;					///< The next span higher up in column.
-};
-
-/// A memory pool used for quick allocation of spans within a heightfield.
-/// @see rcHeightfield
-struct rcSpanPool
-{
-	rcSpanPool* next;					///< The next span pool.
-	rcSpan items[RC_SPANS_PER_POOL];	///< Array of spans in the pool.
+	Span(unsigned int smin, unsigned int smax, unsigned int area):
+		_smin(smin), _smax(smax), _area(area) {}
+		
+	void merge(Span const& other, const int flagMergeThr);
+	
+	unsigned int _smin : 13; ///< The lower limit of the span. [Limit: < #smax]
+	unsigned int _smax : 13; ///< The upper limit of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT]
+	unsigned int _area : 6;  ///< The area id assigned to the span.
 };
 
 /// A dynamic heightfield representing obstructed space.
 /// @ingroup recast
-struct rcHeightfield
+class Heightfield
 {
-	int width;			///< The width of the heightfield. (Along the x-axis in cell units.)
-	int height;			///< The height of the heightfield. (Along the z-axis in cell units.)
-	float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
-	float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
-	float cs;			///< The size of each cell. (On the xz-plane.)
-	float ch;			///< The height of each cell. (The minimum increment along the y-axis.)
-	rcSpan** spans;		///< Heightfield of spans (width*height).
-	rcSpanPool* pools;	///< Linked list of span pools.
-	rcSpan* freelist;	///< The next free span.
+public:
+	Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight);
+	
+	/// Adds a span to the heightfield.
+	///  @ingroup recast
+	///  @param[in,out] ctx          The build context to use during the operation.
+	///  @param[in,out] hf           An initialized heightfield.
+	///  @param[in]     x            The width index where the span is to be added.
+	///[Limits: 0 <= value < rcHeightfield::width]
+	///  @param[in]     y            The height index where the span is to be added.
+	///[Limits: 0 <= value < rcHeightfield::height]
+	///  @param[in]     smin         The minimum height of the span. [Limit: < @p smax] [Units: vx]
+	///  @param[in]     smax         The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
+	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
+	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
+	void addSpan(const int x, const int y,
+		const unsigned short smin, const unsigned short smax,
+		const unsigned char area, const int flagMergeThr);
+private:
+	int _width;			///< The width of the heightfield. (Along the x-axis in cell units.)
+	int _height;			///< The height of the heightfield. (Along the z-axis in cell units.)
+
+	//FIXME: boundingbox is probably useless now
+	Ogre::AxisAlignedBox _boundingBox; ///< Bounding box (world units)
+	//float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
+	//float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
+	float _cs;			///< The size of each cell. (On the xz-plane.)
+	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
+	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
 };
 
 /// Provides information on the content of a cell column in a compact heightfield. 
@@ -419,18 +438,6 @@ struct rcPolyMeshDetail
 /// Functions used to allocate and de-allocate Recast objects.
 /// @see rcAllocSetCustom
 /// @{
-
-/// Allocates a heightfield object using the Recast allocator.
-///  @return A heightfield that is ready for initialization, or null on failure.
-///  @ingroup recast
-///  @see rcCreateHeightfield, rcFreeHeightField
-rcHeightfield* rcAllocHeightfield();
-
-/// Frees the specified heightfield object using the Recast allocator.
-///  @param[in]		hf	A heightfield allocated using #rcAllocHeightfield
-///  @ingroup recast
-///  @see rcAllocHeightfield
-void rcFreeHeightField(rcHeightfield* hf);
 
 /// Allocates a compact heightfield object using the Recast allocator.
 ///  @return A compact heightfield that is ready for initialization, or null on failure.
@@ -587,14 +594,6 @@ template<class T> inline T rcSqr(T a) { return a*a; }
 ///  @return The value, clamped to the specified range.
 template<class T> inline T rcClamp(T v, T mn, T mx) { return v < mn ? mn : (v > mx ? mx : v); }
 
-/// Returns the square root of the value.
-///  @param[in]		x	The value.
-///  @return The square root of the vlaue.
-static inline float rcSqrt(float x)
-{
-	return sqrtf(x);
-}
-
 /// @}
 /// @name Vector helper functions.
 /// @{
@@ -692,7 +691,7 @@ inline float rcVdist(const float* v1, const float* v2)
 	float dx = v2[0] - v1[0];
 	float dy = v2[1] - v1[1];
 	float dz = v2[2] - v1[2];
-	return rcSqrt(dx*dx + dy*dy + dz*dz);
+	return std::sqrt(dx*dx + dy*dy + dz*dz);
 }
 
 /// Returns the square of the distance between two points.
@@ -711,7 +710,7 @@ inline float rcVdistSqr(const float* v1, const float* v2)
 ///  @param[in,out]	v	The vector to normalize. [(x, y, z)]
 inline void rcVnormalize(float* v)
 {
-	float d = 1.0f / rcSqrt(rcSqr(v[0]) + rcSqr(v[1]) + rcSqr(v[2]));
+	float d = 1.0f / std::sqrt(rcSqr(v[0]) + rcSqr(v[1]) + rcSqr(v[2]));
 	v[0] *= d;
 	v[1] *= d;
 	v[2] *= d;
@@ -738,20 +737,6 @@ void rcCalcBounds(const float* verts, int nv, float* bmin, float* bmax);
 ///  @param[out]	w		The width along the x-axis. [Limit: >= 0] [Units: vx]
 ///  @param[out]	h		The height along the z-axis. [Limit: >= 0] [Units: vx]
 void rcCalcGridSize(const float* bmin, const float* bmax, float cs, int* w, int* h);
-
-/// Initializes a new heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx		The build context to use during the operation.
-///  @param[in,out]	hf		The allocated heightfield to initialize.
-///  @param[in]		width	The width of the field along the x-axis. [Limit: >= 0] [Units: vx]
-///  @param[in]		height	The height of the field along the z-axis. [Limit: >= 0] [Units: vx]
-///  @param[in]		bmin	The minimum bounds of the field's AABB. [(x, y, z)] [Units: wu]
-///  @param[in]		bmax	The maximum bounds of the field's AABB. [(x, y, z)] [Units: wu]
-///  @param[in]		cs		The xz-plane cell size to use for the field. [Limit: > 0] [Units: wu]
-///  @param[in]		ch		The y-axis cell size to use for field. [Limit: > 0] [Units: wu]
-bool rcCreateHeightfield(rcContext* ctx, rcHeightfield& hf, int width, int height,
-						 const float* bmin, const float* bmax,
-						 float cs, float ch);
 
 /// Sets the area id of all triangles with a slope below the specified value
 /// to #RC_WALKABLE_AREA.
@@ -780,22 +765,6 @@ void rcMarkWalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, con
 void rcClearUnwalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, const float* verts, int nv,
 								const int* tris, int nt, unsigned char* areas); 
 
-/// Adds a span to the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in,out]	hf				An initialized heightfield.
-///  @param[in]		x				The width index where the span is to be added.
-///  								[Limits: 0 <= value < rcHeightfield::width]
-///  @param[in]		y				The height index where the span is to be added.
-///  								[Limits: 0 <= value < rcHeightfield::height]
-///  @param[in]		smin			The minimum height of the span. [Limit: < @p smax] [Units: vx]
-///  @param[in]		smax			The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
-///  @param[in]		area			The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
-///  @param[in]		flagMergeThr	The merge theshold. [Limit: >= 0] [Units: vx]
-void rcAddSpan(rcContext* ctx, rcHeightfield& hf, const int x, const int y,
-			   const unsigned short smin, const unsigned short smax,
-			   const unsigned char area, const int flagMergeThr);
-
 /// Rasterizes a triangle into the specified heightfield.
 ///  @ingroup recast
 ///  @param[in,out]	ctx				The build context to use during the operation.
@@ -806,6 +775,7 @@ void rcAddSpan(rcContext* ctx, rcHeightfield& hf, const int x, const int y,
 ///  @param[in,out]	solid			An initialized heightfield.
 ///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
 ///  								[Limit: >= 0] [Units: vx]
+#ifdef RCHF
 void rcRasterizeTriangle(rcContext* ctx, const float* v0, const float* v1, const float* v2,
 						 const unsigned char area, rcHeightfield& solid,
 						 const int flagMergeThr = 1);
@@ -885,7 +855,6 @@ void rcFilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight, rcHeight
 ///  @param[in]		hf		An initialized heightfield.
 ///  @returns The number of spans in the heightfield.
 int rcGetHeightFieldSpanCount(rcContext* ctx, rcHeightfield& hf);
-
 /// @}
 /// @name Compact Heightfield Functions
 /// @see rcCompactHeightfield
@@ -902,7 +871,8 @@ int rcGetHeightFieldSpanCount(rcContext* ctx, rcHeightfield& hf);
 ///  @param[out]	chf				The resulting compact heightfield. (Must be pre-allocated.)
 ///  @returns True if the operation completed successfully.
 bool rcBuildCompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
-							   rcHeightfield& hf, rcCompactHeightfield& chf);
+										 rcHeightfield& hf, rcCompactHeightfield& chf);
+#endif
 
 /// Erodes the walkable area within the heightfield by the specified radius. 
 ///  @ingroup recast

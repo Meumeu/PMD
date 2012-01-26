@@ -1,5 +1,7 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
+// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -18,66 +20,63 @@
 
 #include <float.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <cmath>
 #include "Recast.h"
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
 namespace Recast
 {
-	rcHeightfield* rcAllocHeightfield()
+
+Heightfield::Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight):
+_boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
 {
-	rcHeightfield* hf = (rcHeightfield*)rcAlloc(sizeof(rcHeightfield), RC_ALLOC_PERM);
-	memset(hf, 0, sizeof(rcHeightfield));
-	return hf;
+	_width = (int)(_boundingBox.getSize().x/_cs + 0.5f);
+	_height = (int)(_boundingBox.getSize().z/_ch + 0.5f);
 }
 
-void rcFreeHeightField(rcHeightfield* hf)
+void Span::merge(Span const& other, const int flagMergeThr)
 {
-	if (!hf) return;
-	// Delete span array.
-	rcFree(hf->spans);
-	// Delete span pools.
-	while (hf->pools)
+	_smin = std::min(other._smin, _smin);
+	_smax = std::max(other._smax, _smax);
+	if (std::abs((int)_smax - (int)_smax) <= flagMergeThr)
 	{
-		rcSpanPool* next = hf->pools->next;
-		rcFree(hf->pools);
-		hf->pools = next;
+		_area = std::max(_area, other._area);
 	}
-	rcFree(hf);
 }
 
-/// @par
-///
-/// See the #rcConfig documentation for more information on the configuration parameters.
-/// 
-/// @see rcAllocHeightfield, rcHeightfield 
-bool rcCreateHeightfield(rcContext* /*ctx*/, rcHeightfield& hf, int width, int height,
-						 const float* bmin, const float* bmax,
-						 float cs, float ch)
+void Heightfield::addSpan(const int x, const int y,
+	const unsigned short smin, const unsigned short smax,
+	const unsigned char area, const int flagMergeThr)
 {
-	// TODO: VC complains about unref formal variable, figure out a way to handle this better.
-//	rcAssert(ctx);
+	Span s(smin, smax, area);
 
-	memset(&hf, 0, sizeof(hf));
-
-	hf.width = width;
-	hf.height = height;
-	rcVcopy(hf.bmin, bmin);
-	rcVcopy(hf.bmax, bmax);
-	hf.cs = cs;
-	hf.ch = ch;
-	hf.spans = (rcSpan**)rcAlloc(sizeof(rcSpan*)*hf.width*hf.height, RC_ALLOC_PERM);
-	if (!hf.spans)
-		return false;
-	memset(hf.spans, 0, sizeof(rcSpan*)*hf.width*hf.height);
-	return true;
+	std::map<std::pair<int,int>, std::list<Span> >::iterator cell = _spans.find(std::make_pair(x,y));
+	//If the cell is empty, add a new list
+	if ( cell == _spans.end())
+	{
+		std::list<Span> newList;
+		newList.push_back(s);
+		_spans.insert(std::make_pair(std::make_pair(x,y), newList));
+		return;
+	}
+	std::list<Span> & intervals = cell->second;
+	std::list<Span>::iterator target= intervals.begin();
+	for (std::list<Span>::iterator end = intervals.end() ;
+	     target != end && target->_smin <= s._smax;
+	     ++target)
+	{
+		//Merge spans, remove the current one
+		if (target->_smax >= s._smin)
+		{
+			s.merge(*target, flagMergeThr);
+			target = intervals.erase(target);
+		}
+	}
+	intervals.insert(target, s);
 }
 
+#ifdef RCHF
 int rcGetHeightFieldSpanCount(rcContext* /*ctx*/, rcHeightfield& hf)
 {
 	// TODO: VC complains about unref formal variable, figure out a way to handle this better.
@@ -99,5 +98,6 @@ int rcGetHeightFieldSpanCount(rcContext* /*ctx*/, rcHeightfield& hf)
 	}
 	return spanCount;
 }
+#endif
 
 }

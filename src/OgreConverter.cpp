@@ -133,7 +133,7 @@ void OgreConverter::Vector3ToFloatArray(Ogre::Vector3 const& v, float *point)
 	point[2] = v.z;
 }
 
-void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::rcHeightfield& heightField, unsigned char areaID, int flagMergeThr) const
+void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField, unsigned char areaID, int flagMergeThr) const
 {
 	Recast::rcContext dummyCtx(false);
 	float p1[3], p2[3], p3[3];
@@ -144,7 +144,8 @@ void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::rcH
 		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[1]], p2);
 		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[2]], p3);
 
-		Recast::rcRasterizeTriangle(&dummyCtx, p1, p2, p3, areaID, heightField, flagMergeThr);
+		//TODO: rewrite Recast function
+		//Recast::rcRasterizeTriangle(&dummyCtx, p1, p2, p3, areaID, heightField, flagMergeThr);
 	}
 }
 

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2011  Patrick Nicolas <patricknicolas@laposte.net>
+    Copyright (C) 2011-2012  Patrick Nicolas <patricknicolas@laposte.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -113,15 +113,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::rcHeightfield heightfield;
-	Recast::rcContext context(false);
-	float bboxMin[3], bboxMax[3];
-	OgreConverter::Vector3ToFloatArray(boundingBox.getMinimum(), bboxMin);
-	OgreConverter::Vector3ToFloatArray(boundingBox.getMaximum(), bboxMax);
-	float cellSize = 0.3f, cellHeight = 0.2f; //FIXME: value tweaking ?
-	int width, height;
-	Recast::rcCalcGridSize(bboxMin, bboxMax, cellSize, &width, &height);
-	Recast::rcCreateHeightfield(&context, heightfield, width, height, bboxMin, bboxMax, cellSize, cellHeight);
+	Recast::Heightfield heightfield(boundingBox, 0.3f, 0.2f);
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
