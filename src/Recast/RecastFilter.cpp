@@ -22,6 +22,8 @@
 #include "Recast.h"
 #include "RecastAssert.h"
 
+namespace Recast
+{
 /// @par
 ///
 /// Allows the formation of walkable regions that will flow over low lying 
@@ -204,4 +206,5 @@ void rcFilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight, rcHeight
 	}
 	
 	ctx->stopTimer(RC_TIMER_FILTER_WALKABLE);
+}
 }

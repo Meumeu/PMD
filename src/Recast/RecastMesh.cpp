@@ -24,6 +24,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
+namespace Recast
+{
 struct rcEdge
 {
 	unsigned short vert[2];
@@ -1360,4 +1362,5 @@ bool rcMergePolyMeshes(rcContext* ctx, rcPolyMesh** meshes, const int nmeshes, r
 	ctx->stopTimer(RC_TIMER_MERGE_POLYMESH);
 	
 	return true;
+}
 }

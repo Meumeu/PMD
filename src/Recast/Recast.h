@@ -19,6 +19,8 @@
 #ifndef RECAST_H
 #define RECAST_H
 
+namespace Recast
+{
 /// The value of PI used by Recast.
 static const float RC_PI = 3.14159265f;
 
@@ -1102,7 +1104,7 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 bool rcMergePolyMeshDetails(rcContext* ctx, rcPolyMeshDetail** meshes, const int nmeshes, rcPolyMeshDetail& mesh);
 
 /// @}
-
+}
 #endif // RECAST_H
 
 ///////////////////////////////////////////////////////////////////////////

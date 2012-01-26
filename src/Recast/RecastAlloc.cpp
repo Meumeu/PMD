@@ -20,6 +20,8 @@
 #include <string.h>
 #include "RecastAlloc.h"
 
+namespace Recast
+{
 static void *rcAllocDefault(int size, rcAllocHint)
 {
 	return malloc(size);
@@ -85,4 +87,4 @@ void rcIntArray::resize(int n)
 	}
 	m_size = n;
 }
-
+}

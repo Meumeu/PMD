@@ -27,7 +27,8 @@
 #include "RecastAssert.h"
 #include <new>
 
-
+namespace Recast
+{
 static void calculateDistanceField(rcCompactHeightfield& chf, unsigned short* src, unsigned short& maxDist)
 {
 	const int w = chf.width;
@@ -1333,5 +1334,5 @@ bool rcBuildRegions(rcContext* ctx, rcCompactHeightfield& chf,
 	
 	return true;
 }
-
+}
 

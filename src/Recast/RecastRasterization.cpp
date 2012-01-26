@@ -23,6 +23,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
+namespace Recast
+{
 inline bool overlapBounds(const float* amin, const float* amax, const float* bmin, const float* bmax)
 {
 	bool overlap = true;
@@ -384,4 +386,5 @@ void rcRasterizeTriangles(rcContext* ctx, const float* verts, const unsigned cha
 	}
 	
 	ctx->stopTimer(RC_TIMER_RASTERIZE_TRIANGLES);
+}
 }

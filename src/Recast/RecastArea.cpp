@@ -26,6 +26,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
+namespace Recast
+{
 /// @par 
 /// 
 /// Basically, any spans that are closer to a boundary or obstruction than the specified radius 
@@ -521,4 +523,5 @@ void rcMarkCylinderArea(rcContext* ctx, const float* pos,
 	}
 	
 	ctx->stopTimer(RC_TIMER_MARK_CYLINDER_AREA);
+}
 }

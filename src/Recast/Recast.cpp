@@ -27,6 +27,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
+namespace Recast
+{
 float rcSqrt(float x)
 {
 	return sqrtf(x);
@@ -493,3 +495,4 @@ static int getCompactHeightFieldMemoryusage(const rcCompactHeightfield& chf)
 	return size;
 }
 */
+}

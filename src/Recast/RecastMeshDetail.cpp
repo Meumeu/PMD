@@ -26,7 +26,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
-
+namespace Recast
+{
 static const unsigned RC_UNSET_HEIGHT = 0xffff;
 
 struct rcHeightPatch
@@ -1242,4 +1243,4 @@ bool rcMergePolyMeshDetails(rcContext* ctx, rcPolyMeshDetail** meshes, const int
 	
 	return true;
 }
-
+}

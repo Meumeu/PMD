@@ -26,7 +26,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
-
+namespace Recast
+{
 static const int RC_MAX_LAYERS = RC_NOT_CONNECTED;
 static const int RC_MAX_NEIS = 16;
 
@@ -617,4 +618,5 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 	ctx->stopTimer(RC_TIMER_BUILD_LAYERS);
 	
 	return true;
+}
 }

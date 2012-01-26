@@ -24,7 +24,8 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 
-
+namespace Recast
+{
 static int getCornerHeight(int x, int y, int i, int dir,
 						   const rcCompactHeightfield& chf,
 						   bool& isBorderVertex)
@@ -848,4 +849,5 @@ bool rcBuildContours(rcContext* ctx, rcCompactHeightfield& chf,
 	ctx->stopTimer(RC_TIMER_BUILD_CONTOURS);
 	
 	return true;
+}
 }
