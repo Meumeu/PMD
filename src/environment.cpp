@@ -32,7 +32,7 @@
 #include "bullet/btBulletCollisionCommon.h"
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
-#include "Recast.h"
+#include "Recast/Recast.h"
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,

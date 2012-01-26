@@ -28,6 +28,18 @@
 
 namespace Recast
 {
+static void insertSort(unsigned char* a, const int n)
+{
+	int i, j;
+	for (i = 1; i < n; i++)
+	{
+		const unsigned char value = a[i];
+		for (j = i - 1; j >= 0 && a[j] > value; j--)
+			a[j+1] = a[j];
+		a[j+1] = value;
+	}
+}
+
 /// @par 
 /// 
 /// Basically, any spans that are closer to a boundary or obstruction than the specified radius 
@@ -222,18 +234,6 @@ bool rcErodeWalkableArea(rcContext* ctx, int radius, rcCompactHeightfield& chf)
 	return true;
 }
 
-static void insertSort(unsigned char* a, const int n)
-{
-	int i, j;
-	for (i = 1; i < n; i++)
-	{
-		const unsigned char value = a[i];
-		for (j = i - 1; j >= 0 && a[j] > value; j--)
-			a[j+1] = a[j];
-		a[j+1] = value;
-	}
-}
-
 /// @par
 ///
 /// This filter is usually applied after applying area id's using functions
@@ -363,7 +363,6 @@ void rcMarkBoxArea(rcContext* ctx, const float* bmin, const float* bmax, unsigne
 	ctx->stopTimer(RC_TIMER_MARK_BOX_AREA);
 
 }
-
 
 static int pointInPoly(int nvert, const float* verts, const float* p)
 {
@@ -524,4 +523,5 @@ void rcMarkCylinderArea(rcContext* ctx, const float* pos,
 	
 	ctx->stopTimer(RC_TIMER_MARK_CYLINDER_AREA);
 }
+
 }

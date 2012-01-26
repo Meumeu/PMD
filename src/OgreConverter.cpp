@@ -29,7 +29,7 @@
 
 #include "OgreConverter.h"
 
-#include <Recast.h>
+#include "Recast/Recast.h"
 
 void OgreConverter::AddVertices(Ogre::VertexData * data)
 {
