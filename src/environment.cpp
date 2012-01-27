@@ -72,7 +72,6 @@ static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Ve
 
 Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
 {
-	Ogre::AxisAlignedBox boundingBox;
 	while (!level.eof())
 	{
 		std::string MeshName;
@@ -104,16 +103,12 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Entity->setCastShadows(true);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
 			Ogre::Matrix4 transform = getMatrix4(o, Ogre::Vector3(x,y,z));
-
-			const Ogre::Vector3 * corners = Entity->getBoundingBox().getAllCorners();
-			for(int i = 0; i < 8; i++)
-				boundingBox.merge(transform * corners[i]);
 		}
 	}
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(boundingBox, 0.3f, 0.2f);
+	Recast::Heightfield heightfield(0.3f, 0.2f);
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{

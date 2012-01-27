@@ -32,11 +32,9 @@ namespace Recast
 
 typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
-Heightfield::Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight):
-	_boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
+Heightfield::Heightfield(float cellSize, float cellHeight):
+	_cs(cellSize), _ch(cellHeight)
 {
-	_width = (int)(boundingBox.getSize().x/_cs + 0.5f);
-	_height = (int)(boundingBox.getSize().z/_ch + 0.5f);
 }
 
 void Span::merge(Span const& other, const int flagMergeThr)
@@ -90,10 +88,98 @@ unsigned int Heightfield::getSpanCount()
 	return number;
 }
 
-void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-		const unsigned char area, const int flagMergeThr)
+class PlaneDistance
 {
+public:
+	PlaneDistance(Ogre::Plane const & _p) : p(_p) {}
+	float operator()(Ogre::Vector3 const & v) { return p.getDistance(v); }
+private:
+	Ogre::Plane p;
+};
 
+static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in, Ogre::Plane const & p)
+{
+	std::vector<Ogre::Vector3> out;
+	
+	std::vector<float> d;
+	std::transform(in.begin(), in.end(), d.begin(), PlaneDistance(p));
+	
+	size_t n = in.size();
+
+	for(size_t i = 0, j = n - 1; i < n; j = i, ++i)
+	{
+		bool iVertexOnTheCorrectSide = d[i] >= 0;
+		bool jVertexOnTheCorrectSide = d[j] >= 0;
+		if (iVertexOnTheCorrectSide != jVertexOnTheCorrectSide)
+		{
+			out.push_back(in[j] - (in[j] - in[i]) * d[j] / (d[j] - d[i]));
+		}
+		if (jVertexOnTheCorrectSide)
+		{
+			out.push_back(in[j]);
+		}
+	}
+
+	return out;
+}
+
+static bool getPolyMinMax(
+	std::vector<Ogre::Vector3> in,
+	float x, float z, float cs, float ch,
+	int& min, int& max)
+{
+	std::vector<Ogre::Vector3> clippedIn = clipPoly(clipPoly(clipPoly(clipPoly(in,
+		Ogre::Plane(Ogre::Vector3::UNIT_X, -x)),
+		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, x+cs)),
+		Ogre::Plane(Ogre::Vector3::UNIT_Z, -z)),
+		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, z+cs));
+
+	if (clippedIn.size() < 3) return false;
+
+	float fmin, fmax;
+	fmin = fmax = in[0].y;
+	for(size_t i = 1; i < clippedIn.size(); ++i)
+	{
+		fmin = std::min(fmin, clippedIn[i].y);
+		fmax = std::max(fmax, clippedIn[i].y);
+	}
+
+	min = std::floor(fmin / ch);
+	max = std::ceil(fmax / ch);
+	
+	
+	return true;
+}
+
+void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
+	const unsigned char area, const int flagMergeThr)
+{
+	Ogre::AxisAlignedBox tribox;
+	tribox.merge(v0);
+	tribox.merge(v1);
+	tribox.merge(v2);
+
+	std::vector<Ogre::Vector3> triangle;
+	triangle.push_back(v0);
+	triangle.push_back(v1);
+	triangle.push_back(v2);
+
+	int x  = std::floor(tribox.getMinimum().x / _cs);
+	int x1 = std::ceil (tribox.getMaximum().x / _cs);
+	int z0 = std::floor(tribox.getMinimum().z / _cs);
+	int z1 = std::ceil (tribox.getMaximum().z / _cs);
+	
+	for(; x < x1; ++x)
+	{
+		for(int z = z0; z < z1; ++z)
+		{
+			int min, max;
+			if (getPolyMinMax(triangle, x, z, _cs, _ch, min, max))
+			{
+				addSpan(x, z, min, max, area, flagMergeThr);
+			}
+		}
+	}
 }
 
 

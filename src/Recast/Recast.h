@@ -560,6 +560,7 @@ template<class T> inline T rcClamp(T v, T mn, T mx) { return v < mn ? mn : (v > 
 ///  @param[out]	dest	The cross product. [(x, y, z)]
 ///  @param[in]		v1		A Vector [(x, y, z)]
 ///  @param[in]		v2		A vector [(x, y, z)]
+void rcVcross(float* dest, const float* v1, const float* v2) __attribute__((deprecated));
 inline void rcVcross(float* dest, const float* v1, const float* v2)
 {
 	dest[0] = v1[1]*v2[2] - v1[2]*v2[1];
@@ -571,6 +572,7 @@ inline void rcVcross(float* dest, const float* v1, const float* v2)
 ///  @param[in]		v1	A Vector [(x, y, z)]
 ///  @param[in]		v2	A vector [(x, y, z)]
 /// @return The dot product.
+float rcVdot(const float* v1, const float* v2) __attribute__((deprecated));
 inline float rcVdot(const float* v1, const float* v2)
 {
 	return v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2];
@@ -581,6 +583,7 @@ inline float rcVdot(const float* v1, const float* v2)
 ///  @param[in]		v1		The base vector. [(x, y, z)]
 ///  @param[in]		v2		The vector to scale and add to @p v1. [(x, y, z)]
 ///  @param[in]		s		The amount to scale @p v2 by before adding to @p v1.
+void rcVmad(float* dest, const float* v1, const float* v2, const float s) __attribute__((deprecated));
 inline void rcVmad(float* dest, const float* v1, const float* v2, const float s)
 {
 	dest[0] = v1[0]+v2[0]*s;
@@ -592,6 +595,7 @@ inline void rcVmad(float* dest, const float* v1, const float* v2, const float s)
 ///  @param[out]	dest	The result vector. [(x, y, z)]
 ///  @param[in]		v1		The base vector. [(x, y, z)]
 ///  @param[in]		v2		The vector to add to @p v1. [(x, y, z)]
+void rcVadd(float* dest, const float* v1, const float* v2) __attribute__((deprecated));
 inline void rcVadd(float* dest, const float* v1, const float* v2)
 {
 	dest[0] = v1[0]+v2[0];
@@ -603,6 +607,7 @@ inline void rcVadd(float* dest, const float* v1, const float* v2)
 ///  @param[out]	dest	The result vector. [(x, y, z)]
 ///  @param[in]		v1		The base vector. [(x, y, z)]
 ///  @param[in]		v2		The vector to subtract from @p v1. [(x, y, z)]
+void rcVsub(float* dest, const float* v1, const float* v2) __attribute__((deprecated));
 inline void rcVsub(float* dest, const float* v1, const float* v2)
 {
 	dest[0] = v1[0]-v2[0];
@@ -613,6 +618,7 @@ inline void rcVsub(float* dest, const float* v1, const float* v2)
 /// Selects the minimum value of each element from the specified vectors.
 ///  @param[in,out]	mn	A vector.  (Will be updated with the result.) [(x, y, z)]
 ///  @param[in]		v	A vector. [(x, y, z)]
+void rcVmin(float* mn, const float* v) __attribute__((deprecated));
 inline void rcVmin(float* mn, const float* v)
 {
 	mn[0] = rcMin(mn[0], v[0]);
@@ -623,6 +629,7 @@ inline void rcVmin(float* mn, const float* v)
 /// Selects the maximum value of each element from the specified vectors.
 ///  @param[in,out]	mx	A vector.  (Will be updated with the result.) [(x, y, z)]
 ///  @param[in]		v	A vector. [(x, y, z)]
+void rcVmax(float* mx, const float* v) __attribute__((deprecated));
 inline void rcVmax(float* mx, const float* v)
 {
 	mx[0] = rcMax(mx[0], v[0]);
@@ -633,6 +640,7 @@ inline void rcVmax(float* mx, const float* v)
 /// Performs a vector copy.
 ///  @param[out]	dest	The result. [(x, y, z)]
 ///  @param[in]		v		The vector to copy. [(x, y, z)]
+void rcVcopy(float* dest, const float* v) __attribute__((deprecated));
 inline void rcVcopy(float* dest, const float* v)
 {
 	dest[0] = v[0];
@@ -644,6 +652,7 @@ inline void rcVcopy(float* dest, const float* v)
 ///  @param[in]		v1	A point. [(x, y, z)]
 ///  @param[in]		v2	A point. [(x, y, z)]
 /// @return The distance between the two points.
+float rcVdist(const float* v1, const float* v2) __attribute__((deprecated));
 inline float rcVdist(const float* v1, const float* v2)
 {
 	float dx = v2[0] - v1[0];
@@ -656,6 +665,7 @@ inline float rcVdist(const float* v1, const float* v2)
 ///  @param[in]		v1	A point. [(x, y, z)]
 ///  @param[in]		v2	A point. [(x, y, z)]
 /// @return The square of the distance between the two points.
+float rcVdistSqr(const float* v1, const float* v2) __attribute__((deprecated));
 inline float rcVdistSqr(const float* v1, const float* v2)
 {
 	float dx = v2[0] - v1[0];
@@ -666,6 +676,7 @@ inline float rcVdistSqr(const float* v1, const float* v2)
 
 /// Normalizes the vector.
 ///  @param[in,out]	v	The vector to normalize. [(x, y, z)]
+void rcVnormalize(float* v) __attribute__((deprecated));
 inline void rcVnormalize(float* v)
 {
 	float d = 1.0f / std::sqrt(rcSqr(v[0]) + rcSqr(v[1]) + rcSqr(v[2]));
