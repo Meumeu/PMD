@@ -295,20 +295,79 @@ public:
 		const unsigned short smin, const unsigned short smax,
 		const unsigned char area, const int flagMergeThr);
 
+	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor. 
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
+	///  								[Limit: >=0] [Units: vx]
 	void FilterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
+
+	/// Marks spans that are ledges as not-walkable. 
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to 
+	///  								be considered walkable. [Limit: >= 3] [Units: vx]
+	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
+	///  								[Limit: >=0] [Units: vx]
 	void FilterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
+
+	/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height. 
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to 
+	///  								be considered walkable. [Limit: >= 3] [Units: vx]
 	void FilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
 
+	/// Rasterizes a triangle into the specified heightfield.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		v0				Triangle vertex 0 [(x, y, z)]
+	///  @param[in]		v1				Triangle vertex 1 [(x, y, z)]
+	///  @param[in]		v2				Triangle vertex 2 [(x, y, z)]
+	///  @param[in]		area			The area id of the triangle. [Limit: <= #RC_WALKABLE_AREA]
+	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
+	///  								[Limit: >= 0] [Units: vx]
 	void RasterizeTriangle(rcContext* ctx, const float* v0, const float* v1, const float* v2,
 		const unsigned char area, const int flagMergeThr);
+
+	/// Rasterizes an indexed triangle mesh into the specified heightfield.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		verts			The vertices. [(x, y, z) * @p nv]
+	///  @param[in]		nv				The number of vertices.
+	///  @param[in]		tris			The triangle indices. [(vertA, vertB, vertC) * @p nt]
+	///  @param[in]		areas			The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
+	///  @param[in]		nt				The number of triangles.
+	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
+	///  								[Limit: >= 0] [Units: vx]
 	void RasterizeTriangles(rcContext* ctx, const float* verts, const int /*nv*/,
 		const int* tris, const unsigned char* areas, const int nt,
 		const int flagMergeThr);
+
+	/// Rasterizes an indexed triangle mesh into the specified heightfield.
+	///  @ingroup recast
+	///  @param[in,out]	ctx			The build context to use during the operation.
+	///  @param[in]		verts		The vertices. [(x, y, z) * @p nv]
+	///  @param[in]		nv			The number of vertices.
+	///  @param[in]		tris		The triangle indices. [(vertA, vertB, vertC) * @p nt]
+	///  @param[in]		areas		The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
+	///  @param[in]		nt			The number of triangles.
+	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
+	///  							[Limit: >= 0] [Units: vx]
 	void RasterizeTriangles(rcContext* ctx, const float* verts, const int /*nv*/,
 		const unsigned short* tris, const unsigned char* areas, const int nt,
 		const int flagMergeThr);
+
+	/// Rasterizes triangles into the specified heightfield.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		verts			The triangle vertices. [(ax, ay, az, bx, by, bz, cx, by, cx) * @p nt]
+	///  @param[in]		areas			The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
+	///  @param[in]		nt				The number of triangles.
+	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
+	///  								[Limit: >= 0] [Units: vx]
 	void RasterizeTriangles(rcContext* ctx, const float* verts, const unsigned char* areas, const int nt,
-						  const int flagMergeThr);
+		const int flagMergeThr);
 
 	int GetWidth(void) { return _width; }
 	int GetHeight(void) { return _height; }
@@ -366,33 +425,33 @@ struct rcCompactHeightfield
 
 /// Represents a heightfield layer within a layer set.
 /// @see rcHeightfieldLayerSet
-struct rcHeightfieldLayer
+struct HeightfieldLayer
 {
-	float bmin[3];				///< The minimum bounds in world space. [(x, y, z)]
-	float bmax[3];				///< The maximum bounds in world space. [(x, y, z)]
-	float cs;					///< The size of each cell. (On the xz-plane.)
-	float ch;					///< The height of each cell. (The minimum increment along the y-axis.)
-	int width;					///< The width of the heightfield. (Along the x-axis in cell units.)
-	int height;					///< The height of the heightfield. (Along the z-axis in cell units.)
-	int minx;					///< The minimum x-bounds of usable data.
-	int maxx;					///< The maximum x-bounds of usable data.
-	int miny;					///< The minimum y-bounds of usable data. (Along the z-axis.)
-	int maxy;					///< The maximum y-bounds of usable data. (Along the z-axis.)
-	int hmin;					///< The minimum height bounds of usable data. (Along the y-axis.)
-	int hmax;					///< The maximum height bounds of usable data. (Along the y-axis.)
-	unsigned char* heights;		///< The heightfield. [Size: (width - borderSize*2) * (h - borderSize*2)]
-	unsigned char* areas;		///< Area ids. [Size: Same as #heights]
-	unsigned char* cons;		///< Packed neighbor connection information. [Size: Same as #heights]
+	float _bmin[3];				///< The minimum bounds in world space. [(x, y, z)]
+	float _bmax[3];				///< The maximum bounds in world space. [(x, y, z)]
+	float _cs;					///< The size of each cell. (On the xz-plane.)
+	float _ch;					///< The height of each cell. (The minimum increment along the y-axis.)
+	int _width;					///< The width of the heightfield. (Along the x-axis in cell units.)
+	int _height;					///< The height of the heightfield. (Along the z-axis in cell units.)
+	int _minx;					///< The minimum x-bounds of usable data.
+	int _maxx;					///< The maximum x-bounds of usable data.
+	int _miny;					///< The minimum y-bounds of usable data. (Along the z-axis.)
+	int _maxy;					///< The maximum y-bounds of usable data. (Along the z-axis.)
+	int _hmin;					///< The minimum height bounds of usable data. (Along the y-axis.)
+	int _hmax;					///< The maximum height bounds of usable data. (Along the y-axis.)
+	unsigned char* _heights;		///< The heightfield. [Size: (width - borderSize*2) * (h - borderSize*2)]
+	unsigned char* _areas;		///< Area ids. [Size: Same as #heights]
+	unsigned char* _cons;		///< Packed neighbor connection information. [Size: Same as #heights]
 };
 
 /// Represents a set of heightfield layers.
 /// @ingroup recast
 /// @see rcAllocHeightfieldLayerSet, rcFreeHeightfieldLayerSet 
-struct rcHeightfieldLayerSet
+/*struct rcHeightfieldLayerSet
 {
 	rcHeightfieldLayer* layers;			///< The layers in the set. [Size: #nlayers]
 	int nlayers;						///< The number of layers in the set.
-};
+};*/
 
 /// Represents a simple, non-overlapping contour in field space.
 struct rcContour
@@ -474,13 +533,13 @@ void rcFreeCompactHeightfield(rcCompactHeightfield* chf);
 ///  @return A heightfield layer set that is ready for initialization, or null on failure.
 ///  @ingroup recast
 ///  @see rcBuildHeightfieldLayers, rcFreeHeightfieldLayerSet
-rcHeightfieldLayerSet* rcAllocHeightfieldLayerSet();
+//rcHeightfieldLayerSet* rcAllocHeightfieldLayerSet();
 
 /// Frees the specified heightfield layer set using the Recast allocator.
 ///  @param[in]		lset	A heightfield layer set allocated using #rcAllocHeightfieldLayerSet
 ///  @ingroup recast
 ///  @see rcAllocHeightfieldLayerSet
-void rcFreeHeightfieldLayerSet(rcHeightfieldLayerSet* lset);
+//void rcFreeHeightfieldLayerSet(rcHeightfieldLayerSet* lset);
 
 /// Allocates a contour set object using the Recast allocator.
 ///  @return A contour set that is ready for initialization, or null on failure.
@@ -784,89 +843,9 @@ void rcMarkWalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, con
 void rcClearUnwalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, const float* verts, int nv,
 								const int* tris, int nt, unsigned char* areas); 
 
-/// Rasterizes a triangle into the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		v0				Triangle vertex 0 [(x, y, z)]
-///  @param[in]		v1				Triangle vertex 1 [(x, y, z)]
-///  @param[in]		v2				Triangle vertex 2 [(x, y, z)]
-///  @param[in]		area			The area id of the triangle. [Limit: <= #RC_WALKABLE_AREA]
-///  @param[in,out]	solid			An initialized heightfield.
-///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
-///  								[Limit: >= 0] [Units: vx]
+
 #ifdef RCHF
-void rcRasterizeTriangle(rcContext* ctx, const float* v0, const float* v1, const float* v2,
-						 const unsigned char area, rcHeightfield& solid,
-						 const int flagMergeThr = 1);
 
-/// Rasterizes an indexed triangle mesh into the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		verts			The vertices. [(x, y, z) * @p nv]
-///  @param[in]		nv				The number of vertices.
-///  @param[in]		tris			The triangle indices. [(vertA, vertB, vertC) * @p nt]
-///  @param[in]		areas			The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
-///  @param[in]		nt				The number of triangles.
-///  @param[in,out]	solid			An initialized heightfield.
-///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
-///  								[Limit: >= 0] [Units: vx]
-void rcRasterizeTriangles(rcContext* ctx, const float* verts, const int nv,
-						  const int* tris, const unsigned char* areas, const int nt,
-						  rcHeightfield& solid, const int flagMergeThr = 1);
-
-/// Rasterizes an indexed triangle mesh into the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx			The build context to use during the operation.
-///  @param[in]		verts		The vertices. [(x, y, z) * @p nv]
-///  @param[in]		nv			The number of vertices.
-///  @param[in]		tris		The triangle indices. [(vertA, vertB, vertC) * @p nt]
-///  @param[in]		areas		The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
-///  @param[in]		nt			The number of triangles.
-///  @param[in,out]	solid		An initialized heightfield.
-///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
-///  							[Limit: >= 0] [Units: vx]
-void rcRasterizeTriangles(rcContext* ctx, const float* verts, const int nv,
-						  const unsigned short* tris, const unsigned char* areas, const int nt,
-						  rcHeightfield& solid, const int flagMergeThr = 1);
-
-/// Rasterizes triangles into the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		verts			The triangle vertices. [(ax, ay, az, bx, by, bz, cx, by, cx) * @p nt]
-///  @param[in]		areas			The area id's of the triangles. [Limit: <= #RC_WALKABLE_AREA] [Size: @p nt]
-///  @param[in]		nt				The number of triangles.
-///  @param[in,out]	solid			An initialized heightfield.
-///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag. 
-///  								[Limit: >= 0] [Units: vx]
-void rcRasterizeTriangles(rcContext* ctx, const float* verts, const unsigned char* areas, const int nt,
-						  rcHeightfield& solid, const int flagMergeThr = 1);
-
-/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor. 
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
-///  								[Limit: >=0] [Units: vx]
-///  @param[in,out]	solid			A fully built heightfield.  (All spans have been added.)
-void rcFilterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb, rcHeightfield& solid);
-
-/// Marks spans that are ledges as not-walkable. 
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to 
-///  								be considered walkable. [Limit: >= 3] [Units: vx]
-///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
-///  								[Limit: >=0] [Units: vx]
-///  @param[in,out]	solid			A fully built heightfield.  (All spans have been added.)
-void rcFilterLedgeSpans(rcContext* ctx, const int walkableHeight,
-						const int walkableClimb, rcHeightfield& solid);
-
-/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height. 
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to 
-///  								be considered walkable. [Limit: >= 3] [Units: vx]
-///  @param[in,out]	solid			A fully built heightfield.  (All spans have been added.)
-void rcFilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight, rcHeightfield& solid);
 
 /// Returns the number of spans contained in the specified heightfield.
 ///  @ingroup recast
@@ -1038,7 +1017,8 @@ inline int rcGetDirOffsetY(int dir)
 ///  @returns True if the operation completed successfully.
 bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf, 
 							  const int borderSize, const int walkableHeight,
-							  rcHeightfieldLayerSet& lset);
+							  std::vector<HeightfieldLayer>&
+							  /*rcHeightfieldLayerSet&*/ lset);
 
 /// Builds a contour set from the region outlines in the provided compact heightfield.
 ///  @ingroup recast
