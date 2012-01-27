@@ -920,15 +920,35 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastArea.cpp"
+					RelativePath=".\src\Recast\RecastCompactHeightfield.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastContour.cpp"
+					RelativePath=".\src\Recast\RecastCompactHeightfieldArea.cpp"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastFilter.cpp"
+					RelativePath=".\src\Recast\RecastCompactHeightfieldContour.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastContext.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastContourSet.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastHeightfield.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastHeightfieldFilter.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastHeightfieldLayerSet.cpp"
 					>
 				</File>
 				<File
@@ -941,6 +961,14 @@
 				</File>
 				<File
 					RelativePath=".\src\Recast\RecastMeshDetail.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastPolyMesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastPolyMeshDetail.cpp"
 					>
 				</File>
 				<File

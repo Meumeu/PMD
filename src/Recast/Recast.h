@@ -294,6 +294,11 @@ public:
 	void addSpan(const int x, const int y,
 		const unsigned short smin, const unsigned short smax,
 		const unsigned char area, const int flagMergeThr);
+
+	void FilterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
+	void FilterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
+	void FilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
+
 private:
 	int _width;			///< The width of the heightfield. (Along the x-axis in cell units.)
 	int _height;			///< The height of the heightfield. (Along the z-axis in cell units.)
@@ -304,7 +309,9 @@ private:
 	//float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
-	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
+
+	typedef std::map<std::pair<int,int>, std::list<Span> > SpanMap;
+	SpanMap _spans; ///< Heightfield of spans (width*height).
 };
 
 /// Provides information on the content of a cell column in a compact heightfield. 
