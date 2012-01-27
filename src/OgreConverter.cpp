@@ -30,6 +30,7 @@
 #include "OgreConverter.h"
 
 #include "Recast/Recast.h"
+#include "Recast/RecastHeightfield.h"
 
 void OgreConverter::AddVertices(Ogre::VertexData * data)
 {
@@ -126,26 +127,16 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 	}
 }
 
-void OgreConverter::Vector3ToFloatArray(Ogre::Vector3 const& v, float *point)
-{
-	point[0] = v.x;
-	point[1] = v.y;
-	point[2] = v.z;
-}
-
 void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField, unsigned char areaID, int flagMergeThr) const
 {
-	Recast::rcContext dummyCtx(false);
-	float p1[3], p2[3], p3[3];
-	
 	BOOST_FOREACH(Face const& i, Faces)
 	{
-		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[0]], p1);
-		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[1]], p2);
-		Vector3ToFloatArray( transform * Vertices[i.VertexIndices[2]], p3);
-
-		//TODO: rewrite Recast function
-		//Recast::rcRasterizeTriangle(&dummyCtx, p1, p2, p3, areaID, heightField, flagMergeThr);
+		heightField.rasterizeTriangle(
+			transform * Vertices[i.VertexIndices[0]],
+			transform * Vertices[i.VertexIndices[1]],
+			transform * Vertices[i.VertexIndices[2]],
+			areaID,
+			flagMergeThr);
 	}
 }
 

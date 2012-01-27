@@ -24,6 +24,7 @@ SET(recast_HDRS
 	src/Recast/Recast.h
 	src/Recast/RecastAlloc.h
 	src/Recast/RecastAssert.h
+	src/Recast/RecastHeightfield.h
 	PARENT_SCOPE
 )
 

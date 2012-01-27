@@ -19,14 +19,18 @@
 //
 
 #include <float.h>
-#define _USE_MATH_DEFINES
+
+#include "RecastHeightfield.h"
+
+#include <algorithm>
 #include <cmath>
-#include "Recast.h"
-#include "RecastAlloc.h"
-#include "RecastAssert.h"
+
+#include <boost/foreach.hpp>
 
 namespace Recast
 {
+
+typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
 Heightfield::Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight):
 _boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
@@ -49,9 +53,10 @@ void Heightfield::addSpan(const int x, const int y,
 	const unsigned short smin, const unsigned short smax,
 	const unsigned char area, const int flagMergeThr)
 {
+	
 	Span s(smin, smax, area);
 
-	std::map<std::pair<int,int>, std::list<Span> >::iterator cell = _spans.find(std::make_pair(x,y));
+	span_container_t::iterator cell = _spans.find(std::make_pair(x,y));
 	//If the cell is empty, add a new list
 	if ( cell == _spans.end())
 	{
@@ -76,28 +81,20 @@ void Heightfield::addSpan(const int x, const int y,
 	intervals.insert(target, s);
 }
 
-#ifdef RCHF
-int rcGetHeightFieldSpanCount(rcContext* /*ctx*/, rcHeightfield& hf)
+unsigned int Heightfield::getSpanCount()
 {
-	// TODO: VC complains about unref formal variable, figure out a way to handle this better.
-//	rcAssert(ctx);
-	
-	const int w = hf.width;
-	const int h = hf.height;
-	int spanCount = 0;
-	for (int y = 0; y < h; ++y)
-	{
-		for (int x = 0; x < w; ++x)
-		{
-			for (rcSpan* s = hf.spans[x + y*w]; s; s = s->next)
-			{
-				if (s->area != RC_NULL_AREA)
-					spanCount++;
-			}
-		}
+	unsigned int number = 0;
+	BOOST_FOREACH(span_container_t::value_type const& cell, _spans){
+		number += cell.second.size();
 	}
-	return spanCount;
+	return number;
 }
-#endif
+
+void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
+		const unsigned char area, const int flagMergeThr)
+{
+
+}
+
 
 }

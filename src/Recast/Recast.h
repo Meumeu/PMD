@@ -22,8 +22,6 @@
 #define RECAST_H
 #include <cmath>
 
-#include <OgreAxisAlignedBox.h>
-
 namespace Recast
 {
 /// The value of PI used by Recast.
@@ -257,55 +255,6 @@ static const int RC_SPAN_MAX_HEIGHT = (1<<RC_SPAN_HEIGHT_BITS)-1;
 /// The number of spans allocated per span spool.
 /// @see rcSpanPool
 static const int RC_SPANS_PER_POOL = 2048;
-
-/// Represents a span in a heightfield.
-/// @see rcHeightfield
-struct Span
-{
-	Span(unsigned int smin, unsigned int smax, unsigned int area):
-		_smin(smin), _smax(smax), _area(area) {}
-		
-	void merge(Span const& other, const int flagMergeThr);
-	
-	unsigned int _smin : 13; ///< The lower limit of the span. [Limit: < #smax]
-	unsigned int _smax : 13; ///< The upper limit of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT]
-	unsigned int _area : 6;  ///< The area id assigned to the span.
-};
-
-/// A dynamic heightfield representing obstructed space.
-/// @ingroup recast
-class Heightfield
-{
-public:
-	Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight);
-	
-	/// Adds a span to the heightfield.
-	///  @ingroup recast
-	///  @param[in,out] ctx          The build context to use during the operation.
-	///  @param[in,out] hf           An initialized heightfield.
-	///  @param[in]     x            The width index where the span is to be added.
-	///[Limits: 0 <= value < rcHeightfield::width]
-	///  @param[in]     y            The height index where the span is to be added.
-	///[Limits: 0 <= value < rcHeightfield::height]
-	///  @param[in]     smin         The minimum height of the span. [Limit: < @p smax] [Units: vx]
-	///  @param[in]     smax         The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
-	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
-	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
-	void addSpan(const int x, const int y,
-		const unsigned short smin, const unsigned short smax,
-		const unsigned char area, const int flagMergeThr);
-private:
-	int _width;			///< The width of the heightfield. (Along the x-axis in cell units.)
-	int _height;			///< The height of the heightfield. (Along the z-axis in cell units.)
-
-	//FIXME: boundingbox is probably useless now
-	Ogre::AxisAlignedBox _boundingBox; ///< Bounding box (world units)
-	//float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
-	//float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
-	float _cs;			///< The size of each cell. (On the xz-plane.)
-	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
-	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
-};
 
 /// Provides information on the content of a cell column in a compact heightfield. 
 struct rcCompactCell
@@ -764,21 +713,9 @@ void rcMarkWalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, con
 ///  @param[out]	areas				The triangle area ids. [Length: >= @p nt]
 void rcClearUnwalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, const float* verts, int nv,
 								const int* tris, int nt, unsigned char* areas); 
-
-/// Rasterizes a triangle into the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		v0				Triangle vertex 0 [(x, y, z)]
-///  @param[in]		v1				Triangle vertex 1 [(x, y, z)]
-///  @param[in]		v2				Triangle vertex 2 [(x, y, z)]
-///  @param[in]		area			The area id of the triangle. [Limit: <= #RC_WALKABLE_AREA]
-///  @param[in,out]	solid			An initialized heightfield.
-///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
-///  								[Limit: >= 0] [Units: vx]
 #ifdef RCHF
-void rcRasterizeTriangle(rcContext* ctx, const float* v0, const float* v1, const float* v2,
-						 const unsigned char area, rcHeightfield& solid,
-						 const int flagMergeThr = 1);
+
+
 
 /// Rasterizes an indexed triangle mesh into the specified heightfield.
 ///  @ingroup recast
