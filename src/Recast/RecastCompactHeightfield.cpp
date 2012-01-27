@@ -29,7 +29,7 @@
 
 namespace Recast
 {
-rcCompactHeightfield* rcAllocCompactHeightfield()
+/*rcCompactHeightfield* rcAllocCompactHeightfield()
 {
 	rcCompactHeightfield* chf = (rcCompactHeightfield*)rcAlloc(sizeof(rcCompactHeightfield), RC_ALLOC_PERM);
 	memset(chf, 0, sizeof(rcCompactHeightfield));
@@ -44,7 +44,7 @@ void rcFreeCompactHeightfield(rcCompactHeightfield* chf)
 	rcFree(chf->dist);
 	rcFree(chf->areas);
 	rcFree(chf);
-}
+}*/
 
 /// @par
 ///
@@ -55,50 +55,41 @@ void rcFreeCompactHeightfield(rcCompactHeightfield* chf)
 /// See the #rcConfig documentation for more information on the configuration parameters.
 ///
 /// @see rcAllocCompactHeightfield, rcHeightfield, rcCompactHeightfield, rcConfig
-bool rcBuildCompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
-							   rcHeightfield& hf, rcCompactHeightfield& chf)
+//bool rcBuildCompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
+//							   Heightfield& hf, CompactHeightfield& chf)
+CompactHeightfield::CompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb, Heightfield& hf) :
+	_walkableHeight(walkableHeight),
+	_walkableClimb(walkableClimb),
+	_borderSize(0),
+	_maxDistance(0),
+	_maxRegions(0),
+	_cs(hf._cs),
+	_ch(hf._ch)
 {
 	rcAssert(ctx);
 	
 	ctx->startTimer(RC_TIMER_BUILD_COMPACTHEIGHTFIELD);
 	
-	const int w = hf.width;
-	const int h = hf.height;
+	const int w = hf.GetWidth();
+	const int h = hf.GetHeight();
 	const int spanCount = rcGetHeightFieldSpanCount(ctx, hf);
 
 	// Fill in header.
-	chf.width = w;
-	chf.height = h;
-	chf.spanCount = spanCount;
-	chf.walkableHeight = walkableHeight;
-	chf.walkableClimb = walkableClimb;
-	chf.maxRegions = 0;
-	rcVcopy(chf.bmin, hf.bmin);
-	rcVcopy(chf.bmax, hf.bmax);
-	chf.bmax[1] += walkableHeight*hf.ch;
-	chf.cs = hf.cs;
-	chf.ch = hf.ch;
-	chf.cells = (rcCompactCell*)rcAlloc(sizeof(rcCompactCell)*w*h, RC_ALLOC_PERM);
-	if (!chf.cells)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildCompactHeightfield: Out of memory 'chf.cells' (%d)", w*h);
-		return false;
-	}
-	memset(chf.cells, 0, sizeof(rcCompactCell)*w*h);
-	chf.spans = (rcCompactSpan*)rcAlloc(sizeof(rcCompactSpan)*spanCount, RC_ALLOC_PERM);
-	if (!chf.spans)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildCompactHeightfield: Out of memory 'chf.spans' (%d)", spanCount);
-		return false;
-	}
-	memset(chf.spans, 0, sizeof(rcCompactSpan)*spanCount);
-	chf.areas = (unsigned char*)rcAlloc(sizeof(unsigned char)*spanCount, RC_ALLOC_PERM);
-	if (!chf.areas)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildCompactHeightfield: Out of memory 'chf.areas' (%d)", spanCount);
-		return false;
-	}
-	memset(chf.areas, RC_NULL_AREA, sizeof(unsigned char)*spanCount);
+	_width = w;
+	_height = h;
+	_spanCount = spanCount;
+	rcVcopy(_bmin, hf._bmin);
+	rcVcopy(_bmax, hf._bmax);
+	_bmax[1] += walkableHeight*hf._ch;
+	
+	_cells = boost::scoped_array<CompactCell>(new CompactCell[w*h]);
+	memset(_cells, 0, sizeof(rcCompactCell)*w*h);
+
+	_spans = boost::scoped_array<CompactSpan>(new CompactSpan[spanCount]);
+	memset(_spans, 0, sizeof(rcCompactSpan)*spanCount);
+
+	_areas = boost::scoped_array<unsigned char>(new unsigned char[spanCount]);
+	memset(_areas, RC_NULL_AREA, sizeof(unsigned char)*spanCount);
 	
 	const int MAX_HEIGHT = 0xffff;
 	

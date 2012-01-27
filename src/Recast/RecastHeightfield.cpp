@@ -33,10 +33,10 @@ namespace Recast
 typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
 Heightfield::Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight):
-_boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
+	_boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
 {
-	_width = (int)(_boundingBox.getSize().x/_cs + 0.5f);
-	_height = (int)(_boundingBox.getSize().z/_ch + 0.5f);
+	_width = (int)(boundingBox.getSize().x/_cs + 0.5f);
+	_height = (int)(boundingBox.getSize().z/_ch + 0.5f);
 }
 
 void Span::merge(Span const& other, const int flagMergeThr)

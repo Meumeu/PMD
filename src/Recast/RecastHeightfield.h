@@ -42,6 +42,8 @@ struct Span
 	unsigned int _area : 6;  ///< The area id assigned to the span.
 };
 
+class rcContext;
+
 /// A dynamic heightfield representing obstructed space.
 /// @ingroup recast
 class Heightfield
@@ -77,7 +79,32 @@ public:
 	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
 	///  								[Limit: >= 0] [Units: vx]
 	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-		const unsigned char area, const int flagMergeThr = 1);
+								  const unsigned char area, const int flagMergeThr = 1);
+	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
+	///  								[Limit: >=0] [Units: vx]
+	void FilterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
+	
+	/// Marks spans that are ledges as not-walkable.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
+	///  								be considered walkable. [Limit: >= 3] [Units: vx]
+	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
+	///  								[Limit: >=0] [Units: vx]
+	void FilterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
+	
+	/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height.
+	///  @ingroup recast
+	///  @param[in,out]	ctx				The build context to use during the operation.
+	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
+	///  								be considered walkable. [Limit: >= 3] [Units: vx]
+	void FilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
+	
+	int GetWidth(void) const { return _width; }
+	int GetHeight(void) const { return _height; }
 private:
 	int _width;			///< The width of the heightfield. (Along the x-axis in cell units.)
 	int _height;			///< The height of the heightfield. (Along the z-axis in cell units.)

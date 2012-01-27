@@ -102,25 +102,5 @@ public:
 	inline int size() const { return m_size; }
 };
 
-/// A simple helper class used to delete an array when it goes out of scope.
-/// @note This class is rarely if ever used by the end user.
-template<class T> class rcScopedDelete
-{
-	T* ptr;
-	inline T* operator=(T* p);
-public:
-
-	/// Constructs an instance with a null pointer.
-	inline rcScopedDelete() : ptr(0) {}
-
-	/// Constructs an instance with the specified pointer.
-	///  @param[in]		p	An pointer to an allocated array.
-	inline rcScopedDelete(T* p) : ptr(p) {}
-	inline ~rcScopedDelete() { rcFree(ptr); }
-
-	/// The root array pointer.
-	///  @return The root array pointer.
-	inline operator T*() { return ptr; }
-};
 }
 #endif

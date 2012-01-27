@@ -82,33 +82,23 @@ struct rcLayerSweepSpan
 /// See the #rcConfig documentation for more information on the configuration parameters.
 /// 
 /// @see rcAllocHeightfieldLayerSet, rcCompactHeightfield, rcHeightfieldLayerSet, rcConfig
-bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
+bool rcBuildHeightfieldLayers(rcContext* ctx, CompactHeightfield& chf,
 							  const int borderSize, const int walkableHeight,
-							  rcHeightfieldLayerSet& lset)
+							  std::vector<HeightfieldLayer>&
+							  /*rcHeightfieldLayerSet&*/ lset)
 {
 	rcAssert(ctx);
 	
 	ctx->startTimer(RC_TIMER_BUILD_LAYERS);
 	
-	const int w = chf.width;
-	const int h = chf.height;
+	const int w = chf._width;
+	const int h = chf._height;
 	
-	rcScopedDelete<unsigned char> srcReg = (unsigned char*)rcAlloc(sizeof(unsigned char)*chf.spanCount, RC_ALLOC_TEMP);
-	if (!srcReg)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'srcReg' (%d).", chf.spanCount);
-		return false;
-	}
-	memset(srcReg,0xff,sizeof(unsigned char)*chf.spanCount);
-	
-	const int nsweeps = chf.width;
-	rcScopedDelete<rcLayerSweepSpan> sweeps = (rcLayerSweepSpan*)rcAlloc(sizeof(rcLayerSweepSpan)*nsweeps, RC_ALLOC_TEMP);
-	if (!sweeps)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'sweeps' (%d).", nsweeps);
-		return false;
-	}
-	
+	boost::scoped_array<unsigned char> srcReg(new unsigned char[chf._spanCount]);
+	memset(&srcReg[0], 0, sizeof(unsigned char)*chf._spanCount);
+
+	const int nsweeps = chf._width;
+	boost::scoped_array<rcLayerSweepSpan> sweeps(new rcLayerSweepSpan[nsweeps]);	
 	
 	// Partition walkable area into monotone regions.
 	int prevCount[256];
@@ -121,12 +111,12 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 		
 		for (int x = borderSize; x < w-borderSize; ++x)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
+			const CompactCell& c = chf._cells[x+y*w];
 			
 			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 			{
-				const rcCompactSpan& s = chf.spans[i];
-				if (chf.areas[i] == RC_NULL_AREA) continue;
+				const CompactSpan& s = chf._spans[i];
+				if (chf._areas[i] == RC_NULL_AREA) continue;
 
 				unsigned char sid = 0xff;
 
@@ -135,8 +125,8 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(0);
 					const int ay = y + rcGetDirOffsetY(0);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					if (chf.areas[ai] != RC_NULL_AREA && srcReg[ai] != 0xff)
+					const int ai = (int)chf._cells[ax+ay*w].index + rcGetCon(s, 0);
+					if (chf._areas[ai] != RC_NULL_AREA && srcReg[ai] != 0xff)
 						sid = srcReg[ai];
 				}
 				
@@ -152,7 +142,7 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 				{
 					const int ax = x + rcGetDirOffsetX(3);
 					const int ay = y + rcGetDirOffsetY(3);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
+					const int ai = (int)chf._cells[ax+ay*w].index + rcGetCon(s, 3);
 					const unsigned char nr = srcReg[ai];
 					if (nr != 0xff)
 					{
@@ -202,7 +192,7 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 		// Remap local sweep ids to region ids.
 		for (int x = borderSize; x < w-borderSize; ++x)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
+			const CompactCell& c = chf._cells[x+y*w];
 			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 			{
 				if (srcReg[i] != 0xff)
@@ -213,13 +203,8 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 
 	// Allocate and init layer regions.
 	const int nregs = (int)regId;
-	rcScopedDelete<rcLayerRegion> regs = (rcLayerRegion*)rcAlloc(sizeof(rcLayerRegion)*nregs, RC_ALLOC_TEMP);
-	if (!regs)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'regs' (%d).", nregs);
-		return false;
-	}
-	memset(regs, 0, sizeof(rcLayerRegion)*nregs);
+	boost::scoped_array<rcLayerRegion> regs(new rcLayerRegion[nregs]);
+	memset(&regs[0], 0, sizeof(rcLayerRegion)*nregs);
 	for (int i = 0; i < nregs; ++i)
 	{
 		regs[i].layerId = 0xff;
@@ -232,14 +217,14 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 	{
 		for (int x = 0; x < w; ++x)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
+			const CompactCell& c = chf._cells[x+y*w];
 			
 			unsigned char lregs[RC_MAX_LAYERS];
 			int nlregs = 0;
 			
 			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 			{
-				const rcCompactSpan& s = chf.spans[i];
+				const CompactSpan& s = chf._spans[i];
 				const unsigned char ri = srcReg[i];
 				if (ri == 0xff) continue;
 				
@@ -257,7 +242,7 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 					{
 						const int ax = x + rcGetDirOffsetX(dir);
 						const int ay = y + rcGetDirOffsetY(dir);
-						const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+						const int ai = (int)chf._cells[ax+ay*w].index + rcGetCon(s, dir);
 						const unsigned char rai = srcReg[ai];
 						if (rai != 0xff && rai != ri)
 							addUnique(regs[ri].neis, regs[ri].nneis, rai);
@@ -453,21 +438,22 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 	}
 	
 	// Create layers.
-	rcAssert(lset.layers == 0);
+	//rcAssert(lset.layers == 0);
+	rcAssert(lset.empty());
 	
 	const int lw = w - borderSize*2;
 	const int lh = h - borderSize*2;
 
 	// Build contracted bbox for layers.
 	float bmin[3], bmax[3];
-	rcVcopy(bmin, chf.bmin);
-	rcVcopy(bmax, chf.bmax);
-	bmin[0] += borderSize*chf.cs;
-	bmin[2] += borderSize*chf.cs;
-	bmax[0] -= borderSize*chf.cs;
-	bmax[2] -= borderSize*chf.cs;
+	rcVcopy(bmin, chf._bmin);
+	rcVcopy(bmax, chf._bmax);
+	bmin[0] += borderSize*chf._cs;
+	bmin[2] += borderSize*chf._cs;
+	bmax[0] -= borderSize*chf._cs;
+	bmax[2] -= borderSize*chf._cs;
 	
-	lset.nlayers = (int)layerId;
+	/*lset.nlayers = (int)layerId;
 	
 	lset.layers = (rcHeightfieldLayer*)rcAlloc(sizeof(rcHeightfieldLayer)*lset.nlayers, RC_ALLOC_PERM);
 	if (!lset.layers)
@@ -475,43 +461,45 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 		ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'layers' (%d).", lset.nlayers);
 		return false;
 	}
-	memset(lset.layers, 0, sizeof(rcHeightfieldLayer)*lset.nlayers);
+	memset(lset.layers, 0, sizeof(rcHeightfieldLayer)*lset.nlayers);*/
+	lset.resize((int)layerId);
+	for(size_t i = 0; i < (size_t)layerId; i++) memset(&lset[i], 0, sizeof(HeightfieldLayer));
 
 	
 	// Store layers.
-	for (int i = 0; i < lset.nlayers; ++i)
+	for (size_t i = 0; i < lset.size(); ++i)
 	{
 		unsigned char curId = (unsigned char)i;
 		
 		// Allocate memory for the current layer.
-		rcHeightfieldLayer* layer = &lset.layers[i];
-		memset(layer, 0, sizeof(rcHeightfieldLayer));
+		HeightfieldLayer* layer = &lset[i];
+		memset(layer, 0, sizeof(HeightfieldLayer));
 
 		const int gridSize = sizeof(unsigned char)*lw*lh;
 
-		layer->heights = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
-		if (!layer->heights)
+		layer->_heights = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
+		if (!layer->_heights)
 		{
 			ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'heights' (%d).", gridSize);
 			return false;
 		}
-		memset(layer->heights, 0xff, gridSize);
+		memset(layer->_heights, 0xff, gridSize);
 
-		layer->areas = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
-		if (!layer->areas)
+		layer->_areas = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
+		if (!layer->_areas)
 		{
 			ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'areas' (%d).", gridSize);
 			return false;
 		}
-		memset(layer->areas, 0, gridSize);
+		memset(layer->_areas, 0, gridSize);
 
-		layer->cons = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
-		if (!layer->cons)
+		layer->_cons = (unsigned char*)rcAlloc(gridSize, RC_ALLOC_PERM);
+		if (!layer->_cons)
 		{
 			ctx->log(RC_LOG_ERROR, "rcBuildHeightfieldLayers: Out of memory 'cons' (%d).", gridSize);
 			return false;
 		}
-		memset(layer->cons, 0, gridSize);
+		memset(layer->_cons, 0, gridSize);
 		
 		// Find layer height bounds.
 		int hmin = 0, hmax = 0;
@@ -524,24 +512,24 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 			}
 		}
 
-		layer->width = lw;
-		layer->height = lh;
-		layer->cs = chf.cs;
-		layer->ch = chf.ch;
+		layer->_width = lw;
+		layer->_height = lh;
+		layer->_cs = chf._cs;
+		layer->_ch = chf._ch;
 		
 		// Adjust the bbox to fit the heighfield.
-		rcVcopy(layer->bmin, bmin);
-		rcVcopy(layer->bmax, bmax);
-		layer->bmin[1] = bmin[1] + hmin*chf.ch;
-		layer->bmax[1] = bmin[1] + hmax*chf.ch;
-		layer->hmin = hmin;
-		layer->hmax = hmax;
+		rcVcopy(layer->_bmin, bmin);
+		rcVcopy(layer->_bmax, bmax);
+		layer->_bmin[1] = bmin[1] + hmin*chf._ch;
+		layer->_bmax[1] = bmin[1] + hmax*chf._ch;
+		layer->_hmin = hmin;
+		layer->_hmax = hmax;
 
 		// Update usable data region.
-		layer->minx = layer->width;
-		layer->maxx = 0;
-		layer->miny = layer->height;
-		layer->maxy = 0;
+		layer->_minx = layer->_width;
+		layer->_maxx = 0;
+		layer->_miny = layer->_height;
+		layer->_maxy = 0;
 		
 		// Copy height and area from compact heighfield. 
 		for (int y = 0; y < lh; ++y)
@@ -550,10 +538,10 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 			{
 				const int cx = borderSize+x;
 				const int cy = borderSize+y;
-				const rcCompactCell& c = chf.cells[cx+cy*w];
+				const CompactCell& c = chf._cells[cx+cy*w];
 				for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 				{
-					const rcCompactSpan& s = chf.spans[i];
+					const CompactSpan& s = chf._spans[i];
 					// Skip unassigned regions.
 					if (srcReg[i] == 0xff)
 						continue;
@@ -563,15 +551,15 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 						continue;
 					
 					// Update data bounds.
-					layer->minx = rcMin(layer->minx, x);
-					layer->maxx = rcMax(layer->maxx, x);
-					layer->miny = rcMin(layer->miny, y);
-					layer->maxy = rcMax(layer->maxy, y);
+					layer->_minx = rcMin(layer->_minx, x);
+					layer->_maxx = rcMax(layer->_maxx, x);
+					layer->_miny = rcMin(layer->_miny, y);
+					layer->_maxy = rcMax(layer->_maxy, y);
 					
 					// Store height and area type.
 					const int idx = x+y*lw;
-					layer->heights[idx] = (unsigned char)(s.y - hmin);
-					layer->areas[idx] = chf.areas[i];
+					layer->_heights[idx] = (unsigned char)(s.y - hmin);
+					layer->_areas[idx] = chf._areas[i];
 					
 					// Check connection.
 					unsigned char portal = 0;
@@ -582,19 +570,19 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 						{
 							const int ax = cx + rcGetDirOffsetX(dir);
 							const int ay = cy + rcGetDirOffsetY(dir);
-							const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, dir);
+							const int ai = (int)chf._cells[ax+ay*w].index + rcGetCon(s, dir);
 							unsigned char alid = srcReg[ai] != 0xff ? regs[srcReg[ai]].layerId : 0xff;
 							// Portal mask
-							if (chf.areas[ai] != RC_NULL_AREA && lid != alid)
+							if (chf._areas[ai] != RC_NULL_AREA && lid != alid)
 							{
 								portal |= (unsigned char)(1<<dir);
 								// Update height so that it matches on both sides of the portal.
-								const rcCompactSpan& as = chf.spans[ai];
+								const CompactSpan& as = chf._spans[ai];
 								if (as.y > hmin)
-									layer->heights[idx] = rcMax(layer->heights[idx], (unsigned char)(as.y - hmin));
+									layer->_heights[idx] = rcMax(layer->_heights[idx], (unsigned char)(as.y - hmin));
 							}
 							// Valid connection mask
-							if (chf.areas[ai] != RC_NULL_AREA && lid == alid)
+							if (chf._areas[ai] != RC_NULL_AREA && lid == alid)
 							{
 								const int nx = ax - borderSize;
 								const int ny = ay - borderSize;
@@ -604,15 +592,15 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, rcCompactHeightfield& chf,
 						}
 					}
 					
-					layer->cons[idx] = (portal << 4) | con;
+					layer->_cons[idx] = (portal << 4) | con;
 				}
 			}
 		}
 		
-		if (layer->minx > layer->maxx)
-			layer->minx = layer->maxx = 0;
-		if (layer->miny > layer->maxy)
-			layer->miny = layer->maxy = 0;
+		if (layer->_minx > layer->_maxx)
+			layer->_minx = layer->_maxx = 0;
+		if (layer->_miny > layer->_maxy)
+			layer->_miny = layer->_maxy = 0;
 	}
 	
 	ctx->stopTimer(RC_TIMER_BUILD_LAYERS);
