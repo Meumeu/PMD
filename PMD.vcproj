@@ -948,10 +948,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastHeightfieldLayerSet.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\src\Recast\RecastLayers.cpp"
 					>
 				</File>
