@@ -299,14 +299,26 @@ public:
 	void FilterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
 	void FilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
 
+	void RasterizeTriangle(rcContext* ctx, const float* v0, const float* v1, const float* v2,
+		const unsigned char area, const int flagMergeThr);
+	void RasterizeTriangles(rcContext* ctx, const float* verts, const int /*nv*/,
+		const int* tris, const unsigned char* areas, const int nt,
+		const int flagMergeThr);
+	void RasterizeTriangles(rcContext* ctx, const float* verts, const int /*nv*/,
+		const unsigned short* tris, const unsigned char* areas, const int nt,
+		const int flagMergeThr);
+	void RasterizeTriangles(rcContext* ctx, const float* verts, const unsigned char* areas, const int nt,
+						  const int flagMergeThr);
+
+	int GetWidth(void) { return _width; }
+	int GetHeight(void) { return _height; }
+
 private:
 	int _width;			///< The width of the heightfield. (Along the x-axis in cell units.)
 	int _height;			///< The height of the heightfield. (Along the z-axis in cell units.)
 
-	//FIXME: boundingbox is probably useless now
-	Ogre::AxisAlignedBox _boundingBox; ///< Bounding box (world units)
-	//float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
-	//float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
+	float _bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
+	float _bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
 

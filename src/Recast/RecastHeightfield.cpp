@@ -29,10 +29,18 @@ namespace Recast
 {
 
 Heightfield::Heightfield(Ogre::AxisAlignedBox const& boundingBox, float cellSize, float cellHeight):
-_boundingBox(boundingBox), _cs(cellSize), _ch(cellHeight)
+	_cs(cellSize), _ch(cellHeight)
 {
-	_width = (int)(_boundingBox.getSize().x/_cs + 0.5f);
-	_height = (int)(_boundingBox.getSize().z/_ch + 0.5f);
+	_bmin[0] = boundingBox.getMinimum().x;
+	_bmin[1] = boundingBox.getMinimum().y;
+	_bmin[2] = boundingBox.getMinimum().z;
+
+	_bmax[0] = boundingBox.getMaximum().x;
+	_bmax[1] = boundingBox.getMaximum().y;
+	_bmax[2] = boundingBox.getMaximum().z;
+
+	_width = (int)(boundingBox.getSize().x/_cs + 0.5f);
+	_height = (int)(boundingBox.getSize().z/_ch + 0.5f);
 }
 
 void Span::merge(Span const& other, const int flagMergeThr)
