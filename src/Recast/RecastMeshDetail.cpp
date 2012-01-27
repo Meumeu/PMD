@@ -503,7 +503,7 @@ inline float getJitterY(const int i)
 
 static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 							const float sampleDist, const float sampleMaxError,
-							const rcCompactHeightfield& chf, const rcHeightPatch& hp,
+							const CompactHeightfield& chf, const rcHeightPatch& hp,
 							float* verts, int& nverts, rcIntArray& tris,
 							rcIntArray& edges, rcIntArray& samples)
 {
@@ -520,7 +520,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 		rcVcopy(&verts[i*3], &in[i*3]);
 	nverts = nin;
 	
-	const float cs = chf.cs;
+	const float cs = chf._cs;
 	const float ics = 1.0f/cs;
 	
 	// Tessellate outlines.
@@ -568,7 +568,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 				pos[0] = vj[0] + dx*u;
 				pos[1] = vj[1] + dy*u;
 				pos[2] = vj[2] + dz*u;
-				pos[1] = getHeight(pos[0],pos[1],pos[2], cs, ics, chf.ch, hp)*chf.ch;
+				pos[1] = getHeight(pos[0],pos[1],pos[2], cs, ics, chf._ch, hp)*chf._ch;
 			}
 			// Simplify samples.
 			int idx[MAX_VERTS_PER_EDGE] = {0,nn};
@@ -677,7 +677,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 				// Make sure the samples are not too close to the edges.
 				if (distToPoly(nin,in,pt) > -sampleDist/2) continue;
 				samples.push(x);
-				samples.push(getHeight(pt[0], pt[1], pt[2], cs, ics, chf.ch, hp));
+				samples.push(getHeight(pt[0], pt[1], pt[2], cs, ics, chf._ch, hp));
 				samples.push(z);
 				samples.push(0); // Not added
 			}
@@ -704,7 +704,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 				// The sample location is jittered to get rid of some bad triangulations
 				// which are cause by symmetrical data from the grid structure.
 				pt[0] = s[0]*sampleDist + getJitterX(i)*cs*0.1f;
-				pt[1] = s[1]*chf.ch;
+				pt[1] = s[1]*chf._ch;
 				pt[2] = s[2]*sampleDist + getJitterY(i)*cs*0.1f;
 				float d = distToTriMesh(pt, verts, nverts, &tris[0], tris.size()/4);
 				if (d < 0) continue; // did not hit the mesh.
@@ -742,7 +742,7 @@ static bool buildPolyDetail(rcContext* ctx, const float* in, const int nin,
 	return true;
 }
 
-static void getHeightData(const rcCompactHeightfield& chf,
+static void getHeightData(const CompactHeightfield& chf,
 						  const unsigned short* poly, const int npoly,
 						  const unsigned short* verts, const int bs,
 						  rcHeightPatch& hp, rcIntArray& stack)
@@ -776,10 +776,10 @@ static void getHeightData(const rcCompactHeightfield& chf,
 				az < hp.ymin || az >= hp.ymin+hp.height)
 				continue;
 			
-			const rcCompactCell& c = chf.cells[(ax+bs)+(az+bs)*chf.width];
+			const CompactCell& c = chf._cells[(ax+bs)+(az+bs)*chf._width];
 			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
 			{
-				const rcCompactSpan& s = chf.spans[i];
+				const CompactSpan& s = chf._spans[i];
 				int d = rcAbs(ay - (int)s.y);
 				if (d < dmin)
 				{
@@ -832,7 +832,7 @@ static void getHeightData(const rcCompactHeightfield& chf,
 			break;
 		}
 		
-		const rcCompactSpan& cs = chf.spans[ci];
+		const CompactSpan& cs = chf._spans[ci];
 		
 		for (int dir = 0; dir < 4; ++dir)
 		{
@@ -848,7 +848,7 @@ static void getHeightData(const rcCompactHeightfield& chf,
 			if (hp.data[ax-hp.xmin+(ay-hp.ymin)*hp.width] != 0)
 				continue;
 			
-			const int ai = (int)chf.cells[(ax+bs)+(ay+bs)*chf.width].index + rcGetCon(cs, dir);
+			const int ai = (int)chf._cells[(ax+bs)+(ay+bs)*chf._width].index + rcGetCon(cs, dir);
 
 			int idx = ax-hp.xmin+(ay-hp.ymin)*hp.width;
 			hp.data[idx] = 1;
@@ -868,7 +868,7 @@ static void getHeightData(const rcCompactHeightfield& chf,
 		int cy = stack[i+1];
 		int ci = stack[i+2];
 		int idx = cx-hp.xmin+(cy-hp.ymin)*hp.width;
-		const rcCompactSpan& cs = chf.spans[ci];
+		const CompactSpan& cs = chf._spans[ci];
 		hp.data[idx] = cs.y;
 	}
 	
@@ -889,7 +889,7 @@ static void getHeightData(const rcCompactHeightfield& chf,
 			stack.resize(stack.size()-RETRACT_SIZE*3);
 		}
 
-		const rcCompactSpan& cs = chf.spans[ci];
+		const CompactSpan& cs = chf._spans[ci];
 		for (int dir = 0; dir < 4; ++dir)
 		{
 			if (rcGetCon(cs, dir) == RC_NOT_CONNECTED) continue;
@@ -904,9 +904,9 @@ static void getHeightData(const rcCompactHeightfield& chf,
 			if (hp.data[ax-hp.xmin+(ay-hp.ymin)*hp.width] != RC_UNSET_HEIGHT)
 				continue;
 			
-			const int ai = (int)chf.cells[(ax+bs)+(ay+bs)*chf.width].index + rcGetCon(cs, dir);
+			const int ai = (int)chf._cells[(ax+bs)+(ay+bs)*chf._width].index + rcGetCon(cs, dir);
 			
-			const rcCompactSpan& as = chf.spans[ai];
+			const CompactSpan& as = chf._spans[ai];
 			int idx = ax-hp.xmin+(ay-hp.ymin)*hp.width;
 			hp.data[idx] = as.y;
 
@@ -947,7 +947,7 @@ static unsigned char getTriFlags(const float* va, const float* vb, const float* 
 /// See the #rcConfig documentation for more information on the configuration parameters.
 ///
 /// @see rcAllocPolyMeshDetail, rcPolyMesh, rcCompactHeightfield, rcPolyMeshDetail, rcConfig
-bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompactHeightfield& chf,
+bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const CompactHeightfield& chf,
 						   const float sampleDist, const float sampleMaxError,
 						   rcPolyMeshDetail& dmesh)
 {
@@ -973,18 +973,8 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 	int nPolyVerts = 0;
 	int maxhw = 0, maxhh = 0;
 	
-	rcScopedDelete<int> bounds = (int*)rcAlloc(sizeof(int)*mesh.npolys*4, RC_ALLOC_TEMP);
-	if (!bounds)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildPolyMeshDetail: Out of memory 'bounds' (%d).", mesh.npolys*4);
-		return false;
-	}
-	rcScopedDelete<float> poly = (float*)rcAlloc(sizeof(float)*nvp*3, RC_ALLOC_TEMP);
-	if (!poly)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildPolyMeshDetail: Out of memory 'poly' (%d).", nvp*3);
-		return false;
-	}
+	boost::scoped_array<int> bounds(new int[mesh.npolys*4]);
+	boost::scoped_array<float> poly(new float[nvp*3]);
 	
 	// Find max size for a polygon area.
 	for (int i = 0; i < mesh.npolys; ++i)
@@ -994,9 +984,9 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 		int& xmax = bounds[i*4+1];
 		int& ymin = bounds[i*4+2];
 		int& ymax = bounds[i*4+3];
-		xmin = chf.width;
+		xmin = chf._width;
 		xmax = 0;
-		ymin = chf.height;
+		ymin = chf._height;
 		ymax = 0;
 		for (int j = 0; j < nvp; ++j)
 		{
@@ -1009,9 +999,9 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 			nPolyVerts++;
 		}
 		xmin = rcMax(0,xmin-1);
-		xmax = rcMin(chf.width,xmax+1);
+		xmax = rcMin(chf._width,xmax+1);
 		ymin = rcMax(0,ymin-1);
-		ymax = rcMin(chf.height,ymax+1);
+		ymax = rcMin(chf._height,ymax+1);
 		if (xmin >= xmax || ymin >= ymax) continue;
 		maxhw = rcMax(maxhw, xmax-xmin);
 		maxhh = rcMax(maxhh, ymax-ymin);
@@ -1077,7 +1067,7 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 		
 		// Build detail mesh.
 		int nverts = 0;
-		if (!buildPolyDetail(ctx, poly, npoly,
+		if (!buildPolyDetail(ctx, &poly[0], npoly,
 							 sampleDist, sampleMaxError,
 							 chf, hp, verts, nverts, tris,
 							 edges, samples))
@@ -1089,7 +1079,7 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 		for (int j = 0; j < nverts; ++j)
 		{
 			verts[j*3+0] += orig[0];
-			verts[j*3+1] += orig[1] + chf.ch; // Is this offset necessary?
+			verts[j*3+1] += orig[1] + chf._ch; // Is this offset necessary?
 			verts[j*3+2] += orig[2];
 		}
 		// Offset poly too, will be used to flag checking.
@@ -1155,7 +1145,7 @@ bool rcBuildPolyMeshDetail(rcContext* ctx, const rcPolyMesh& mesh, const rcCompa
 			dmesh.tris[dmesh.ntris*4+0] = (unsigned char)t[0];
 			dmesh.tris[dmesh.ntris*4+1] = (unsigned char)t[1];
 			dmesh.tris[dmesh.ntris*4+2] = (unsigned char)t[2];
-			dmesh.tris[dmesh.ntris*4+3] = getTriFlags(&verts[t[0]*3], &verts[t[1]*3], &verts[t[2]*3], poly, npoly);
+			dmesh.tris[dmesh.ntris*4+3] = getTriFlags(&verts[t[0]*3], &verts[t[1]*3], &verts[t[2]*3], &poly[0], npoly);
 			dmesh.ntris++;
 		}
 	}
