@@ -102,7 +102,6 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
 			Entity->setCastShadows(true);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
-			Ogre::Matrix4 transform = getMatrix4(o, Ogre::Vector3(x,y,z));
 		}
 	}
 
