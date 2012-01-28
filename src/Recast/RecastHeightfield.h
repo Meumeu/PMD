@@ -73,6 +73,12 @@ public:
 	/// Get the list of spans
 	std::list<Span> & getSpans(int x, int z);
 	
+	/// Get cell size
+	float getCellSize() { return _cs; }
+	
+	/// Get cell height
+	float getCellHeight() { return _ch; }
+	
 	/// Rasterizes a triangle into the heightfield.
 	///  @ingroup recast
 	///  @param[in]		v0				Triangle vertex 0
