@@ -22,6 +22,7 @@
 #define RECAST_H
 #include <cmath>
 #include <vector>
+#include <stdexcept>
 
 namespace Recast
 {
@@ -707,18 +708,6 @@ int rcGetHeightFieldSpanCount(rcContext* ctx, rcHeightfield& hf);
 /// @see rcCompactHeightfield
 /// @{
 
-/// Builds a compact heightfield representing open space, from a heightfield representing solid space.
-///  @ingroup recast
-///  @param[in,out]	ctx				The build context to use during the operation.
-///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area 
-///  								to be considered walkable. [Limit: >= 3] [Units: vx]
-///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
-///  								[Limit: >=0] [Units: vx]
-///  @param[in]		hf				The heightfield to be compacted.
-///  @param[out]	chf				The resulting compact heightfield. (Must be pre-allocated.)
-///  @returns True if the operation completed successfully.
-bool rcBuildCompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
-										 rcHeightfield& hf, rcCompactHeightfield& chf);
 #endif
 
 /// Erodes the walkable area within the heightfield by the specified radius. 
@@ -806,24 +795,62 @@ bool rcBuildRegions(rcContext* ctx, CompactHeightfield& chf,
 bool rcBuildRegionsMonotone(rcContext* ctx, CompactHeightfield& chf,
 							const int borderSize, const int minRegionArea, const int mergeRegionArea);
 
+struct Direction
+{
+enum
+{
+	Begin = 0,
+	Left = 0,
+	Forward,
+	Right,
+	Backward,
+	End
+};
+};
+
 /// Gets the standard width (x-axis) offset for the specified direction.
 ///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
 ///  @return The width offset to apply to the current cell position to move
 ///  	in the direction.
-inline int rcGetDirOffsetX(int dir)
+int getXOffset(int dir)
 {
-	const int offset[4] = { -1, 0, 1, 0, };
-	return offset[dir&0x03];
+	switch(dir)
+	{
+		case Direction::Left:
+			return -1;
+		case Direction::Right:
+			return 1;
+		case Direction::Forward:
+		case Direction::Backward:
+			return 0;
+		case Direction::End:
+			throw std::range_error("End");
+	}
+	
+	throw std::runtime_error("Unreachable");
 }
 
 /// Gets the standard height (z-axis) offset for the specified direction.
 ///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
 ///  @return The height offset to apply to the current cell position to move
 ///  	in the direction.
-inline int rcGetDirOffsetY(int dir)
+int getZOffset(int dir)
 {
-	const int offset[4] = { 0, 1, 0, -1 };
-	return offset[dir&0x03];
+	switch(dir)
+	{
+		case Direction::Forward:
+			return 1;
+		case Direction::Backward:
+			return -1;
+		case Direction::Left:
+		case Direction::Right:
+			return 0;
+		case Direction::End:
+			throw std::range_error("End");
+	}
+	
+	throw std::runtime_error("Unreachable");
+		
 }
 
 /// @}
