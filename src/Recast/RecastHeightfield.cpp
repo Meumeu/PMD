@@ -27,12 +27,16 @@
 
 #include <boost/foreach.hpp>
 
+#include <climits>
+
 namespace Recast
 {
 
 typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
 Heightfield::Heightfield(float cellSize, float cellHeight):
+	_xmin(INT_MAX), _xmax(INT_MIN),
+	_zmin(INT_MAX), _zmax(INT_MIN),
 	_cs(cellSize), _ch(cellHeight)
 {
 }
@@ -47,19 +51,19 @@ void Span::merge(Span const& other, const int flagMergeThr)
 	}
 }
 
-void Heightfield::addSpan(const int x, const int y,
+void Heightfield::addSpan(const int x, const int z,
 	const unsigned short smin, const unsigned short smax,
 	bool walkable, const int flagMergeThr)
 {
 	Span s(smin, smax, walkable);
 
-	span_container_t::iterator cell = _spans.find(std::make_pair(x,y));
+	span_container_t::iterator cell = _spans.find(std::make_pair(x,z));
 	//If the cell is empty, add a new list
 	if ( cell == _spans.end())
 	{
 		std::list<Span> newList;
 		newList.push_back(s);
-		_spans.insert(std::make_pair(std::make_pair(x,y), newList));
+		_spans.insert(std::make_pair(std::make_pair(x,z), newList));
 		return;
 	}
 	std::list<Span> & intervals = cell->second;
@@ -76,6 +80,11 @@ void Heightfield::addSpan(const int x, const int y,
 		}
 	}
 	intervals.insert(target, s);
+	
+	_xmin = std::min(_xmin, x);
+	_xmax = std::max(_xmax, x);
+	_zmin = std::min(_zmin, z);
+	_zmax = std::max(_zmax, z);
 }
 
 unsigned int Heightfield::getSpanCount()

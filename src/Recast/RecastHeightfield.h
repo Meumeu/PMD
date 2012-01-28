@@ -40,6 +40,11 @@ struct Span
 	unsigned int _smin; ///< The lower limit of the span.
 	unsigned int _smax; ///< The upper limit of the span.
 	bool _walkable;
+	
+	struct
+	{
+		int x, y, z;
+	} _neighbours[4];
 };
 
 class rcContext;
@@ -79,6 +84,15 @@ public:
 	/// Get cell height
 	float getCellHeight() { return _ch; }
 	
+	/// Get bounding box
+	void getOffsetAndSize(int& xmin, int& xsize, int& zmin, int& zsize)
+	{
+		xmin = _xmin;
+		zmin = _zmin;
+		xsize = _xmax - _xmin + 1;
+		zsize = _zmax - _zmin + 1;
+	}
+	
 	/// Rasterizes a triangle into the heightfield.
 	///  @ingroup recast
 	///  @param[in]		v0				Triangle vertex 0
@@ -89,12 +103,13 @@ public:
 	///  								[Limit: >= 0] [Units: vx]
 	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
 		const unsigned char area, const int flagMergeThr = 1);
+	
 	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor.
 	///  @ingroup recast
 	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void FilterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
+	void filterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
 	
 	/// Marks spans that are ledges as not-walkable.
 	///  @ingroup recast
@@ -103,16 +118,18 @@ public:
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void FilterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
+	void filterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
 	
 	/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height.
 	///  @ingroup recast
 	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
-	void FilterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
+	void filterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
 
 private:
+	int _xmin, _xmax;
+	int _zmin, _zmax;
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
 	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
