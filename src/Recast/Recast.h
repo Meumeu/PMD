@@ -29,6 +29,7 @@ namespace Recast
 
 class Heightfield;
 class CompactHeightfield;
+class ContourSet;
 
 /// The value of PI used by Recast.
 static const float RC_PI = 3.14159265f;
@@ -293,32 +294,6 @@ struct HeightfieldLayer
 	rcHeightfieldLayer* layers;			///< The layers in the set. [Size: #nlayers]
 	int nlayers;						///< The number of layers in the set.
 };*/
-
-/// Represents a simple, non-overlapping contour in field space.
-struct rcContour
-{
-	int* verts;			///< Simplified contour vertex and connection data. [Size: 4 * #nverts]
-	int nverts;			///< The number of vertices in the simplified contour. 
-	int* rverts;		///< Raw contour vertex and connection data. [Size: 4 * #nrverts]
-	int nrverts;		///< The number of vertices in the raw contour. 
-	unsigned short reg;	///< The region id of the contour.
-	unsigned char area;	///< The area id of the contour.
-};
-
-/// Represents a group of related contours.
-/// @ingroup recast
-struct rcContourSet
-{
-	rcContour* conts;	///< An array of the contours in the set. [Size: #nconts]
-	int nconts;			///< The number of contours in the set.
-	float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
-	float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
-	float cs;			///< The size of each cell. (On the xz-plane.)
-	float ch;			///< The height of each cell. (The minimum increment along the y-axis.)
-	int width;			///< The width of the set. (Along the x-axis in cell units.) 
-	int height;			///< The height of the set. (Along the z-axis in cell units.) 
-	int borderSize;		///< The AABB border size used to generate the source data from which the contours were derived.
-};
 
 /// Represents a polygon mesh suitable for use in building a navigation mesh. 
 /// @ingroup recast

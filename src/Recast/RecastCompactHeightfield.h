@@ -45,6 +45,7 @@ struct CompactSpan
 /// @ingroup recast
 class CompactHeightfield
 {
+	friend class ContourSet;
 public:
 /// Builds a compact heightfield representing open space, from a heightfield representing solid space.
 ///  @ingroup recast
@@ -58,8 +59,8 @@ public:
 	void erodeWalkableArea(int radius);
 	
 private:
-	CompactHeightfield(const CompactHeightfield&) { abort(); };
-	CompactHeightfield & operator=(const CompactHeightfield&) { abort(); };
+	CompactHeightfield(const CompactHeightfield&);
+	CompactHeightfield & operator=(const CompactHeightfield&);
 	
 	int _xmin;
 	int _zmin;
