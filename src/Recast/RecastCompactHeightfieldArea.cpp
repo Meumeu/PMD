@@ -18,17 +18,21 @@
 
 #include <float.h>
 #define _USE_MATH_DEFINES
-#include <math.h>
+#include <climits>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include <boost/foreach.hpp>
+
 #include "Recast.h"
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
+#include "RecastCompactHeightfield.h"
 
 namespace Recast
 {
-static void insertSort(unsigned char* a, const int n)
+/*static void insertSort(unsigned char* a, const int n)
 {
 	int i, j;
 	for (i = 1; i < n; i++)
@@ -38,7 +42,7 @@ static void insertSort(unsigned char* a, const int n)
 			a[j+1] = a[j];
 		a[j+1] = value;
 	}
-}
+}*/
 
 /// @par 
 /// 
@@ -48,116 +52,61 @@ static void insertSort(unsigned char* a, const int n)
 /// This method is usually called immediately after the heightfield has been built.
 ///
 /// @see rcCompactHeightfield, rcBuildCompactHeightfield, rcConfig::walkableRadius
-bool rcErodeWalkableArea(rcContext* ctx, int radius, rcCompactHeightfield& chf)
+
+void CompactHeightfield::erodeWalkableArea(int radius)
 {
-	rcAssert(ctx);
-	
-	const int w = chf.width;
-	const int h = chf.height;
-	
-	ctx->startTimer(RC_TIMER_ERODE_AREA);
-	
-	unsigned char* dist = (unsigned char*)rcAlloc(sizeof(unsigned char)*chf.spanCount, RC_ALLOC_TEMP);
-	if (!dist)
+	// Mark boundary cells
+	for(int i = 0; i < _xsize * _zsize; i++)
 	{
-		ctx->log(RC_LOG_ERROR, "erodeWalkableArea: Out of memory 'dist' (%d).", chf.spanCount);
-		return false;
-	}
-	
-	// Init distance.
-	memset(dist, 0xff, sizeof(unsigned char)*chf.spanCount);
-	
-	// Mark boundary cells.
-	for (int y = 0; y < h; ++y)
-	{
-		for (int x = 0; x < w; ++x)
+		std::vector<CompactSpan> & cell = _cells[i];
+		
+		BOOST_FOREACH(CompactSpan & span, cell)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
-			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
+			if (span.walkable)
 			{
-				if (chf.areas[i] == RC_NULL_AREA)
+				// Init distance
+				span.dist = USHRT_MAX;
+				
+				for(int dir = Direction::Begin; dir < Direction::End; dir++)
 				{
-					dist[i] = 0;
+					if (!span.neighbours[dir] || !span.neighbours[dir]->walkable)
+						span.dist = 0; // At least one missing or non walkable neighbour (boundary)
 				}
-				else
-				{
-					const rcCompactSpan& s = chf.spans[i];
-					int nc = 0;
-					for (int dir = 0; dir < 4; ++dir)
-					{
-						if (rcGetCon(s, dir) != RC_NOT_CONNECTED)
-						{
-							const int nx = x + rcGetDirOffsetX(dir);
-							const int ny = y + rcGetDirOffsetY(dir);
-							const int ni = (int)chf.cells[nx+ny*w].index + rcGetCon(s, dir);
-							if (chf.areas[ni] != RC_NULL_AREA)
-							{
-								nc++;
-							}
-						}
-					}
-					// At least one missing neighbour.
-					if (nc != 4)
-						dist[i] = 0;
-				}
+			}
+			else
+			{
+				span.dist = 0;
 			}
 		}
 	}
 	
-	unsigned char nd;
-	
 	// Pass 1
-	for (int y = 0; y < h; ++y)
+	for(int z = 0; z < _zsize; z++)
 	{
-		for (int x = 0; x < w; ++x)
+		for(int x = 0; x < _xsize; x++)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
-			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
+			std::vector<CompactSpan>& c = _cells[x + z * _xsize];
+			BOOST_FOREACH(CompactSpan& span, c)
 			{
-				const rcCompactSpan& s = chf.spans[i];
-				
-				if (rcGetCon(s, 0) != RC_NOT_CONNECTED)
+				const CompactSpan * n;
+				const CompactSpan * nn;
+				if ((n = span.neighbours[Direction::Left]))
 				{
-					// (-1,0)
-					const int ax = x + rcGetDirOffsetX(0);
-					const int ay = y + rcGetDirOffsetY(0);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 0);
-					const rcCompactSpan& as = chf.spans[ai];
-					nd = (unsigned char)rcMin((int)dist[ai]+2, 255);
-					if (nd < dist[i])
-						dist[i] = nd;
+					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
 					
-					// (-1,-1)
-					if (rcGetCon(as, 3) != RC_NOT_CONNECTED)
+					if ((nn = n->neighbours[Direction::Backward]))
 					{
-						const int aax = ax + rcGetDirOffsetX(3);
-						const int aay = ay + rcGetDirOffsetY(3);
-						const int aai = (int)chf.cells[aax+aay*w].index + rcGetCon(as, 3);
-						nd = (unsigned char)rcMin((int)dist[aai]+3, 255);
-						if (nd < dist[i])
-							dist[i] = nd;
+						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
 					}
 				}
-				if (rcGetCon(s, 3) != RC_NOT_CONNECTED)
+				
+				if ((n = span.neighbours[Direction::Backward]))
 				{
-					// (0,-1)
-					const int ax = x + rcGetDirOffsetX(3);
-					const int ay = y + rcGetDirOffsetY(3);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 3);
-					const rcCompactSpan& as = chf.spans[ai];
-					nd = (unsigned char)rcMin((int)dist[ai]+2, 255);
-					if (nd < dist[i])
-						dist[i] = nd;
+					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
 					
-					// (1,-1)
-					if (rcGetCon(as, 2) != RC_NOT_CONNECTED)
+					if ((nn = n->neighbours[Direction::Right]))
 					{
-						const int aax = ax + rcGetDirOffsetX(2);
-						const int aay = ay + rcGetDirOffsetY(2);
-						const int aai = (int)chf.cells[aax+aay*w].index + rcGetCon(as, 2);
-						nd = (unsigned char)rcMin((int)dist[aai]+3, 255);
-						if (nd < dist[i])
-							dist[i] = nd;
+						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
 					}
 				}
 			}
@@ -165,74 +114,52 @@ bool rcErodeWalkableArea(rcContext* ctx, int radius, rcCompactHeightfield& chf)
 	}
 	
 	// Pass 2
-	for (int y = h-1; y >= 0; --y)
+	for(int z = _zsize - 1; z >= 0; z--)
 	{
-		for (int x = w-1; x >= 0; --x)
+		for(int x = _xsize - 1; x >= 0; z--)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
-			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
+			std::vector<CompactSpan>& c = _cells[x + z * _xsize];
+			BOOST_FOREACH(CompactSpan& span, c)
 			{
-				const rcCompactSpan& s = chf.spans[i];
-				
-				if (rcGetCon(s, 2) != RC_NOT_CONNECTED)
+				const CompactSpan * n;
+				const CompactSpan * nn;
+				if ((n = span.neighbours[Direction::Right]))
 				{
-					// (1,0)
-					const int ax = x + rcGetDirOffsetX(2);
-					const int ay = y + rcGetDirOffsetY(2);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 2);
-					const rcCompactSpan& as = chf.spans[ai];
-					nd = (unsigned char)rcMin((int)dist[ai]+2, 255);
-					if (nd < dist[i])
-						dist[i] = nd;
+					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
 					
-					// (1,1)
-					if (rcGetCon(as, 1) != RC_NOT_CONNECTED)
+					if ((nn = n->neighbours[Direction::Forward]))
 					{
-						const int aax = ax + rcGetDirOffsetX(1);
-						const int aay = ay + rcGetDirOffsetY(1);
-						const int aai = (int)chf.cells[aax+aay*w].index + rcGetCon(as, 1);
-						nd = (unsigned char)rcMin((int)dist[aai]+3, 255);
-						if (nd < dist[i])
-							dist[i] = nd;
+						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
 					}
 				}
-				if (rcGetCon(s, 1) != RC_NOT_CONNECTED)
+				
+				if ((n = span.neighbours[Direction::Forward]))
 				{
-					// (0,1)
-					const int ax = x + rcGetDirOffsetX(1);
-					const int ay = y + rcGetDirOffsetY(1);
-					const int ai = (int)chf.cells[ax+ay*w].index + rcGetCon(s, 1);
-					const rcCompactSpan& as = chf.spans[ai];
-					nd = (unsigned char)rcMin((int)dist[ai]+2, 255);
-					if (nd < dist[i])
-						dist[i] = nd;
+					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
 					
-					// (-1,1)
-					if (rcGetCon(as, 0) != RC_NOT_CONNECTED)
+					if ((nn = n->neighbours[Direction::Left]))
 					{
-						const int aax = ax + rcGetDirOffsetX(0);
-						const int aay = ay + rcGetDirOffsetY(0);
-						const int aai = (int)chf.cells[aax+aay*w].index + rcGetCon(as, 0);
-						nd = (unsigned char)rcMin((int)dist[aai]+3, 255);
-						if (nd < dist[i])
-							dist[i] = nd;
+						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
 					}
 				}
 			}
 		}
 	}
-	
-	const unsigned char thr = (unsigned char)(radius*2);
-	for (int i = 0; i < chf.spanCount; ++i)
-		if (dist[i] < thr)
-			chf.areas[i] = RC_NULL_AREA;
-	
-	rcFree(dist);
-	
-	ctx->stopTimer(RC_TIMER_ERODE_AREA);
-	
-	return true;
+
+	const int thr = radius * 2;
+	for(int i = 0; i < _xsize * _zsize; i++)
+	{
+		std::vector<CompactSpan> & cell = _cells[i];
+		
+		BOOST_FOREACH(CompactSpan & span, cell)
+		{
+			if (span.dist < thr)
+				span.walkable = false;
+		}
+	}
 }
+
+#if 0
 
 /// @par
 ///
@@ -523,5 +450,5 @@ void rcMarkCylinderArea(rcContext* ctx, const float* pos,
 	
 	ctx->stopTimer(RC_TIMER_MARK_CYLINDER_AREA);
 }
-
+#endif
 }

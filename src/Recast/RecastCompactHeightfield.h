@@ -22,6 +22,7 @@
 #define RECAST_COMPACTHEIGHTFIELD_H
 
 #include <boost/scoped_array.hpp>
+#include "Recast.h"
 
 namespace Recast
 {
@@ -37,7 +38,7 @@ struct CompactSpan
 	bool walkable;
 	unsigned short dist;			///< Border distance data (???)
 	
-	const CompactSpan * neighbours[4];
+	const CompactSpan * neighbours[Direction::End];
 };
 
 /// A compact, static heightfield representing unobstructed space.
@@ -45,7 +46,16 @@ struct CompactSpan
 class CompactHeightfield
 {
 public:
+/// Builds a compact heightfield representing open space, from a heightfield representing solid space.
+///  @ingroup recast
+///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area 
+///  								to be considered walkable. [Limit: >= 3] [Units: vx]
+///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
+///  								[Limit: >=0] [Units: vx]
+///  @param[in]		hf				The heightfield to be compacted.
 	CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf);
+	
+	void erodeWalkableArea(int radius);
 	
 private:
 	CompactHeightfield(const CompactHeightfield&) { abort(); };
@@ -60,8 +70,6 @@ private:
 	int _borderSize;				///< The AABB border size used during the build of the field. (See: rcConfig::borderSize)
 	unsigned short _maxDistance;	///< The maximum distance value of any span within the field. 
 	unsigned short _maxRegions;	///< The maximum region id of any span within the field. 
-	//float _bmin[3];				///< The minimum bounds in world space. [(x, y, z)]
-	//float _bmax[3];				///< The maximum bounds in world space. [(x, y, z)]
 	float _cs;					///< The size of each cell. (On the xz-plane.)
 	float _ch;					///< The height of each cell. (The minimum increment along the y-axis.)
 	boost::scoped_array<std::vector<CompactSpan> > _cells;		///< Array of cells. [Size: #width*#height]
