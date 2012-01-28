@@ -87,16 +87,7 @@ void Heightfield::addSpan(const int x, const int z,
 	_zmax = std::max(_zmax, z);
 }
 
-unsigned int Heightfield::getSpanCount()
-{
-	unsigned int number = 0;
-	BOOST_FOREACH(span_container_t::value_type const& cell, _spans){
-		number += cell.second.size();
-	}
-	return number;
-}
-
-std::list<Span> & Heightfield::getSpans(int x, int z)
+std::list<Span> const& Heightfield::getSpans(int x, int z) const
 {
 	static std::list<Span> empty;
 	std::map<std::pair<int,int>, std::list<Span> >::const_iterator it = _spans.find(std::make_pair(x, z));

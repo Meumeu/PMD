@@ -73,7 +73,7 @@ public:
 		bool walkable, const int flagMergeThr);
 	
 	/// Get the list of spans
-	std::list<Span> & getSpans(int x, int z) const;
+	std::list<Span> const& getSpans(int x, int z) const;
 	
 	/// Get cell size
 	float getCellSize() const { return _cs; }
