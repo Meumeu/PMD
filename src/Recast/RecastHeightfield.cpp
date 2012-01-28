@@ -88,6 +88,16 @@ unsigned int Heightfield::getSpanCount()
 	return number;
 }
 
+std::list<Span> & Heightfield::getSpans(int x, int z)
+{
+	static std::list<Span> empty;
+	std::map<std::pair<int,int>, std::list<Span> >::const_iterator it = _spans.find(std::make_pair(x, z));
+	if (it == _spans.end())
+		return empty;
+
+	return it->second;
+}
+
 class PlaneDistance
 {
 public:

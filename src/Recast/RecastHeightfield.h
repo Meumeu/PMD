@@ -70,6 +70,9 @@ public:
 	/// Gets the total number of spans in the heightfield.
 	unsigned int getSpanCount();
 	
+	/// Get the list of spans
+	std::list<Span> & getSpans(int x, int z);
+	
 	/// Rasterizes a triangle into the heightfield.
 	///  @ingroup recast
 	///  @param[in]		v0				Triangle vertex 0
