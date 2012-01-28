@@ -693,30 +693,7 @@ void rcMarkWalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, con
 ///  @param[in]		nt					The number of triangles.
 ///  @param[out]	areas				The triangle area ids. [Length: >= @p nt]
 void rcClearUnwalkableTriangles(rcContext* ctx, const float walkableSlopeAngle, const float* verts, int nv,
-								const int* tris, int nt, unsigned char* areas); 
-#ifdef RCHF
-
-
-/// Returns the number of spans contained in the specified heightfield.
-///  @ingroup recast
-///  @param[in,out]	ctx		The build context to use during the operation.
-///  @param[in]		hf		An initialized heightfield.
-///  @returns The number of spans in the heightfield.
-int rcGetHeightFieldSpanCount(rcContext* ctx, rcHeightfield& hf);
-/// @}
-/// @name Compact Heightfield Functions
-/// @see rcCompactHeightfield
-/// @{
-
-#endif
-
-/// Erodes the walkable area within the heightfield by the specified radius. 
-///  @ingroup recast
-///  @param[in,out]	ctx		The build context to use during the operation.
-///  @param[in]		radius	The radius of erosion. [Limits: 0 < value < 255] [Units: vx]
-///  @param[in,out]	chf		The populated compact heightfield to erode.
-///  @returns True if the operation completed successfully.
-bool rcErodeWalkableArea(rcContext* ctx, int radius, CompactHeightfield& chf);
+								const int* tris, int nt, unsigned char* areas);
 
 /// Applies a median filter to walkable area types (based on area id), removing noise.
 ///  @ingroup recast
