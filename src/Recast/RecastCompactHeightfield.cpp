@@ -61,9 +61,9 @@ inline int rcGetCon(const CompactSpan& s, int dir)
 
 static bool isWalkable(CompactSpan const & s1, CompactSpan const & s2, const int walkableHeight, const int walkableClimb)
 {
-	const int bottom = std::max(s1.y, s2.y);
-	const int top = std::min(s1.y + s1.h, s2.y + s2.h);
-	const int climb = std::abs(s1.y - s2.y);
+	const int bottom = std::max(s1._bottom, s2._bottom);
+	const int top = std::min(s1._bottom + s1._height, s2._bottom + s2._height);
+	const int climb = std::abs(s1._bottom - s2._bottom);
 	
 	return (top - bottom) >= walkableHeight && climb <= walkableClimb;
 }
