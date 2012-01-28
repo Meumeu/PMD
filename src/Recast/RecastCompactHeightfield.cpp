@@ -105,11 +105,10 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 					
 					const int bottom = s->_smax;
 					const int height = ((next == spans.end()) ? INT_MAX : next->_smin) - bottom;
+
+					if (height < _walkableHeight ) continue;
 					
-					CompactSpan span;
-					span.y = bottom;
-					span.h = height;
-					vspan.push_back(span);
+					vspan.push_back(CompactSpan(bottom, height));
 				}
 			}
 		}
