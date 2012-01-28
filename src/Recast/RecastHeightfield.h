@@ -86,7 +86,7 @@ public:
 	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
 		const int flagMergeThr = 1);
 	
-	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor.
+	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimb of a walkable neihbor.
 	///  @ingroup recast
 	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
