@@ -23,12 +23,12 @@
 #include <cmath>
 #include <vector>
 
-#include <boost/scoped_array.hpp>
-
 namespace Recast
 {
 
 class Heightfield;
+class CompactHeightfield;
+
 /// The value of PI used by Recast.
 static const float RC_PI = 3.14159265f;
 
@@ -261,47 +261,7 @@ static const int RC_SPAN_MAX_HEIGHT = (1<<RC_SPAN_HEIGHT_BITS)-1;
 /// @see rcSpanPool
 static const int RC_SPANS_PER_POOL = 2048;
 
-/// Provides information on the content of a cell column in a compact heightfield. 
-struct CompactCell
-{
-	unsigned int index : 24;	///< Index to the first span in the column.
-	unsigned int count : 8;		///< Number of spans in the column.
-};
 
-/// Represents a span of unobstructed space within a compact heightfield.
-struct CompactSpan
-{
-	unsigned short y;			///< The lower extent of the span. (Measured from the heightfield's base.)
-	unsigned short reg;			///< The id of the region the span belongs to. (Or zero if not in a region.)
-	unsigned int con : 24;		///< Packed neighbor connection data.
-	unsigned int h : 8;			///< The height of the span.  (Measured from #y.)
-};
-
-/// A compact, static heightfield representing unobstructed space.
-/// @ingroup recast
-class CompactHeightfield
-{
-public:
-	CompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
-							   Heightfield& hf);
-
-	int _width;					///< The width of the heightfield. (Along the x-axis in cell units.)
-	int _height;					///< The height of the heightfield. (Along the z-axis in cell units.)
-	int _spanCount;				///< The number of spans in the heightfield.
-	int _walkableHeight;			///< The walkable height used during the build of the field.  (See: rcConfig::walkableHeight)
-	int _walkableClimb;			///< The walkable climb used during the build of the field. (See: rcConfig::walkableClimb)
-	int _borderSize;				///< The AABB border size used during the build of the field. (See: rcConfig::borderSize)
-	unsigned short _maxDistance;	///< The maximum distance value of any span within the field. 
-	unsigned short _maxRegions;	///< The maximum region id of any span within the field. 
-	float _bmin[3];				///< The minimum bounds in world space. [(x, y, z)]
-	float _bmax[3];				///< The maximum bounds in world space. [(x, y, z)]
-	float _cs;					///< The size of each cell. (On the xz-plane.)
-	float _ch;					///< The height of each cell. (The minimum increment along the y-axis.)
-	boost::scoped_array<CompactCell> _cells;		///< Array of cells. [Size: #width*#height]
-	boost::scoped_array<CompactSpan> _spans;		///< Array of spans. [Size: #spanCount]
-	boost::scoped_array<unsigned short> _dist;		///< Array containing border distance data. [Size: #spanCount]
-	boost::scoped_array<unsigned char> _areas;		///< Array containing area id data. [Size: #spanCount]
-};
 
 /// Represents a heightfield layer within a layer set.
 /// @see rcHeightfieldLayerSet
@@ -845,29 +805,6 @@ bool rcBuildRegions(rcContext* ctx, CompactHeightfield& chf,
 ///  @returns True if the operation completed successfully.
 bool rcBuildRegionsMonotone(rcContext* ctx, CompactHeightfield& chf,
 							const int borderSize, const int minRegionArea, const int mergeRegionArea);
-
-
-/// Sets the neighbor connection data for the specified direction.
-///  @param[in]		s		The span to update.
-///  @param[in]		dir		The direction to set. [Limits: 0 <= value < 4]
-///  @param[in]		i		The index of the neighbor span.
-inline void rcSetCon(CompactSpan& s, int dir, int i)
-{
-	const unsigned int shift = (unsigned int)dir*6;
-	unsigned int con = s.con;
-	s.con = (con & ~(0x3f << shift)) | (((unsigned int)i & 0x3f) << shift);
-}
-
-/// Gets neighbor connection data for the specified direction.
-///  @param[in]		s		The span to check.
-///  @param[in]		dir		The direction to check. [Limits: 0 <= value < 4]
-///  @return The neighbor connection data for the specified direction,
-///  	or #RC_NOT_CONNECTED if there is no connection.
-inline int rcGetCon(const CompactSpan& s, int dir)
-{
-	const unsigned int shift = (unsigned int)dir*6;
-	return (s.con >> shift) & 0x3f;
-}
 
 /// Gets the standard width (x-axis) offset for the specified direction.
 ///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]

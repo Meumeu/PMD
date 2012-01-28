@@ -23,28 +23,50 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <climits>
+
+#include <boost/foreach.hpp>
+
 #include "Recast.h"
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
+#include "RecastHeightfield.h"
+#include "RecastCompactHeightfield.h"
 
 namespace Recast
 {
-/*rcCompactHeightfield* rcAllocCompactHeightfield()
+
+	/*
+/// Sets the neighbor connection data for the specified direction.
+///  @param[in]		s		The span to update.
+///  @param[in]		dir		The direction to set. [Limits: 0 <= value < 4]
+///  @param[in]		i		The index of the neighbor span.
+inline void rcSetCon(CompactSpan& s, int dir, int i)
 {
-	rcCompactHeightfield* chf = (rcCompactHeightfield*)rcAlloc(sizeof(rcCompactHeightfield), RC_ALLOC_PERM);
-	memset(chf, 0, sizeof(rcCompactHeightfield));
-	return chf;
+	const unsigned int shift = (unsigned int)dir*6;
+	unsigned int con = s.con;
+	s.con = (con & ~(0x3f << shift)) | (((unsigned int)i & 0x3f) << shift);
 }
 
-void rcFreeCompactHeightfield(rcCompactHeightfield* chf)
+/// Gets neighbor connection data for the specified direction.
+///  @param[in]		s		The span to check.
+///  @param[in]		dir		The direction to check. [Limits: 0 <= value < 4]
+///  @return The neighbor connection data for the specified direction,
+///  	or #RC_NOT_CONNECTED if there is no connection.
+inline int rcGetCon(const CompactSpan& s, int dir)
 {
-	if (!chf) return;
-	rcFree(chf->cells);
-	rcFree(chf->spans);
-	rcFree(chf->dist);
-	rcFree(chf->areas);
-	rcFree(chf);
+	const unsigned int shift = (unsigned int)dir*6;
+	return (s.con >> shift) & 0x3f;
 }*/
+
+static bool isWalkable(CompactSpan const & s1, CompactSpan const & s2, const int walkableHeight, const int walkableClimb)
+{
+	const int bottom = std::max(s1.y, s2.y);
+	const int top = std::min(s1.y + s1.h, s2.y + s2.h);
+	const int climb = std::abs(s1.y - s2.y);
+	
+	return (top - bottom) >= walkableHeight && climb <= walkableClimb;
+}
 
 /// @par
 ///
@@ -55,133 +77,77 @@ void rcFreeCompactHeightfield(rcCompactHeightfield* chf)
 /// See the #rcConfig documentation for more information on the configuration parameters.
 ///
 /// @see rcAllocCompactHeightfield, rcHeightfield, rcCompactHeightfield, rcConfig
-//bool rcBuildCompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb,
-//							   Heightfield& hf, CompactHeightfield& chf)
-CompactHeightfield::CompactHeightfield(rcContext* ctx, const int walkableHeight, const int walkableClimb, Heightfield& hf) :
+CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf) :
 	_walkableHeight(walkableHeight),
 	_walkableClimb(walkableClimb),
 	_borderSize(0),
 	_maxDistance(0),
 	_maxRegions(0),
-	_cs(hf._cs),
-	_ch(hf._ch)
+	_cs(hf.getCellSize()),
+	_ch(hf.getCellHeight())
 {
-	rcAssert(ctx);
-	
-	ctx->startTimer(RC_TIMER_BUILD_COMPACTHEIGHTFIELD);
-	
-	const int w = hf.GetWidth();
-	const int h = hf.GetHeight();
-	const int spanCount = rcGetHeightFieldSpanCount(ctx, hf);
-
-	// Fill in header.
-	_width = w;
-	_height = h;
-	_spanCount = spanCount;
-	rcVcopy(_bmin, hf._bmin);
-	rcVcopy(_bmax, hf._bmax);
-	_bmax[1] += walkableHeight*hf._ch;
-	
-	_cells = boost::scoped_array<CompactCell>(new CompactCell[w*h]);
-	memset(_cells, 0, sizeof(rcCompactCell)*w*h);
-
-	_spans = boost::scoped_array<CompactSpan>(new CompactSpan[spanCount]);
-	memset(_spans, 0, sizeof(rcCompactSpan)*spanCount);
-
-	_areas = boost::scoped_array<unsigned char>(new unsigned char[spanCount]);
-	memset(_areas, RC_NULL_AREA, sizeof(unsigned char)*spanCount);
-	
-	const int MAX_HEIGHT = 0xffff;
+	hf.getOffsetAndSize(_xmin, _xsize, _zmin, _zsize);
+	_cells.reset(new std::vector<CompactSpan>[_xsize * _zsize]);
 	
 	// Fill in cells and spans.
-	int idx = 0;
-	for (int y = 0; y < h; ++y)
+	for (int z = 0; z < _zsize; ++z)
 	{
-		for (int x = 0; x < w; ++x)
+		for (int x = 0; x < _xsize; ++x)
 		{
-			const rcSpan* s = hf.spans[x + y*w];
-			// If there are no spans at this cell, just leave the data to index=0, count=0.
-			if (!s) continue;
-			rcCompactCell& c = chf.cells[x+y*w];
-			c.index = idx;
-			c.count = 0;
-			while (s)
+			std::list<Span> const & spans = hf.getSpans(x, z);
+			
+			if (!spans.empty())
 			{
-				if (s->area != RC_NULL_AREA)
+				std::vector<CompactSpan> & vspan = _cells[x + z * _xsize];
+				for(std::list<Span>::const_iterator next = spans.begin(), s = next++; s != spans.end(); s = (next != spans.end()) ? next++ : next)
 				{
-					const int bot = (int)s->smax;
-					const int top = s->next ? (int)s->next->smin : MAX_HEIGHT;
-					chf.spans[idx].y = (unsigned short)rcClamp(bot, 0, 0xffff);
-					chf.spans[idx].h = (unsigned char)rcClamp(top - bot, 0, 0xff);
-					chf.areas[idx] = s->area;
-					idx++;
-					c.count++;
+					if (!s->_walkable) continue;
+					
+					const int bottom = s->_smax;
+					const int height = ((next == spans.end()) ? INT_MAX : next->_smin) - bottom;
+					
+					CompactSpan span;
+					span.y = bottom;
+					span.h = height;
+					vspan.push_back(span);
 				}
-				s = s->next;
 			}
 		}
 	}
 
 	// Find neighbour connections.
-	const int MAX_LAYERS = RC_NOT_CONNECTED-1;
-	int tooHighNeighbour = 0;
-	for (int y = 0; y < h; ++y)
+	for(int z = 0; z < _zsize; z++)
 	{
-		for (int x = 0; x < w; ++x)
+		for(int x = 0; x < _xsize; x++)
 		{
-			const rcCompactCell& c = chf.cells[x+y*w];
-			for (int i = (int)c.index, ni = (int)(c.index+c.count); i < ni; ++i)
+			std::vector<CompactSpan>& c = _cells[x + z * _xsize];
+			
+			for(int i = 0, end = c.size(); i < end; i++)
 			{
-				rcCompactSpan& s = chf.spans[i];
+				CompactSpan &s = c[i];
 				
-				for (int dir = 0; dir < 4; ++dir)
+				for(int dir = 0; dir < 4; dir++)
 				{
-					rcSetCon(s, dir, RC_NOT_CONNECTED);
+					s.neighbours[dir] = 0;
 					const int nx = x + rcGetDirOffsetX(dir);
-					const int ny = y + rcGetDirOffsetY(dir);
-					// First check that the neighbour cell is in bounds.
-					if (nx < 0 || ny < 0 || nx >= w || ny >= h)
-						continue;
-						
-					// Iterate over all neighbour spans and check if any of the is
-					// accessible from current cell.
-					const rcCompactCell& nc = chf.cells[nx+ny*w];
-					for (int k = (int)nc.index, nk = (int)(nc.index+nc.count); k < nk; ++k)
-					{
-						const rcCompactSpan& ns = chf.spans[k];
-						const int bot = rcMax(s.y, ns.y);
-						const int top = rcMin(s.y+s.h, ns.y+ns.h);
-
-						// Check that the gap between the spans is walkable,
-						// and that the climb height between the gaps is not too high.
-						if ((top - bot) >= walkableHeight && rcAbs((int)ns.y - (int)s.y) <= walkableClimb)
-						{
-							// Mark direction as walkable.
-							const int idx = k - (int)nc.index;
-							if (idx < 0 || idx > MAX_LAYERS)
-							{
-								tooHighNeighbour = rcMax(tooHighNeighbour, idx);
-								continue;
-							}
-							rcSetCon(s, dir, idx);
-							break;
-						}
-					}
+					const int nz = z + rcGetDirOffsetY(dir);
 					
+					// First check that the neighbour cell is in bounds.
+					if (nx < 0 || nz < 0 || nx >= _xsize || nz >= _zsize) continue;
+					
+					const std::vector<CompactSpan>& nc = _cells[nx + nz * _xsize];
+					
+					for(int k = 0, endk = nc.size(); k < endk; k++)
+					{
+						const CompactSpan& ns = nc[k];
+						if (isWalkable(s, ns, walkableHeight, walkableClimb))
+							s.neighbours[dir] = &ns;
+					}
 				}
+				
 			}
 		}
 	}
-	
-	if (tooHighNeighbour > MAX_LAYERS)
-	{
-		ctx->log(RC_LOG_ERROR, "rcBuildCompactHeightfield: Heightfield has too many layers %d (max: %d)",
-				 tooHighNeighbour, MAX_LAYERS);
-	}
-		
-	ctx->stopTimer(RC_TIMER_BUILD_COMPACTHEIGHTFIELD);
-	
-	return true;
 }
 
 }

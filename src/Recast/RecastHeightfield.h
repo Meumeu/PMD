@@ -71,21 +71,18 @@ public:
 	void addSpan(const int x, const int y,
 		const unsigned short smin, const unsigned short smax,
 		bool walkable, const int flagMergeThr);
-
-	/// Gets the total number of spans in the heightfield.
-	unsigned int getSpanCount();
 	
 	/// Get the list of spans
-	std::list<Span> & getSpans(int x, int z);
+	std::list<Span> & getSpans(int x, int z) const;
 	
 	/// Get cell size
-	float getCellSize() { return _cs; }
+	float getCellSize() const { return _cs; }
 	
 	/// Get cell height
-	float getCellHeight() { return _ch; }
+	float getCellHeight() const { return _ch; }
 	
 	/// Get bounding box
-	void getOffsetAndSize(int& xmin, int& xsize, int& zmin, int& zsize)
+	void getOffsetAndSize(int& xmin, int& xsize, int& zmin, int& zsize) const
 	{
 		xmin = _xmin;
 		zmin = _zmin;
