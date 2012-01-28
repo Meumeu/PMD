@@ -129,8 +129,8 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 				for(int dir = Direction::Begin; dir < Direction::End; ++dir)
 				{
 					s.neighbours[dir] = 0;
-					const int nx = x + getXOffset(dir);
-					const int nz = z + getZOffset(dir);
+					const int nx = x + Direction::getXOffset(dir);
+					const int nz = z + Direction::getZOffset(dir);
 					
 					// First check that the neighbour cell is in bounds.
 					if (nx < 0 || nz < 0 || nx >= _xsize || nz >= _zsize) continue;

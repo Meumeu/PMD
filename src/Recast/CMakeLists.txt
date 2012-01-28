@@ -1,7 +1,6 @@
 SET(recast_SRCS
 	src/Recast/RecastPolyMesh.cpp
 	src/Recast/RecastContext.cpp
-	src/Recast/Recast.cpp
 	#src/Recast/RecastMeshDetail.cpp
 	#src/Recast/RecastCompactHeightfieldContour.cpp
 	src/Recast/RecastCompactHeightfield.cpp

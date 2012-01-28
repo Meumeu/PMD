@@ -135,7 +135,6 @@ void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Hei
 			transform * Vertices[i.VertexIndices[0]],
 			transform * Vertices[i.VertexIndices[1]],
 			transform * Vertices[i.VertexIndices[2]],
-			areaID,
 			flagMergeThr);
 	}
 }

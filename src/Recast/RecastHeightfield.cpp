@@ -34,10 +34,11 @@ namespace Recast
 
 typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
-Heightfield::Heightfield(float cellSize, float cellHeight):
+Heightfield::Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle):
 	_xmin(INT_MAX), _xmax(INT_MIN),
 	_zmin(INT_MAX), _zmax(INT_MIN),
-	_cs(cellSize), _ch(cellHeight)
+	_cs(cellSize), _ch(cellHeight),
+	_cosWalkableAngle(std::cos(walkableSlopeAngle))
 {
 }
 
@@ -161,8 +162,13 @@ static bool getPolyMinMax(
 	return true;
 }
 
+static bool isWalkable(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2, float cosWalkableAngle)
+{
+	return std::abs((v1-v0).crossProduct(v2-v0).normalisedCopy().y) > cosWalkableAngle;
+}
+
 void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-	const unsigned char area, const int flagMergeThr)
+	const int flagMergeThr)
 {
 	Ogre::AxisAlignedBox tribox;
 	tribox.merge(v0);
@@ -178,6 +184,8 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 	int x1 = std::ceil (tribox.getMaximum().x / _cs);
 	int z0 = std::floor(tribox.getMinimum().z / _cs);
 	int z1 = std::ceil (tribox.getMaximum().z / _cs);
+
+	bool walkable = isWalkable(v0, v1, v2, _cosWalkableAngle);
 	
 	for(; x < x1; ++x)
 	{
@@ -186,7 +194,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 			int min, max;
 			if (getPolyMinMax(triangle, x, z, _cs, _ch, min, max))
 			{
-				addSpan(x, z, min, max, area, flagMergeThr);
+				addSpan(x, z, min, max, walkable, flagMergeThr);
 			}
 		}
 	}

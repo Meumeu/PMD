@@ -107,7 +107,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.3f, 0.2f);
+	Recast::Heightfield heightfield(0.3f, 0.2f, M_PI/4);
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{

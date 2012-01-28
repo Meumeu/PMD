@@ -774,61 +774,61 @@ bool rcBuildRegionsMonotone(rcContext* ctx, CompactHeightfield& chf,
 
 struct Direction
 {
-enum
-{
-	Begin = 0,
-	Left = 0,
-	Forward,
-	Right,
-	Backward,
-	End
-};
-};
-
-/// Gets the standard width (x-axis) offset for the specified direction.
-///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
-///  @return The width offset to apply to the current cell position to move
-///  	in the direction.
-int getXOffset(int dir)
-{
-	switch(dir)
+	enum
 	{
-		case Direction::Left:
-			return -1;
-		case Direction::Right:
-			return 1;
-		case Direction::Forward:
-		case Direction::Backward:
-			return 0;
-		case Direction::End:
-			throw std::range_error("End");
-	}
-	
-	throw std::runtime_error("Unreachable");
-}
+		Begin = 0,
+		Left = 0,
+		Forward,
+		Right,
+		Backward,
+		End
+	};
 
-/// Gets the standard height (z-axis) offset for the specified direction.
-///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
-///  @return The height offset to apply to the current cell position to move
-///  	in the direction.
-int getZOffset(int dir)
-{
-	switch(dir)
+	/// Gets the standard width (x-axis) offset for the specified direction.
+	///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
+	///  @return The width offset to apply to the current cell position to move
+	///  	in the direction.
+	static int getXOffset(int dir)
 	{
-		case Direction::Forward:
-			return 1;
-		case Direction::Backward:
-			return -1;
-		case Direction::Left:
-		case Direction::Right:
-			return 0;
-		case Direction::End:
-			throw std::range_error("End");
+		switch(dir)
+		{
+			case Left:
+				return -1;
+			case Right:
+				return 1;
+			case Forward:
+			case Backward:
+				return 0;
+			case End:
+				throw std::range_error("End");
+		}
+
+		throw std::runtime_error("Unreachable");
 	}
-	
-	throw std::runtime_error("Unreachable");
-		
-}
+
+	/// Gets the standard height (z-axis) offset for the specified direction.
+	///  @param[in]		dir		The direction. [Limits: 0 <= value < 4]
+	///  @return The height offset to apply to the current cell position to move
+	///  	in the direction.
+	static int getZOffset(int dir)
+	{
+		switch(dir)
+		{
+			case Forward:
+				return 1;
+			case Backward:
+				return -1;
+			case Left:
+			case Right:
+				return 0;
+			case End:
+				throw std::range_error("End");
+		}
+
+		throw std::runtime_error("Unreachable");
+
+	}
+};
 
 /// @}
 /// @name Layer, Contour, Polymesh, and Detail Mesh Functions
