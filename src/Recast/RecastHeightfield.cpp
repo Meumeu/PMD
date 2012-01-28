@@ -111,6 +111,7 @@ static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in
 	std::vector<Ogre::Vector3> out;
 	
 	std::vector<float> d;
+	d.resize(in.size());
 	std::transform(in.begin(), in.end(), d.begin(), PlaneDistance(p));
 	
 	size_t n = in.size();
