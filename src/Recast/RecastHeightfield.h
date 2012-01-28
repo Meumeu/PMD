@@ -32,14 +32,14 @@ namespace Recast {
 /// @see rcHeightfield
 struct Span
 {
-	Span(unsigned int smin, unsigned int smax, unsigned int area):
-	_smin(smin), _smax(smax), _area(area) {}
+	Span(unsigned int smin, unsigned int smax, bool walkable):
+	_smin(smin), _smax(smax), _walkable(walkable) {}
 
 	void merge(Span const& other, const int flagMergeThr);
 
-	unsigned int _smin : 13; ///< The lower limit of the span. [Limit: < #smax]
-	unsigned int _smax : 13; ///< The upper limit of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT]
-	unsigned int _area : 6;  ///< The area id assigned to the span.
+	unsigned int _smin; ///< The lower limit of the span.
+	unsigned int _smax; ///< The upper limit of the span.
+	bool _walkable;
 };
 
 class rcContext;
@@ -65,7 +65,7 @@ public:
 	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
 	void addSpan(const int x, const int y,
 		const unsigned short smin, const unsigned short smax,
-		const unsigned char area, const int flagMergeThr);
+		bool walkable, const int flagMergeThr);
 
 	/// Gets the total number of spans in the heightfield.
 	unsigned int getSpanCount();
