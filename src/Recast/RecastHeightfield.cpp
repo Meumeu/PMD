@@ -41,18 +41,17 @@ void Span::merge(Span const& other, const int flagMergeThr)
 {
 	_smin = std::min(other._smin, _smin);
 	_smax = std::max(other._smax, _smax);
-	if (std::abs((int)_smax - (int)_smax) <= flagMergeThr)
+	if (std::abs((int)_smax - (int)other._smax) <= flagMergeThr)
 	{
-		_area = std::max(_area, other._area);
+		_walkable |= other._walkable;
 	}
 }
 
 void Heightfield::addSpan(const int x, const int y,
 	const unsigned short smin, const unsigned short smax,
-	const unsigned char area, const int flagMergeThr)
+	bool walkable, const int flagMergeThr)
 {
-	
-	Span s(smin, smax, area);
+	Span s(smin, smax, walkable);
 
 	span_container_t::iterator cell = _spans.find(std::make_pair(x,y));
 	//If the cell is empty, add a new list
