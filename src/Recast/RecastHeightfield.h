@@ -54,23 +54,8 @@ class rcContext;
 class Heightfield
 {
 public:
-	Heightfield(float cellSize, float cellHeight);
-
-	/// Adds a span to the heightfield.
-	///  @ingroup recast
-	///  @param[in,out] ctx          The build context to use during the operation.
-	///  @param[in,out] hf           An initialized heightfield.
-	///  @param[in]     x            The width index where the span is to be added.
-	///[Limits: 0 <= value < rcHeightfield::width]
-	///  @param[in]     y            The height index where the span is to be added.
-	///[Limits: 0 <= value < rcHeightfield::height]
-	///  @param[in]     smin         The minimum height of the span. [Limit: < @p smax] [Units: vx]
-	///  @param[in]     smax         The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
-	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
-	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
-	void addSpan(const int x, const int y,
-		const unsigned short smin, const unsigned short smax,
-		bool walkable, const int flagMergeThr);
+	/// @param[in] walkableSlopeAngle maximum angle (in radians) a unit can walk
+	Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle);
 	
 	/// Get the list of spans
 	std::list<Span> const& getSpans(int x, int z) const;
@@ -99,7 +84,7 @@ public:
 	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
 	///  								[Limit: >= 0] [Units: vx]
 	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-		const unsigned char area, const int flagMergeThr = 1);
+		const int flagMergeThr = 1);
 	
 	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimp of a walkable neihbor.
 	///  @ingroup recast
@@ -125,10 +110,28 @@ public:
 	void filterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
 
 private:
+	
+	/// Adds a span to the heightfield.
+	///  @ingroup recast
+	///  @param[in,out] ctx          The build context to use during the operation.
+	///  @param[in,out] hf           An initialized heightfield.
+	///  @param[in]     x            The width index where the span is to be added.
+	///[Limits: 0 <= value < rcHeightfield::width]
+	///  @param[in]     y            The height index where the span is to be added.
+	///[Limits: 0 <= value < rcHeightfield::height]
+	///  @param[in]     smin         The minimum height of the span. [Limit: < @p smax] [Units: vx]
+	///  @param[in]     smax         The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
+	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
+	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
+	void addSpan(const int x, const int y,
+		const unsigned short smin, const unsigned short smax,
+		bool walkable, const int flagMergeThr);
+	
 	int _xmin, _xmax;
 	int _zmin, _zmax;
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
+	float _cosWalkableAngle;
 	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
 };
 }
