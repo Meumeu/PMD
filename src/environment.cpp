@@ -33,6 +33,7 @@
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
 #include "Recast/RecastHeightfield.h"
+#include "Recast/RecastCompactHeightfield.h"
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -119,6 +120,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToTriMesh(transform, _TriMesh);
 		converter.AddToHeightField(transform, heightfield);//FIXME: adjust values
 	}
+
+	Recast::CompactHeightfield compactheightfield(1, 1, heightfield, 3);
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
 
