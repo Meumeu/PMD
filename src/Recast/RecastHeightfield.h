@@ -55,7 +55,7 @@ class Heightfield
 {
 public:
 	/// @param[in] walkableSlopeAngle maximum angle (in radians) a unit can walk
-	Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle);
+	Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle, int flagMergeThr);
 	
 	/// Get the list of spans
 	std::list<Span> const& getSpans(int x, int z) const;
@@ -83,8 +83,7 @@ public:
 	///  @param[in]		area			The area id of the triangle. [Limit: <= #RC_WALKABLE_AREA]
 	///  @param[in]		flagMergeThr	The distance where the walkable flag is favored over the non-walkable flag.
 	///  								[Limit: >= 0] [Units: vx]
-	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-		const int flagMergeThr = 1);
+	void rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2);
 	
 	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimb of a walkable neihbor.
 	///  @ingroup recast
@@ -125,13 +124,14 @@ private:
 	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
 	void addSpan(const int x, const int y,
 		const unsigned short smin, const unsigned short smax,
-		bool walkable, const int flagMergeThr);
+		bool walkable);
 	
 	int _xmin, _xmax;
 	int _zmin, _zmax;
-	float _cs;			///< The size of each cell. (On the xz-plane.)
-	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
+	float _cs;         ///< The size of each cell. (On the xz-plane.)
+	float _ch;         ///< The height of each cell. (The minimum increment along the y-axis.)
 	float _cosWalkableAngle;
+	int _flagMergeThr; ///<The distance where the walkable flag is favored over the non-walkable flag.
 	std::map<std::pair<int,int>, std::list<Span> > _spans; ///< Heightfield of spans (width*height).
 };
 }

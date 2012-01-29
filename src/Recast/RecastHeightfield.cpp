@@ -34,11 +34,12 @@ namespace Recast
 
 typedef std::map<std::pair<int,int>, std::list<Span> > span_container_t;
 
-Heightfield::Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle):
+Heightfield::Heightfield(float cellSize, float cellHeight, float walkableSlopeAngle, int flagMergeThr):
 	_xmin(INT_MAX), _xmax(INT_MIN),
 	_zmin(INT_MAX), _zmax(INT_MIN),
 	_cs(cellSize), _ch(cellHeight),
-	_cosWalkableAngle(std::cos(walkableSlopeAngle))
+	_cosWalkableAngle(std::cos(walkableSlopeAngle)),
+	_flagMergeThr(flagMergeThr)
 {
 }
 
@@ -54,7 +55,7 @@ void Span::merge(Span const& other, const int flagMergeThr)
 
 void Heightfield::addSpan(const int x, const int z,
 	const unsigned short smin, const unsigned short smax,
-	bool walkable, const int flagMergeThr)
+	bool walkable)
 {
 	Span s(smin, smax, walkable);
 
@@ -76,7 +77,7 @@ void Heightfield::addSpan(const int x, const int z,
 		//Merge spans, remove the current one
 		if (target->_smax >= s._smin)
 		{
-			s.merge(*target, flagMergeThr);
+			s.merge(*target, _flagMergeThr);
 			target = intervals.erase(target);
 		}
 	}
@@ -167,8 +168,7 @@ static bool isWalkable(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::V
 	return std::abs((v1-v0).crossProduct(v2-v0).normalisedCopy().y) > cosWalkableAngle;
 }
 
-void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2,
-	const int flagMergeThr)
+void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2)
 {
 	Ogre::AxisAlignedBox tribox;
 	tribox.merge(v0);
@@ -194,7 +194,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 			int min, max;
 			if (getPolyMinMax(triangle, x, z, _cs, _ch, min, max))
 			{
-				addSpan(x, z, min, max, walkable, flagMergeThr);
+				addSpan(x, z, min, max, walkable);
 			}
 		}
 	}

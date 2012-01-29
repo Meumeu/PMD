@@ -107,7 +107,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.3f, 0.2f, M_PI/4);
+	Recast::Heightfield heightfield(0.3f, 0.2f, M_PI/4, 1);
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
@@ -117,7 +117,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		OgreConverter converter(*block._entity);
 		Ogre::Matrix4 transform = getMatrix4(block._orientation, block._position);
 		converter.AddToTriMesh(transform, _TriMesh);
-		converter.AddToHeightField(transform, heightfield, 0, 1);//FIXME: adjust values
+		converter.AddToHeightField(transform, heightfield);//FIXME: adjust values
 	}
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
