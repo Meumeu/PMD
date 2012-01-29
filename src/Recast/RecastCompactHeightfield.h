@@ -32,14 +32,15 @@ class Heightfield;
 struct CompactSpan
 {
 	CompactSpan(unsigned int bottom, unsigned int height, bool walkable = true):
-		_bottom(bottom), _height(height), _regionID(0), _walkable(walkable) {}
+		_bottom(bottom), _height(height), _regionID(0), _walkable(walkable), _flag(0) {}
 	unsigned int _bottom;           ///< The lower extent of the span. (Measured from the heightfield's base.)
 	unsigned int _height;           ///< The height of the span.  (Measured from #y.)
-	unsigned short _regionID;            ///< The id of the region the span belongs to. (Or zero if not in a region.)
+	unsigned short _regionID;       ///< The id of the region the span belongs to. (Or zero if not in a region.)
 	bool _walkable;
+	char _flag;
 	unsigned short _borderDistance; ///< Border distance data (number of cells x2, sqrt(2) == 1.5)
 	
-	const CompactSpan * neighbours[Direction::End];
+	CompactSpan * neighbours[Direction::End];
 };
 
 /// A compact, static heightfield representing unobstructed space.

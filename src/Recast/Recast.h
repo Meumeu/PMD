@@ -357,17 +357,6 @@ struct rcPolyMeshDetail
 ///  @see rcAllocHeightfieldLayerSet
 //void rcFreeHeightfieldLayerSet(rcHeightfieldLayerSet* lset);
 
-/// Allocates a contour set object using the Recast allocator.
-///  @return A contour set that is ready for initialization, or null on failure.
-///  @ingroup recast
-///  @see rcBuildContours, rcFreeContourSet
-rcContourSet* rcAllocContourSet();
-
-/// Frees the specified contour set using the Recast allocator.
-///  @param[in]		cset	A contour set allocated using #rcAllocContourSet
-///  @ingroup recast
-///  @see rcAllocContourSet
-void rcFreeContourSet(rcContourSet* cset);
 
 /// Allocates a polygon mesh object using the Recast allocator.
 ///  @return A polygon mesh that is ready for initialization, or null on failure.
@@ -838,7 +827,7 @@ bool rcBuildHeightfieldLayers(rcContext* ctx, CompactHeightfield& chf,
 ///  @returns True if the operation completed successfully.
 bool rcBuildContours(rcContext* ctx, CompactHeightfield& chf,
 					 const float maxError, const int maxEdgeLen,
-					 rcContourSet& cset, const int flags = RC_CONTOUR_TESS_WALL_EDGES);
+					 ContourSet& cset, const int flags = RC_CONTOUR_TESS_WALL_EDGES);
 
 /// Builds a polygon mesh from the provided contours.
 ///  @ingroup recast
@@ -848,7 +837,7 @@ bool rcBuildContours(rcContext* ctx, CompactHeightfield& chf,
 ///  						contour to polygon conversion process. [Limit: >= 3] 
 ///  @param[out]	mesh	The resulting polygon mesh. (Must be re-allocated.)
 ///  @returns True if the operation completed successfully.
-bool rcBuildPolyMesh(rcContext* ctx, rcContourSet& cset, const int nvp, rcPolyMesh& mesh);
+bool rcBuildPolyMesh(rcContext* ctx, ContourSet& cset, const int nvp, rcPolyMesh& mesh);
 
 /// Merges multiple polygon meshes into a single mesh.
 ///  @ingroup recast

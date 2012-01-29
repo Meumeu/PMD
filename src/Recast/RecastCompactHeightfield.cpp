@@ -36,29 +36,6 @@
 namespace Recast
 {
 
-	/*
-/// Sets the neighbor connection data for the specified direction.
-///  @param[in]		s		The span to update.
-///  @param[in]		dir		The direction to set. [Limits: 0 <= value < 4]
-///  @param[in]		i		The index of the neighbor span.
-inline void rcSetCon(CompactSpan& s, int dir, int i)
-{
-	const unsigned int shift = (unsigned int)dir*6;
-	unsigned int con = s.con;
-	s.con = (con & ~(0x3f << shift)) | (((unsigned int)i & 0x3f) << shift);
-}
-
-/// Gets neighbor connection data for the specified direction.
-///  @param[in]		s		The span to check.
-///  @param[in]		dir		The direction to check. [Limits: 0 <= value < 4]
-///  @return The neighbor connection data for the specified direction,
-///  	or #RC_NOT_CONNECTED if there is no connection.
-inline int rcGetCon(const CompactSpan& s, int dir)
-{
-	const unsigned int shift = (unsigned int)dir*6;
-	return (s.con >> shift) & 0x3f;
-}*/
-
 static bool isWalkable(CompactSpan const & s1, CompactSpan const & s2, const int walkableHeight, const int walkableClimb)
 {
 	const int bottom = std::max(s1._bottom, s2._bottom);
@@ -134,11 +111,11 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 					// First check that the neighbour cell is in bounds.
 					if (nx < 0 || nz < 0 || nx >= _xsize || nz >= _zsize) continue;
 					
-					const std::vector<CompactSpan>& nc = _cells[nx + nz * _xsize];
+					std::vector<CompactSpan>& nc = _cells[nx + nz * _xsize];
 					
 					for(int k = 0, endk = nc.size(); k < endk; k++)
 					{
-						const CompactSpan& ns = nc[k];
+						CompactSpan& ns = nc[k];
 						if (isWalkable(s, ns, walkableHeight, walkableClimb))
 							s.neighbours[dir] = &ns;
 					}

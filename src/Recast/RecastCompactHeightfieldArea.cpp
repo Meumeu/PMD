@@ -62,20 +62,20 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 		
 		BOOST_FOREACH(CompactSpan & span, cell)
 		{
-			if (span.walkable)
+			if (span._walkable)
 			{
 				// Init distance
-				span.dist = USHRT_MAX;
+				span._borderDistance = USHRT_MAX;
 				
 				for(int dir = Direction::Begin; dir < Direction::End; dir++)
 				{
-					if (!span.neighbours[dir] || !span.neighbours[dir]->walkable)
-						span.dist = 0; // At least one missing or non walkable neighbour (boundary)
+					if (!span.neighbours[dir] || !span.neighbours[dir]->_walkable)
+						span._walkable = 0; // At least one missing or non walkable neighbour (boundary)
 				}
 			}
 			else
 			{
-				span.dist = 0;
+				span._walkable = 0;
 			}
 		}
 	}
@@ -92,21 +92,21 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 				const CompactSpan * nn;
 				if ((n = span.neighbours[Direction::Left]))
 				{
-					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Backward]))
 					{
-						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 				
 				if ((n = span.neighbours[Direction::Backward]))
 				{
-					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Right]))
 					{
-						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 			}
@@ -125,21 +125,21 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 				const CompactSpan * nn;
 				if ((n = span.neighbours[Direction::Right]))
 				{
-					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Forward]))
 					{
-						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 				
 				if ((n = span.neighbours[Direction::Forward]))
 				{
-					span.dist = std::min(span.dist, std::min<short unsigned int>(n->dist + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Left]))
 					{
-						span.dist = std::min(span.dist, std::min<short unsigned int>(nn->dist + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 			}
@@ -153,12 +153,13 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 		
 		BOOST_FOREACH(CompactSpan & span, cell)
 		{
-			if (span.dist < thr)
-				span.walkable = false;
+			if (span._borderDistance < thr)
+				span._walkable = false;
 		}
 	}
 }
 
+// TODO: le reste de ce fichier
 #if 0
 
 /// @par
