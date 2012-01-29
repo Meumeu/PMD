@@ -60,6 +60,8 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	_InputManager(0),
 	_Mouse(0),
 	_Keyboard(0),
+	_CeguiRenderer(0),
+	_CeguiRootWindow(0),
 	_Shutdown(false),
 	_SettingsDir(SettingsDir)
 {
@@ -229,11 +231,8 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 
 void AppStateManager::cleanup()
 {
-	if (_CeguiRootWindow)
-	{
-		_CeguiRootWindow->destroy();
-		_CeguiRootWindow = 0;
-	}
+	CEGUI::WindowManager::getSingleton().destroyAllWindows();
+	_CeguiRootWindow = 0;
 	
 	if (_CeguiRenderer)
 	{

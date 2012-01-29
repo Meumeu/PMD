@@ -87,26 +87,23 @@ public:
 	
 	/// Marks non-walkable spans as walkable if their maximum is within @p walkableClimb of a walkable neihbor.
 	///  @ingroup recast
-	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void filterLowHangingWalkableObstacles(rcContext* ctx, const int walkableClimb);
+	void filterLowHangingWalkableObstacles(const int walkableClimb);
 	
 	/// Marks spans that are ledges as not-walkable.
 	///  @ingroup recast
-	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void filterLedgeSpans(rcContext* ctx, const int walkableHeight, const int walkableClimb);
+	void filterLedgeSpans(const int walkableHeight, const int walkableClimb);
 	
 	/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height.
 	///  @ingroup recast
-	///  @param[in,out]	ctx				The build context to use during the operation.
 	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
-	void filterWalkableLowHeightSpans(rcContext* ctx, int walkableHeight);
+	void filterWalkableLowHeightSpans(int walkableHeight);
 
 private:
 	

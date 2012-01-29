@@ -56,13 +56,14 @@ public:
 ///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
 ///  								[Limit: >=0] [Units: vx]
 ///  @param[in]		hf				The heightfield to be compacted.
-	CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf);
-	
-	void erodeWalkableArea(int radius);
+	CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf, const int radius,
+			   const bool filterLowHangingWalkableObstacles = true, const bool filterLedgeSpans = true);
 	
 private:
 	CompactHeightfield(const CompactHeightfield&);
 	CompactHeightfield & operator=(const CompactHeightfield&);
+	
+	void erodeWalkableArea(int radius);
 	
 	int _xmin;
 	int _zmin;

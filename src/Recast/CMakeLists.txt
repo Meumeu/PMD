@@ -5,12 +5,11 @@ SET(recast_SRCS
 	#src/Recast/RecastCompactHeightfieldContour.cpp
 	src/Recast/RecastCompactHeightfield.cpp
 	src/Recast/RecastHeightfield.cpp
-	#src/Recast/RecastHeightfieldFilter.cpp
 	src/Recast/RecastAlloc.cpp
 	#src/Recast/RecastLayers.cpp
 	src/Recast/RecastContourSet.cpp
 	#src/Recast/RecastMesh.cpp
-	#src/Recast/RecastCompactHeightfieldArea.cpp
+	src/Recast/RecastCompactHeightfieldArea.cpp
 	src/Recast/RecastPolyMeshDetail.cpp
 	#src/Recast/RecastRegion.cpp
 

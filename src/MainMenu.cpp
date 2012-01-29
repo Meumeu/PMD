@@ -102,7 +102,6 @@ bool MainMenu::keyReleased(const OIS::KeyEvent& e)
 bool MainMenu::mouseMoved(const OIS::MouseEvent& e)
 {
 	CEGUI::System::getSingleton().injectMouseMove(e.state.X.rel, e.state.Y.rel);
-	//CEGUI::System::getSingleton().injectMousePosition(e.state.X.abs, e.state.Y.abs);
 	if (e.state.Z.rel)
 		CEGUI::System::getSingleton().injectMouseWheelChange(e.state.Z.rel / 120.0);
 	
