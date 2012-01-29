@@ -116,7 +116,7 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 	// Pass 2
 	for(int z = _zsize - 1; z >= 0; z--)
 	{
-		for(int x = _xsize - 1; x >= 0; z--)
+		for(int x = _xsize - 1; x >= 0; x--)
 		{
 			std::vector<CompactSpan>& c = _cells[x + z * _xsize];
 			BOOST_FOREACH(CompactSpan& span, c)
