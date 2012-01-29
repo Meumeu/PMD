@@ -127,15 +127,14 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 	}
 }
 
-void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField, unsigned char areaID, int flagMergeThr) const
+void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField) const
 {
 	BOOST_FOREACH(Face const& i, Faces)
 	{
 		heightField.rasterizeTriangle(
 			transform * Vertices[i.VertexIndices[0]],
 			transform * Vertices[i.VertexIndices[1]],
-			transform * Vertices[i.VertexIndices[2]],
-			flagMergeThr);
+			transform * Vertices[i.VertexIndices[2]]);
 	}
 }
 
