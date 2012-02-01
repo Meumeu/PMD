@@ -483,7 +483,7 @@ static void markBoundaries(boost::scoped_array<std::vector<CompactSpan> > & cell
 					cell[i]._flag = 0xf;
 					for(int dir = Direction::Begin; dir < Direction::End; ++dir)
 					{
-						const int r = cell[i].neighbours[dir] ? cell[i].neighbours[dir]->_regionID : 0;
+						const unsigned int r = cell[i].neighbours[dir] ? cell[i].neighbours[dir]->_regionID : 0;
 						if (r == cell[i]._regionID)
 							cell[i]._flag &= ~(1 << dir);
 					}
@@ -502,7 +502,6 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 {
 	// Mark boundaries
 	markBoundaries(chf._cells, chf._xsize, chf._zsize);
-	
 	
 	for(int z = 0; z < chf._zsize; ++z)
 	{

@@ -20,8 +20,6 @@
 #include <boost/foreach.hpp>
 
 #include "Recast.h"
-#include "RecastAlloc.h"
-#include "RecastAssert.h"
 #include "RecastHeightfield.h"
 #include "RecastCompactHeightfield.h"
 
@@ -64,7 +62,7 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 	{
 		Span * curr = &*it;
 		std::list<Span>::iterator it2 = it; ++it2;
-		Span * next = &*it2;
+		Span * next = (it2 != end) ? &*it2 : 0;
 		
 		if (!curr->_walkable) continue;
 		
@@ -80,8 +78,8 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 			
 			const std::list<Span> & nspans = hf.getSpans(nx, nz);
 			
-			// Minus infinity to first spans
-			int nbot = -walkableClimb;
+			// Minus infinity to first span
+			int nbot = -10-walkableClimb;
 			int ntop = (nspans.begin() != nspans.end()) ? nspans.begin()->_smin : INT_MAX;
 			
 			if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
@@ -90,6 +88,7 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 			for(std::list<Span>::const_iterator it2 = nspans.begin(), end2 = nspans.end(); it2 != end2; ++it2)
 			{
 				std::list<Span>::const_iterator it3 = it2; ++it3;
+				assert(it3 == end2 || it3->_smin > it2->_smax);
 				nbot = it2->_smax;
 				ntop = (it3 != end2) ? it3->_smin : INT_MAX;
 				
@@ -107,8 +106,8 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 		
 		// The current span is close to a ledge if the drop to any
 		// neighbour span is less than the walkableClimb.
-		if (minh < -walkableClimb)
-			curr->_walkable = false;
+		//if (minh < -walkableClimb)
+		//	curr->_walkable = false;
 		
 		// If the difference between all neighbours is too large,
 		// we are at steep slope, mark the span as ledge.
@@ -126,37 +125,39 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 /// See the #rcConfig documentation for more information on the configuration parameters.
 ///
 /// @see rcAllocCompactHeightfield, rcHeightfield, rcCompactHeightfield, rcConfig
-CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf, const int radius,
-	const bool filterLowHangingWalkableObstacles, const bool filterLedgeSpans) :
-	_walkableHeight(walkableHeight),
-	_walkableClimb(walkableClimb),
-	_borderSize(0),
+CompactHeightfield::CompactHeightfield(const float walkableHeight, const float walkableClimb, const Heightfield& hf, const float radius,
+	const bool filterLowHangingWalkableObstacles, const bool filterLedgeSpans, const int borderSize) :
+	_walkableHeight(ceil(walkableHeight / hf.getCellHeight())),
+	_walkableClimb(floor(walkableClimb / hf.getCellHeight())),
+	_borderSize(borderSize),
 	_maxDistance(0),
 	_maxRegions(0),
 	_cs(hf.getCellSize()),
 	_ch(hf.getCellHeight())
 {
 	hf.getOffsetAndSize(_xmin, _xsize, _zmin, _zsize);
+	std::cerr << "size (" << _xsize << "," << _zsize << "), cs=" << _cs << "\n";
 	_cells.reset(new std::vector<CompactSpan>[_xsize * _zsize]);
 	
 	// Fill in cells and spans.
+	int n1 = 0, n2 = 0;
+	
 	for (int z = 0; z < _zsize; ++z)
 	{
 		for (int x = 0; x < _xsize; ++x)
 		{
-			std::list<Span> spans = hf.getSpans(x, z);
+			std::list<Span> spans = hf.getSpans(x + _xmin, z + _zmin);
+			n1 += spans.size();
 			
-			if (filterLowHangingWalkableObstacles)
-				Recast::filterLowHangingWalkableObstacles(spans, walkableClimb);
-			
-			if (filterLedgeSpans)
-				Recast::filterLedgeSpans(spans, x, z, hf, walkableClimb, walkableHeight);
+			if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
+			if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);
 			
 			if (!spans.empty())
 			{
 				std::vector<CompactSpan> & vspan = _cells[x + z * _xsize];
 				for(std::list<Span>::const_iterator next = spans.begin(), s = next++; s != spans.end(); s = (next != spans.end()) ? next++ : next)
 				{
+					assert((next == spans.end()) || (next->_smin >= s->_smax));
 					if (!s->_walkable) continue;
 					
 					const int bottom = s->_smax;
@@ -165,10 +166,14 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 					if (height < _walkableHeight ) continue;
 					
 					vspan.push_back(CompactSpan(bottom, height));
+					n2++;
 				}
 			}
 		}
 	}
+	
+	std::cout << n1 << " spans, " << n2 << " compactspans\n";
+	
 
 	// Find neighbour connections.
 	for(int z = 0; z < _zsize; z++)
@@ -195,7 +200,7 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 					for(int k = 0, endk = nc.size(); k < endk; k++)
 					{
 						CompactSpan& ns = nc[k];
-						if (isWalkable(s, ns, walkableHeight, walkableClimb))
+						if (isWalkable(s, ns, _walkableHeight, _walkableClimb))
 							s.neighbours[dir] = &ns;
 					}
 				}
@@ -203,7 +208,7 @@ CompactHeightfield::CompactHeightfield(const int walkableHeight, const int walka
 		}
 	}
 	
-	erodeWalkableArea(radius);
+	erodeWalkableArea(ceil(radius / _cs));
 }
 
 }

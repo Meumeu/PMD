@@ -40,11 +40,6 @@ struct Span
 	unsigned int _smin; ///< The lower limit of the span.
 	unsigned int _smax; ///< The upper limit of the span.
 	bool _walkable;
-	
-	struct
-	{
-		int x, y, z;
-	} _neighbours[4];
 };
 
 class rcContext;
@@ -89,7 +84,7 @@ public:
 	///  @ingroup recast
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void filterLowHangingWalkableObstacles(const int walkableClimb);
+	//void filterLowHangingWalkableObstacles(const int walkableClimb);
 	
 	/// Marks spans that are ledges as not-walkable.
 	///  @ingroup recast
@@ -97,13 +92,13 @@ public:
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
 	///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable.
 	///  								[Limit: >=0] [Units: vx]
-	void filterLedgeSpans(const int walkableHeight, const int walkableClimb);
+	//void filterLedgeSpans(const int walkableHeight, const int walkableClimb);
 	
 	/// Marks walkable spans as not walkable if the clearence above the span is less than the specified height.
 	///  @ingroup recast
 	///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area to
 	///  								be considered walkable. [Limit: >= 3] [Units: vx]
-	void filterWalkableLowHeightSpans(int walkableHeight);
+	//void filterWalkableLowHeightSpans(int walkableHeight);
 
 private:
 	
@@ -119,7 +114,7 @@ private:
 	///  @param[in]     smax         The maximum height of the span. [Limit: <= #RC_SPAN_MAX_HEIGHT] [Units: vx]
 	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
 	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
-	void addSpan(const int x, const int y,
+	void addSpan(const int x, const int z,
 		const unsigned short smin, const unsigned short smax,
 		bool walkable);
 	

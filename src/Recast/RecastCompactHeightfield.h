@@ -22,6 +22,9 @@
 #define RECAST_COMPACTHEIGHTFIELD_H
 
 #include <boost/scoped_array.hpp>
+#include <vector>
+#include <map>
+
 #include "Recast.h"
 
 namespace Recast
@@ -31,14 +34,14 @@ class Heightfield;
 /// Represents a span of unobstructed space within a compact heightfield.
 struct CompactSpan
 {
-	CompactSpan(unsigned int bottom, unsigned int height, bool walkable = true):
+	CompactSpan(int bottom, int height, bool walkable = true):
 		_bottom(bottom), _height(height), _regionID(0), _walkable(walkable), _flag(0) {}
-	unsigned int _bottom;           ///< The lower extent of the span. (Measured from the heightfield's base.)
-	unsigned int _height;           ///< The height of the span.  (Measured from #y.)
-	unsigned short _regionID;       ///< The id of the region the span belongs to. (Or zero if not in a region.)
+	int _bottom;                     ///< The lower extent of the span. (Measured from the heightfield's base.)
+	int _height;                     ///< The height of the span.  (Measured from #_bottom.)
+	unsigned int _regionID;          ///< The id of the region the span belongs to. (Or zero if not in a region.)
 	bool _walkable;
 	char _flag;
-	unsigned short _borderDistance; ///< Border distance data (number of cells x2, sqrt(2) == 1.5)
+	unsigned short _borderDistance;   ///< Border distance data (number of cells x2, sqrt(2) == 1.5)
 	
 	CompactSpan * neighbours[Direction::End];
 };
@@ -52,19 +55,38 @@ public:
 /// Builds a compact heightfield representing open space, from a heightfield representing solid space.
 ///  @ingroup recast
 ///  @param[in]		walkableHeight	Minimum floor to 'ceiling' height that will still allow the floor area 
-///  								to be considered walkable. [Limit: >= 3] [Units: vx]
+///  								to be considered walkable. [Limit: >= 3 * cs] [Units: wu]
 ///  @param[in]		walkableClimb	Maximum ledge height that is considered to still be traversable. 
-///  								[Limit: >=0] [Units: vx]
+///  								[Limit: >=0] [Units: wu]
 ///  @param[in]		hf				The heightfield to be compacted.
-	CompactHeightfield(const int walkableHeight, const int walkableClimb, const Heightfield& hf, const int radius,
-			   const bool filterLowHangingWalkableObstacles = true, const bool filterLedgeSpans = true);
+	CompactHeightfield(const float walkableHeight, const float walkableClimb, const Heightfield& hf, const float radius,
+			   const bool filterLowHangingWalkableObstacles = true, const bool filterLedgeSpans = true,
+			   const int borderSize = 1);
 	
+	typedef std::map<CompactSpan *, unsigned int> IntMap;
+	void buildRegions(const int minRegionArea, const int mergeRegionSize);
+
 private:
+	struct Region;
+	
 	CompactHeightfield(const CompactHeightfield&);
 	CompactHeightfield & operator=(const CompactHeightfield&);
 	
-	void erodeWalkableArea(int radius);
+	// The following functions are the different steps performed by buildRegions()
+	void buildDistanceField();
+	void blurDistanceField(IntMap& out, int threshold = 1);
+	bool fillRegion(Recast::CompactSpan& span, unsigned int level, unsigned int region, Recast::CompactHeightfield::IntMap& regionMap, Recast::CompactHeightfield::IntMap& distanceMap);
+	void paintRectRegion(const int minx, const int maxx, const int minz, const int maxz, const unsigned int regionID, IntMap& regionMap);
+	void expandRegions(const int maxIter, const unsigned int level, IntMap& regionMap, IntMap& distanceMap);
+	void findConnections(std::vector<Region> & regions, IntMap& regionMap);
+	void removeTooSmallRegions(std::vector<Region> & regions, const int minRegionArea);
+	void mergeTooSmallRegions(std::vector<Region> & regions, const int mergeRegionSize);
+	void compressRegionId(std::vector<Region> & regions, IntMap& regionMap);
+	void filterSmallRegions(const int minRegionArea, const int mergeRegionSize, IntMap& regionMap);
 	
+	
+	void erodeWalkableArea(int radius);
+public:
 	int _xmin;
 	int _zmin;
 	int _xsize;					///< The width of the heightfield. (Along the x-axis in cell units.)

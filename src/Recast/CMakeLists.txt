@@ -11,7 +11,7 @@ SET(recast_SRCS
 	#src/Recast/RecastMesh.cpp
 	src/Recast/RecastCompactHeightfieldArea.cpp
 	src/Recast/RecastPolyMeshDetail.cpp
-	#src/Recast/RecastRegion.cpp
+	src/Recast/RecastRegion.cpp
 
 	PARENT_SCOPE
 )

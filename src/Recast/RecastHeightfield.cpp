@@ -57,11 +57,15 @@ void Heightfield::addSpan(const int x, const int z,
 	const unsigned short smin, const unsigned short smax,
 	bool walkable)
 {
+	_xmin = std::min(_xmin, x);
+	_xmax = std::max(_xmax, x);
+	_zmin = std::min(_zmin, z);
+	_zmax = std::max(_zmax, z);
 	Span s(smin, smax, walkable);
 
 	span_container_t::iterator cell = _spans.find(std::make_pair(x,z));
 	//If the cell is empty, add a new list
-	if ( cell == _spans.end())
+	if (cell == _spans.end())
 	{
 		std::list<Span> newList;
 		newList.push_back(s);
@@ -70,23 +74,27 @@ void Heightfield::addSpan(const int x, const int z,
 	}
 	std::list<Span> & intervals = cell->second;
 	std::list<Span>::iterator target= intervals.begin();
-	for (std::list<Span>::iterator end = intervals.end() ;
-	     target != end && target->_smin <= s._smax;
-	     ++target)
+	std::list<Span>::iterator end = intervals.end();
+	while(target != end)
 	{
-		//Merge spans, remove the current one
-		if (target->_smax >= s._smin)
+		if (target->_smin > s._smax)
 		{
+			intervals.insert(target, s);
+			return;
+		}
+		else if (target->_smax >= s._smin)
+		{
+			// Merge spans, remove the current one
 			s.merge(*target, _flagMergeThr);
 			target = intervals.erase(target);
 		}
+		else
+		{
+			target++;
+		}
 	}
-	intervals.insert(target, s);
 	
-	_xmin = std::min(_xmin, x);
-	_xmax = std::max(_xmax, x);
-	_zmin = std::min(_zmin, z);
-	_zmax = std::max(_zmax, z);
+	intervals.insert(end, s);
 }
 
 std::list<Span> const& Heightfield::getSpans(int x, int z) const
@@ -141,10 +149,10 @@ static bool getPolyMinMax(
 	int& min, int& max)
 {
 	std::vector<Ogre::Vector3> clippedIn = clipPoly(clipPoly(clipPoly(clipPoly(in,
-		Ogre::Plane(Ogre::Vector3::UNIT_X, -x)),
-		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, x+cs)),
-		Ogre::Plane(Ogre::Vector3::UNIT_Z, -z)),
-		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, z+cs));
+		Ogre::Plane(Ogre::Vector3::UNIT_X, x)),
+		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -x-cs)),
+		Ogre::Plane(Ogre::Vector3::UNIT_Z, z)),
+		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -z-cs));
 
 	if (clippedIn.size() < 3) return false;
 
@@ -174,7 +182,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 	tribox.merge(v0);
 	tribox.merge(v1);
 	tribox.merge(v2);
-
+	
 	std::vector<Ogre::Vector3> triangle;
 	triangle.push_back(v0);
 	triangle.push_back(v1);
@@ -184,7 +192,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 	int x1 = std::ceil (tribox.getMaximum().x / _cs);
 	int z0 = std::floor(tribox.getMinimum().z / _cs);
 	int z1 = std::ceil (tribox.getMaximum().z / _cs);
-
+	
 	bool walkable = isWalkable(v0, v1, v2, _cosWalkableAngle);
 	
 	for(; x < x1; ++x)
@@ -192,7 +200,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 		for(int z = z0; z < z1; ++z)
 		{
 			int min, max;
-			if (getPolyMinMax(triangle, x, z, _cs, _ch, min, max))
+			if (getPolyMinMax(triangle, x * _cs, z * _cs, _cs, _ch, min, max))
 			{
 				addSpan(x, z, min, max, walkable);
 			}

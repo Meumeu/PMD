@@ -226,7 +226,7 @@ void Game::go(void)
 		_Env = boost::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));
 	}
 
-	btVector3 PlayerPosition(0, 0, 0);
+	btVector3 PlayerPosition(40, 10, 0);
 	_Player = boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Sinbad.mesh", 1.8, 100, PlayerPosition, 0));
 	
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
@@ -248,7 +248,7 @@ void Game::go(void)
 
 	_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
 
-	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+	/*Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 	Ogre::MeshManager::getSingleton().createPlane(
 		"ground",
 		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
@@ -265,12 +265,12 @@ void Game::go(void)
 		0,
 		new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10.5, 0))),
 		new btBoxShape(btVector3(120, 10, 120)));
-	_World->addRigidBody(btGround);
+	_World->addRigidBody(btGround);*/
 
 	for(float x = -10; x < 10; x += 1)
 	{
-		btVector3 pos(x, 0, -10);
-		_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
+		btVector3 pos(x, 0, -3);
+		//_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
 	}
 
 	/*for(float x = -10; x < 10; x += 0.4)

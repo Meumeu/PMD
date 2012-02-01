@@ -32,28 +32,7 @@
 
 namespace Recast
 {
-/*static void insertSort(unsigned char* a, const int n)
-{
-	int i, j;
-	for (i = 1; i < n; i++)
-	{
-		const unsigned char value = a[i];
-		for (j = i - 1; j >= 0 && a[j] > value; j--)
-			a[j+1] = a[j];
-		a[j+1] = value;
-	}
-}*/
-
-/// @par 
-/// 
-/// Basically, any spans that are closer to a boundary or obstruction than the specified radius 
-/// are marked as unwalkable.
-///
-/// This method is usually called immediately after the heightfield has been built.
-///
-/// @see rcCompactHeightfield, rcBuildCompactHeightfield, rcConfig::walkableRadius
-
-void CompactHeightfield::erodeWalkableArea(int radius)
+void CompactHeightfield::buildDistanceField()
 {
 	// Mark boundary cells
 	for(int i = 0; i < _xsize * _zsize; i++)
@@ -70,12 +49,12 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 				for(int dir = Direction::Begin; dir < Direction::End; dir++)
 				{
 					if (!span.neighbours[dir] || !span.neighbours[dir]->_walkable)
-						span._walkable = 0; // At least one missing or non walkable neighbour (boundary)
+						span._borderDistance = 0; // At least one missing or non walkable neighbour (boundary)
 				}
 			}
 			else
 			{
-				span._walkable = 0;
+				span._borderDistance = 0;
 			}
 		}
 	}
@@ -92,21 +71,21 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 				const CompactSpan * nn;
 				if ((n = span.neighbours[Direction::Left]))
 				{
-					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Backward]))
 					{
-						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 				
 				if ((n = span.neighbours[Direction::Backward]))
 				{
-					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Right]))
 					{
-						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 			}
@@ -125,28 +104,55 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 				const CompactSpan * nn;
 				if ((n = span.neighbours[Direction::Right]))
 				{
-					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Forward]))
 					{
-						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 				
 				if ((n = span.neighbours[Direction::Forward]))
 				{
-					span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(n->_borderDistance + 2, USHRT_MAX));
+					span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(n->_borderDistance + 2, USHRT_MAX));
 					
 					if ((nn = n->neighbours[Direction::Left]))
 					{
-						span._borderDistance = std::min(span._borderDistance, std::min<short unsigned int>(nn->_borderDistance + 3, USHRT_MAX));
+						span._borderDistance = std::min(span._borderDistance, std::min<unsigned short int>(nn->_borderDistance + 3, USHRT_MAX));
 					}
 				}
 			}
 		}
 	}
+	
+	_maxDistance = 0;
+	for(int x = 0; x < _xsize; ++x)
+	{
+		for(int z = 0; z < _zsize; ++z)
+		{
+			BOOST_FOREACH(CompactSpan& span, _cells[x + z * _xsize])
+			{
+				_maxDistance = std::max<unsigned int>(_maxDistance, span._borderDistance);
+			}
+		}
+	}
+}
+
+/// @par 
+/// 
+/// Basically, any spans that are closer to a boundary or obstruction than the specified radius 
+/// are marked as unwalkable.
+///
+/// This method is usually called immediately after the heightfield has been built.
+///
+/// @see rcCompactHeightfield, rcBuildCompactHeightfield, rcConfig::walkableRadius
+
+void CompactHeightfield::erodeWalkableArea(int radius)
+{
+	buildDistanceField();
 
 	const int thr = radius * 2;
+	int n = 0;
 	for(int i = 0; i < _xsize * _zsize; i++)
 	{
 		std::vector<CompactSpan> & cell = _cells[i];
@@ -154,9 +160,14 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 		BOOST_FOREACH(CompactSpan & span, cell)
 		{
 			if (span._borderDistance < thr)
+			{
 				span._walkable = false;
+				++n;
+			}
 		}
 	}
+	
+	std::cout << n << " spans eroded\n";
 }
 
 // TODO: le reste de ce fichier

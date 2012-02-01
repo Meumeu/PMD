@@ -26,6 +26,7 @@
 #include <fstream>
 #include <stdexcept>
 #include "OgreConverter.h"
+#include "OgreMeshManager.h"
 #include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 #include "bullet/btBulletDynamicsCommon.h"
@@ -101,27 +102,64 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			}
 
 			Ogre::Entity * Entity = _sceneManager->createEntity(MeshName);
-			Entity->setCastShadows(true);
+			Entity->setCastShadows(false);
 			_blocks.push_back(Block(Entity, o, Ogre::Vector3(x,y,z)));
 		}
 	}
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.3f, 0.2f, M_PI/4, 1);
+	Recast::Heightfield heightfield(0.5f, 0.2f, M_PI/4, 1); //FIXME: adjust values
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
-		block._entity->setCastShadows(false);
-		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
+		//sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
 		OgreConverter converter(*block._entity);
 		Ogre::Matrix4 transform = getMatrix4(block._orientation, block._position);
 		converter.AddToTriMesh(transform, _TriMesh);
-		converter.AddToHeightField(transform, heightfield);//FIXME: adjust values
+		converter.AddToHeightField(transform, heightfield);
 	}
-
-	Recast::CompactHeightfield compactheightfield(1, 1, heightfield, 3);
+	
+	
+	
+	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
+	//chf.buildRegions(8, 20); //FIXME: adjust values
+	
+	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
+	Ogre::MeshManager::getSingleton().createPlane(
+		"chf",
+		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+		plane,
+		chf._cs, chf._cs, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
+	
+	for(int x = 0; x < chf._xsize; ++x)
+	{
+		for(int z = 0; z < chf._zsize; ++z)
+		{
+			float x0 = (0.5 + x + chf._xmin) * chf._cs;
+			float z0 = (0.5 + z + chf._zmin) * chf._cs;
+			BOOST_FOREACH(Recast::CompactSpan& span, chf._cells[x + z * chf._xsize])
+			{
+				if (!span._walkable) continue;
+				//if (span._height > 1000000) continue;
+				//float y0 = (span._bottom + span._height) * chf._ch;
+				float y0 = span._bottom * chf._ch;
+				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0+0.1, z0));
+				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0+0.1, z0),
+					Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X));
+			}
+			/*BOOST_FOREACH(Recast::Span const & span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
+			{
+				if (!span._walkable) continue;
+				float y0 = span._smax * chf._ch;
+				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0, z0));
+				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0, z0),
+					Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X));
+			}*/
+			
+		}
+	}
 
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
 
