@@ -1,3 +1,1 @@
-wall.mesh 0 0 10 N
-wall.mesh 3 0 10 N
-wall.mesh 6 0 10 W
+dungeon.mesh 0 0 0 N
