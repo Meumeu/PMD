@@ -194,25 +194,21 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 #if DEBUG_RECAST == 3
 	BOOST_FOREACH(Recast::Contour const & cont, cs._conts)
 	{
-		BOOST_FOREACH(Recast::Contour::Vertex const & v, cont.rverts)
+		size_t n = cont.rverts.size();
+		for(size_t i = 0; i < n; ++i)
 		{
-			float x0 = (v.x + chf._xmin) * chf._cs;
-			float y0 = v.y * chf._ch;
-			float z0 = (v.z + chf._zmin) * chf._cs;
+			size_t j = (i + 1) % n;
+			Ogre::Vector3 a((cont.rverts[i].x + chf._xmin) * chf._cs,
+				         cont.rverts[i].y * chf._ch,
+				        (cont.rverts[i].z + chf._zmin) * chf._cs);
 			
-			Ogre::Vector3 v[8];
-			v[0] = Ogre::Vector3(x0, y0+0.1, z0);
-			v[1] = Ogre::Vector3(x0, y0+0.1, z0+chf._cs);
-			v[2] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0+chf._cs);
-			v[3] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0);
-			v[4] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0+chf._cs);
-			v[5] = Ogre::Vector3(x0, y0+0.11, z0+chf._cs);
-			v[6] = Ogre::Vector3(x0, y0+0.11, z0);
-			v[7] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0);
+			Ogre::Vector3 b((cont.rverts[j].x + chf._xmin) * chf._cs,
+				         cont.rverts[j].y * chf._ch,
+				        (cont.rverts[j].z + chf._zmin) * chf._cs);
+			
 			unsigned int r = cont.reg;
 			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
-			
-			DebugDrawer::getSingleton().drawCuboid(v, c, true);
+			DebugDrawer::getSingleton().drawLine(a, b, c);
 		}
 	}
 #endif

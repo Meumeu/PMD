@@ -278,7 +278,6 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 
 static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
 {
-	std::cerr << verts.size() << "\n";
 	assert(verts.size() > 0);
 	
 	std::vector<Contour::Vertex> out;
@@ -521,8 +520,8 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 				if (cell[i]._regionID & RC_BORDER_REG) continue;
 				
 				std::vector<Contour::Vertex> const & verts = walkContour(x, z, cell[i]);
-				std::vector<Contour::Vertex> const & simplified = simplifyContour(verts, maxError, maxEdgeLen, buildFlags);
-				//removeDegenerateSegments(simplified);
+				std::vector<Contour::Vertex> simplified = simplifyContour(verts, maxError, maxEdgeLen, buildFlags);
+				removeDegenerateSegments(simplified);
 				
 				if (simplified.size() < 3) continue;
 				
