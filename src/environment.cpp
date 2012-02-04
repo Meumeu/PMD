@@ -33,10 +33,15 @@
 #include "bullet/btBulletCollisionCommon.h"
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
+
+#include "Recast/Recast.h"
 #include "Recast/RecastHeightfield.h"
 #include "Recast/RecastCompactHeightfield.h"
+#include "Recast/RecastContourSet.h"
 
 #include "DebugDrawer.h"
+
+#define DEBUG_RECAST 4
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -117,7 +122,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
-		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
+		//sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
 		OgreConverter converter(*block._entity);
 		Ogre::Matrix4 transform = getMatrix4(block._orientation, block._position);
@@ -125,8 +130,9 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToHeightField(transform, heightfield);
 	}
 	
-	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, false, false); //FIXME: adjust values
+	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
 	chf.buildRegions(8, 20); //FIXME: adjust values
+	Recast::ContourSet cs(chf, 1.3, 12, Recast::RC_CONTOUR_TESS_WALL_EDGES | Recast::RC_CONTOUR_TESS_AREA_EDGES);
 	
 	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 	Ogre::MeshManager::getSingleton().createPlane(
@@ -135,12 +141,14 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		plane,
 		chf._cs, chf._cs, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
 	
+#if DEBUG_RECAST == 1 || DEBUG_RECAST == 2
 	for(int x = 0; x < chf._xsize; ++x)
 	{
 		for(int z = 0; z < chf._zsize; ++z)
 		{
 			float x0 = (x + chf._xmin) * chf._cs;
 			float z0 = (z + chf._zmin) * chf._cs;
+#if DEBUG_RECAST == 1
 			BOOST_FOREACH(Recast::CompactSpan& span, chf._cells[x + z * chf._xsize])
 			{
 				if (!span._walkable) continue;
@@ -159,9 +167,77 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 				
 				DebugDrawer::getSingleton().drawCuboid(v, c, true);
 			}
-			
+#else
+#if DEBUG_RECAST == 2
+			BOOST_FOREACH(Recast::Span const& span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
+			{
+				float y1 = span._smin * chf._ch;
+				float y2 = span._smax * chf._ch;
+				Ogre::Vector3 v[8];
+				v[0] = Ogre::Vector3(x0, y1, z0);
+				v[1] = Ogre::Vector3(x0, y1, z0+chf._cs);
+				v[2] = Ogre::Vector3(x0+chf._cs, y1, z0+chf._cs);
+				v[3] = Ogre::Vector3(x0+chf._cs, y1, z0);
+				v[4] = Ogre::Vector3(x0+chf._cs, y2, z0+chf._cs);
+				v[5] = Ogre::Vector3(x0, y2, z0+chf._cs);
+				v[6] = Ogre::Vector3(x0, y2, z0);
+				v[7] = Ogre::Vector3(x0+chf._cs, y2, z0);
+				
+				DebugDrawer::getSingleton().drawCuboid(v, Ogre::ColourValue::Blue, true);
+			}
+#endif
+#endif
 		}
 	}
+#endif
+
+#if DEBUG_RECAST == 3
+	BOOST_FOREACH(Recast::Contour const & cont, cs._conts)
+	{
+		BOOST_FOREACH(Recast::Contour::Vertex const & v, cont.rverts)
+		{
+			float x0 = (v.x + chf._xmin) * chf._cs;
+			float y0 = v.y * chf._ch;
+			float z0 = (v.z + chf._zmin) * chf._cs;
+			
+			Ogre::Vector3 v[8];
+			v[0] = Ogre::Vector3(x0, y0+0.1, z0);
+			v[1] = Ogre::Vector3(x0, y0+0.1, z0+chf._cs);
+			v[2] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0+chf._cs);
+			v[3] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0);
+			v[4] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0+chf._cs);
+			v[5] = Ogre::Vector3(x0, y0+0.11, z0+chf._cs);
+			v[6] = Ogre::Vector3(x0, y0+0.11, z0);
+			v[7] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0);
+			unsigned int r = cont.reg;
+			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+			
+			DebugDrawer::getSingleton().drawCuboid(v, c, true);
+		}
+	}
+#endif
+
+#if DEBUG_RECAST == 4
+	BOOST_FOREACH(Recast::Contour const & cont, cs._conts)
+	{
+		size_t n = cont.verts.size();
+		for(size_t i = 0; i < n; ++i)
+		{
+			size_t j = (i + 1) % n;
+			Ogre::Vector3 a((cont.verts[i].x + chf._xmin) * chf._cs,
+				         cont.verts[i].y * chf._ch,
+				        (cont.verts[i].z + chf._zmin) * chf._cs);
+			
+			Ogre::Vector3 b((cont.verts[j].x + chf._xmin) * chf._cs,
+				         cont.verts[j].y * chf._ch,
+				        (cont.verts[j].z + chf._zmin) * chf._cs);
+			
+			unsigned int r = cont.reg;
+			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+			DebugDrawer::getSingleton().drawLine(a, b, c);
+		}
+	}
+#endif
 	DebugDrawer::getSingleton().build();
 	
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));

@@ -54,7 +54,7 @@ void Span::merge(Span const& other, const int flagMergeThr)
 }
 
 void Heightfield::addSpan(const int x, const int z,
-	const unsigned short smin, const unsigned short smax,
+	const int smin, const int smax,
 	bool walkable)
 {
 	_xmin = std::min(_xmin, x);
@@ -132,6 +132,8 @@ static void clipPoly(std::vector<Ogre::Vector3> const & in, std::vector<Ogre::Ve
 		if (iVertexOnTheCorrectSide != jVertexOnTheCorrectSide)
 		{
 			out.push_back(in[j] - (in[j] - in[i]) * d[j] / (d[j] - d[i]));
+			assert(out.back().y <= std::max(in[i].y, in[j].y) + 0.001);
+			assert(out.back().y >= std::min(in[i].y, in[j].y) - 0.001);
 		}
 		if (jVertexOnTheCorrectSide)
 		{
@@ -156,7 +158,7 @@ static bool getPolyMinMax(
 	if (poly2.size() < 3) return false;
 
 	float fmin, fmax;
-	fmin = fmax = in[0].y;
+	fmin = fmax = poly2[0].y;
 	for(size_t i = 1; i < poly2.size(); ++i)
 	{
 		fmin = std::min(fmin, poly2[i].y);
@@ -205,6 +207,7 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 			int min, max;
 			if (getPolyMinMax(triangle, x * _cs, z * _cs, _cs, _ch, min, max, poly1, poly2))
 			{
+				assert(max < tribox.getMaximum().y / _ch + 1);
 				addSpan(x, z, min, max, walkable);
 			}
 		}

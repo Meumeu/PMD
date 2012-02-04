@@ -22,6 +22,7 @@
 #include "Recast.h"
 #include "RecastCompactHeightfield.h"
 #include "RecastContourSet.h"
+#include <iostream>
 
 namespace Recast
 {
@@ -191,6 +192,7 @@ static void mergeContours(Contour & ca, Contour & cb)
 	
 	const int na = ca.verts.size();
 	const int nb = cb.verts.size();
+	out.reserve(na + nb + 2);
 	
 	for(int i = 0; i <= na; i++)
 	{
@@ -202,7 +204,7 @@ static void mergeContours(Contour & ca, Contour & cb)
 		out.push_back(cb.verts[(i+idx.second) % nb]);
 	}
 
-	ca.verts = out;
+	ca.verts.swap(out);
 	cb.verts.clear();
 }
 
@@ -217,7 +219,7 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 	
 	CompactSpan * currentSpan = &start;
 	int iter = 40000;
-	while(currentSpan != &start || dir != startdir)
+	do
 	{
 		if (currentSpan->_tmpData & (1 << dir))
 		{
@@ -269,13 +271,16 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 		}
 		
 		if (--iter == 0) throw std::runtime_error("Unable to close contour");
-	}
+	} while(currentSpan != &start || dir != startdir);
 	
 	return out;
 }
 
 static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
 {
+	std::cerr << verts.size() << "\n";
+	assert(verts.size() > 0);
+	
 	std::vector<Contour::Vertex> out;
 	
 	// Add initial points.
@@ -515,9 +520,9 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 				if (cell[i]._regionID == 0) continue;
 				if (cell[i]._regionID & RC_BORDER_REG) continue;
 				
-				std::vector<Contour::Vertex> verts = walkContour(x, z, cell[i]);
-				std::vector<Contour::Vertex> simplified = simplifyContour(verts, maxError, maxEdgeLen, buildFlags);
-				removeDegenerateSegments(simplified);
+				std::vector<Contour::Vertex> const & verts = walkContour(x, z, cell[i]);
+				std::vector<Contour::Vertex> const & simplified = simplifyContour(verts, maxError, maxEdgeLen, buildFlags);
+				//removeDegenerateSegments(simplified);
 				
 				if (simplified.size() < 3) continue;
 				
@@ -546,7 +551,7 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 			}
 		}
 	}
-	
+
 	// Check and merge droppings.
 	// Sometimes the previous algorithms can fail and create several contours
 	// per area. This pass will try to merge the holes into the main region.

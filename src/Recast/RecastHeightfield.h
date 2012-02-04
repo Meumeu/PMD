@@ -23,6 +23,7 @@
 
 #include <map>
 #include <list>
+#include <assert.h>
 
 #include <OgreAxisAlignedBox.h>
 
@@ -32,8 +33,8 @@ namespace Recast {
 /// @see rcHeightfield
 struct Span
 {
-	Span(unsigned int smin, unsigned int smax, bool walkable):
-	_smin(smin), _smax(smax), _walkable(walkable) {}
+	Span(int smin, int smax, bool walkable):
+	_smin(smin), _smax(smax), _walkable(walkable) { assert(smin <= smax); }
 
 	void merge(Span const& other, const int flagMergeThr);
 
@@ -115,7 +116,7 @@ private:
 	///  @param[in]     area         The area id of the span. [Limit: <= #RC_WALKABLE_AREA)
 	///  @param[in]     flagMergeThr The merge theshold. [Limit: >= 0] [Units: vx]
 	void addSpan(const int x, const int z,
-		const unsigned short smin, const unsigned short smax,
+		const int smin, const int smax,
 		bool walkable);
 	
 	int _xmin, _xmax;

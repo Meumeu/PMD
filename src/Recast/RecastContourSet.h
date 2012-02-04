@@ -60,11 +60,9 @@ class ContourSet
 public:
 	ContourSet(CompactHeightfield& chf, const float maxError, const int maxEdgeLen, const int buildFlags);
 	
+	std::vector<Contour> _conts;    ///< An array of the contours in the set.
 private:
-	std::vector<Contour> _conts; ///< An array of the contours in the set.
 	
-	//float bmin[3];  	///< The minimum bounds in world space. [(x, y, z)]
-	//float bmax[3];		///< The maximum bounds in world space. [(x, y, z)]
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
 	int _xsize;			///< The width of the set. (Along the x-axis in cell units.) 
