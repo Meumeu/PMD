@@ -116,10 +116,9 @@ private:
 	Ogre::Plane p;
 };
 
-static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in, Ogre::Plane const & p)
+static void clipPoly(std::vector<Ogre::Vector3> const & in, std::vector<Ogre::Vector3> & out, Ogre::Plane const & p)
 {
-	std::vector<Ogre::Vector3> out;
-	out.reserve(7);
+	out.clear();
 	
 	std::vector<float> d(in.size(),0);
 	std::transform(in.begin(), in.end(), d.begin(), PlaneDistance(p));
@@ -139,29 +138,29 @@ static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in
 			out.push_back(in[j]);
 		}
 	}
-
-	return out;
 }
 
 static bool getPolyMinMax(
 	std::vector<Ogre::Vector3> const& in,
 	float x, float z, float cs, float ch,
-	int& min, int& max)
+	int& min, int& max,
+	std::vector<Ogre::Vector3> & poly1,
+	std::vector<Ogre::Vector3> & poly2
+	)
 {
-	std::vector<Ogre::Vector3> const& clippedIn = clipPoly(clipPoly(clipPoly(clipPoly(in,
-		Ogre::Plane(Ogre::Vector3::UNIT_X, x)),
-		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -x-cs)),
-		Ogre::Plane(Ogre::Vector3::UNIT_Z, z)),
-		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -z-cs));
+	clipPoly(in,    poly1, Ogre::Plane(Ogre::Vector3::UNIT_X, x));
+	clipPoly(poly1, poly2, Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -x-cs));
+	clipPoly(poly2, poly1, Ogre::Plane(Ogre::Vector3::UNIT_Z, z));
+	clipPoly(poly1, poly2, Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Z, -z-cs));
 
-	if (clippedIn.size() < 3) return false;
+	if (poly2.size() < 3) return false;
 
 	float fmin, fmax;
 	fmin = fmax = in[0].y;
-	for(size_t i = 1; i < clippedIn.size(); ++i)
+	for(size_t i = 1; i < poly2.size(); ++i)
 	{
-		fmin = std::min(fmin, clippedIn[i].y);
-		fmax = std::max(fmax, clippedIn[i].y);
+		fmin = std::min(fmin, poly2[i].y);
+		fmax = std::max(fmax, poly2[i].y);
 	}
 
 	min = std::floor(fmin / ch);
@@ -196,12 +195,15 @@ void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const
 	
 	bool walkable = isWalkable(v0, v1, v2, _cosWalkableAngle);
 	
+	std::vector<Ogre::Vector3> poly1; poly1.reserve(7);
+	std::vector<Ogre::Vector3> poly2; poly2.reserve(7);
+	
 	for(; x < x1; ++x)
 	{
 		for(int z = z0; z < z1; ++z)
 		{
 			int min, max;
-			if (getPolyMinMax(triangle, x * _cs, z * _cs, _cs, _ch, min, max))
+			if (getPolyMinMax(triangle, x * _cs, z * _cs, _cs, _ch, min, max, poly1, poly2))
 			{
 				addSpan(x, z, min, max, walkable);
 			}

@@ -113,11 +113,11 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.5f, 0.1f, M_PI/4, 1); //FIXME: adjust values
+	Recast::Heightfield heightfield(0.2f, 0.01f, M_PI/4, 1); //FIXME: adjust values
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
-		//sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
+		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
 		OgreConverter converter(*block._entity);
 		Ogre::Matrix4 transform = getMatrix4(block._orientation, block._position);
@@ -146,27 +146,19 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 				if (!span._walkable) continue;
 				float y0 = span._bottom * chf._ch;
 				Ogre::Vector3 v[8];
-				v[0] = Ogre::Vector3(x0, y0, z0);
-				v[1] = Ogre::Vector3(x0, y0, z0+chf._cs);
-				v[2] = Ogre::Vector3(x0+chf._cs, y0, z0+chf._cs);
-				v[3] = Ogre::Vector3(x0+chf._cs, y0, z0);
-				v[4] = Ogre::Vector3(x0+chf._cs, y0+0.001, z0+chf._cs);
-				v[5] = Ogre::Vector3(x0, y0+0.001, z0+chf._cs);
-				v[6] = Ogre::Vector3(x0, y0+0.001, z0);
-				v[7] = Ogre::Vector3(x0+chf._cs, y0+0.001, z0);
+				v[0] = Ogre::Vector3(x0, y0+0.1, z0);
+				v[1] = Ogre::Vector3(x0, y0+0.1, z0+chf._cs);
+				v[2] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0+chf._cs);
+				v[3] = Ogre::Vector3(x0+chf._cs, y0+0.1, z0);
+				v[4] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0+chf._cs);
+				v[5] = Ogre::Vector3(x0, y0+0.11, z0+chf._cs);
+				v[6] = Ogre::Vector3(x0, y0+0.11, z0);
+				v[7] = Ogre::Vector3(x0+chf._cs, y0+0.11, z0);
 				unsigned int r = span._regionID;
 				Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
 				
 				DebugDrawer::getSingleton().drawCuboid(v, c, true);
 			}
-			/*BOOST_FOREACH(Recast::Span const & span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
-			{
-				if (!span._walkable) continue;
-				float y0 = span._smax * chf._ch;
-				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0, z0));
-				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0, z0),
-					Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X));
-			}*/
 			
 		}
 	}
