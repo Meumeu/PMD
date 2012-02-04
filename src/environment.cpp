@@ -199,12 +199,13 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		{
 			size_t j = (i + 1) % n;
 			Ogre::Vector3 a((cont.rverts[i].x + chf._xmin) * chf._cs,
-				         cont.rverts[i].y * chf._ch,
-				        (cont.rverts[i].z + chf._zmin) * chf._cs);
+			                 cont.rverts[i].y * chf._ch,
+			                (cont.rverts[i].z + chf._zmin) * chf._cs);
 			
 			Ogre::Vector3 b((cont.rverts[j].x + chf._xmin) * chf._cs,
-				         cont.rverts[j].y * chf._ch,
-				        (cont.rverts[j].z + chf._zmin) * chf._cs);
+			                 cont.rverts[j].y * chf._ch,
+			                (cont.rverts[j].z + chf._zmin) * chf._cs);
+
 			
 			unsigned int r = cont.reg;
 			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
@@ -221,12 +222,12 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		{
 			size_t j = (i + 1) % n;
 			Ogre::Vector3 a((cont.verts[i].x + chf._xmin) * chf._cs,
-				         cont.verts[i].y * chf._ch,
-				        (cont.verts[i].z + chf._zmin) * chf._cs);
+			                 cont.verts[i].y * chf._ch,
+			                (cont.verts[i].z + chf._zmin) * chf._cs);
 			
 			Ogre::Vector3 b((cont.verts[j].x + chf._xmin) * chf._cs,
-				         cont.verts[j].y * chf._ch,
-				        (cont.verts[j].z + chf._zmin) * chf._cs);
+			                 cont.verts[j].y * chf._ch,
+			                (cont.verts[j].z + chf._zmin) * chf._cs);
 			
 			unsigned int r = cont.reg;
 			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
