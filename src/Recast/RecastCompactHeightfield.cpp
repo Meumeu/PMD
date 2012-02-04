@@ -86,8 +86,8 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 			const int nbot = MIN_HEIGHT; //-walkableClimb;
 			const int ntop = nspans.begin()->_smin;
 			
-			//if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
-			//	minh = std::min(minh, nbot - bot);
+			if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
+				minh = std::min(minh, nbot - bot);
 			
 			for(std::list<Span>::const_iterator it2 = nspans.begin(), end2 = nspans.end(); it2 != end2; ++it2)
 			{
@@ -109,7 +109,7 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 		
 		// The current span is close to a ledge if the drop to any
 		// neighbour span is less than the walkableClimb.
-		//if (minh < -walkableClimb) curr->_walkable = false;
+		if (minh < -walkableClimb) curr->_walkable = false;
 		
 		// If the difference between all neighbours is too large,
 		// we are at steep slope, mark the span as ledge.
@@ -151,8 +151,8 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 			std::list<Span> spans = hf.getSpans(x + _xmin, z + _zmin);
 			n1 += spans.size();
 			
-			//if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
-			//if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);
+			if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
+			if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);
 			
 			if (!spans.empty())
 			{
