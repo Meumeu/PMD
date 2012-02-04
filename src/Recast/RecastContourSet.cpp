@@ -326,7 +326,7 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 		}
 		
 		Contour::Vertex ll = *lowerleft; ll.flag = lowerleft - verts.begin();
-		Contour::Vertex ur = *lowerleft; ur.flag = upperright - verts.begin();
+		Contour::Vertex ur = *upperright; ur.flag = upperright - verts.begin();
 		
 		out.push_back(ll);
 		out.push_back(ur);
@@ -520,18 +520,15 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 				if (cell[i]._regionID == 0) continue;
 				if (cell[i]._regionID & RC_BORDER_REG) continue;
 				
-				std::vector<Contour::Vertex> const & verts = walkContour(x, z, cell[i]);
-				std::vector<Contour::Vertex> const & simplified = simplifyContour(verts, maxError, maxEdgeLen, buildFlags);
-				//removeDegenerateSegments(simplified);
-				
-				if (simplified.size() < 3) continue;
-				
 				Contour cont;
+				cont.rverts = walkContour(x, z, cell[i]);
+				cont.verts = simplifyContour(cont.rverts, maxError, maxEdgeLen, buildFlags);
+				removeDegenerateSegments(cont.verts);
+				
+				if (cont.verts.size() < 3) continue;
 				
 				cont.reg = cell[i]._regionID;
 				cont.area = cell[i]._walkable;
-				cont.verts = simplified;
-				cont.rverts = verts;
 				
 				if (_borderSize > 0)
 				{
