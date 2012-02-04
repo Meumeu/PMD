@@ -56,6 +56,9 @@ static void filterLowHangingWalkableObstacles(std::list<Span> & spans, int walka
 	}
 }
 
+const int MAX_HEIGHT = 1000000;
+const int MIN_HEIGHT = -1000000;
+
 static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Heightfield& hf, int walkableClimb, int walkableHeight)
 {
 	for(std::list<Span>::iterator it = spans.begin(), end = spans.end(); it != end; ++it)
@@ -67,9 +70,9 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 		if (!curr->_walkable) continue;
 		
 		const int bot = curr->_smax;
-		const int top = next ? next->_smin : INT_MAX;
+		const int top = next ? next->_smin : MAX_HEIGHT;
 		
-		int minh = INT_MAX, asmin = curr->_smax, asmax = curr->_smax;
+		int minh = MAX_HEIGHT - bot, asmin = curr->_smax, asmax = curr->_smax;
 		
 		for(int dir = Direction::Begin; dir < Direction::End; ++dir)
 		{
@@ -77,42 +80,40 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 			const int nz = z + Direction::getZOffset(dir);
 			
 			const std::list<Span> & nspans = hf.getSpans(nx, nz);
+			if (nspans.begin() == nspans.end()) continue;
 			
 			// Minus infinity to first span
-			int nbot = -10-walkableClimb;
-			int ntop = (nspans.begin() != nspans.end()) ? nspans.begin()->_smin : INT_MAX;
+			const int nbot = MIN_HEIGHT; //-walkableClimb;
+			const int ntop = nspans.begin()->_smin;
 			
-			if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
-				minh = std::min(minh, nbot - bot);
+			//if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
+			//	minh = std::min(minh, nbot - bot);
 			
 			for(std::list<Span>::const_iterator it2 = nspans.begin(), end2 = nspans.end(); it2 != end2; ++it2)
 			{
 				std::list<Span>::const_iterator it3 = it2; ++it3;
 				assert(it3 == end2 || it3->_smin > it2->_smax);
-				nbot = it2->_smax;
-				ntop = (it3 != end2) ? it3->_smin : INT_MAX;
+				const int nbot = it2->_smax;
+				const int ntop = (it3 != end2) ? it3->_smin : MAX_HEIGHT;
 				
-				if (std::min(top, ntop) - std::max(bot, nbot) > walkableHeight)
+				if (std::min(top, ntop) - std::max(bot, nbot) < walkableHeight) continue;
+				
+				minh = std::min(minh, nbot - bot);
+				if (std::abs(nbot - bot) <= walkableClimb)
 				{
-					minh = std::min(minh, nbot - bot);
-					if (std::abs(nbot - bot) <= walkableClimb)
-					{
-						asmin = std::min(asmin, nbot);
-						asmax = std::max(asmax, nbot);
-					}
+					asmin = std::min(asmin, nbot);
+					asmax = std::max(asmax, nbot);
 				}
 			}
 		}
 		
 		// The current span is close to a ledge if the drop to any
 		// neighbour span is less than the walkableClimb.
-		//if (minh < -walkableClimb)
-		//	curr->_walkable = false;
+		//if (minh < -walkableClimb) curr->_walkable = false;
 		
 		// If the difference between all neighbours is too large,
 		// we are at steep slope, mark the span as ledge.
-		if ((asmax - asmin) > walkableClimb)
-			curr->_walkable = false;
+		if ((asmax - asmin) > walkableClimb) curr->_walkable = false;
 	}
 }
 
@@ -149,8 +150,8 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 			std::list<Span> spans = hf.getSpans(x + _xmin, z + _zmin);
 			n1 += spans.size();
 			
-			if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
-			if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);
+			//if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
+			//if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);
 			
 			if (!spans.empty())
 			{

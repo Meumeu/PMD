@@ -109,7 +109,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.5f, 0.2f, M_PI/4, 1); //FIXME: adjust values
+	Recast::Heightfield heightfield(0.1f, 0.1f, M_PI/4, 1); //FIXME: adjust values
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
@@ -121,10 +121,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToHeightField(transform, heightfield);
 	}
 	
-	
-	
 	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
-	//chf.buildRegions(8, 20); //FIXME: adjust values
+	chf.buildRegions(8, 20); //FIXME: adjust values
 	
 	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 	Ogre::MeshManager::getSingleton().createPlane(
@@ -141,12 +139,16 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			float z0 = (0.5 + z + chf._zmin) * chf._cs;
 			BOOST_FOREACH(Recast::CompactSpan& span, chf._cells[x + z * chf._xsize])
 			{
+				Ogre::Entity * e;
 				if (!span._walkable) continue;
 				//if (span._height > 1000000) continue;
 				//float y0 = (span._bottom + span._height) * chf._ch;
 				float y0 = span._bottom * chf._ch;
-				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0+0.1, z0));
-				sg->addEntity(_sceneManager->createEntity("chf"), Ogre::Vector3(x0, y0+0.1, z0),
+				//y0 += span._borderDistance * 0.01;
+				e = _sceneManager->createEntity("chf");
+				sg->addEntity(e, Ogre::Vector3(x0, y0+0.1, z0));
+				e = _sceneManager->createEntity("chf");
+				sg->addEntity(e, Ogre::Vector3(x0, y0+0.1, z0),
 					Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X));
 			}
 			/*BOOST_FOREACH(Recast::Span const & span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))

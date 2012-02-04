@@ -37,8 +37,8 @@ struct Span
 
 	void merge(Span const& other, const int flagMergeThr);
 
-	unsigned int _smin; ///< The lower limit of the span.
-	unsigned int _smax; ///< The upper limit of the span.
+	int _smin; ///< The lower limit of the span.
+	int _smax; ///< The upper limit of the span.
 	bool _walkable;
 };
 

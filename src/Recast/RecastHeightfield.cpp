@@ -173,7 +173,8 @@ static bool getPolyMinMax(
 
 static bool isWalkable(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2, float cosWalkableAngle)
 {
-	return std::abs((v1-v0).crossProduct(v2-v0).normalisedCopy().y) > cosWalkableAngle;
+	//return std::abs((v1-v0).crossProduct(v2-v0).normalisedCopy().y) > cosWalkableAngle;
+	return (v1-v0).crossProduct(v2-v0).normalisedCopy().y > cosWalkableAngle;
 }
 
 void Heightfield::rasterizeTriangle(Ogre::Vector3 const& v0, Ogre::Vector3 const& v1, Ogre::Vector3 const& v2)

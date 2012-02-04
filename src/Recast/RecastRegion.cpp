@@ -24,6 +24,7 @@
 
 #include "RecastCompactHeightfield.h"
 #include <iostream>
+#include <list>
 
 namespace Recast
 {
@@ -37,8 +38,6 @@ struct CompactHeightfield::Region
 	bool visited;
 	std::set<unsigned int> connections;
 	std::set<unsigned int> floors;
-	
-	void addFloorRegion(unsigned int floor) { floors.insert(floor); }
 	
 	bool isConnectedToBorder()
 	{
@@ -227,44 +226,45 @@ void CompactHeightfield::paintRectRegion(const int minx, const int maxx, const i
 
 void CompactHeightfield::expandRegions(const int maxIter, const unsigned int level, IntMap& regionMap, IntMap& distanceMap)
 {
-	std::vector<CompactSpan*> stack;
+	std::list<CompactSpan*> stack;
 	
 	for(int i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
 		BOOST_FOREACH(CompactSpan& j, _cells[i])
 		{
-			if ((j._borderDistance >= level) && (regionMap[&j] == 0) && j._walkable)
+			assert(distanceMap.find(&j) != distanceMap.end());
+			assert(regionMap.find(&j) != regionMap.end());
+			if ((distanceMap[&j] >= level) && (regionMap[&j] == 0) && j._walkable)
 				stack.push_back(&j);
 		}
 	}
 	
 	int iter = maxIter;
-	size_t failed = 0;
-	while((stack.size() > 0) && (iter > 0) && (stack.size() != failed))
+	bool finished = false;
+	while((iter > 0) && (stack.size() > 0) && !finished)
 	{
-		failed = 0;
 		IntMap regionMap2 = regionMap;
 		IntMap distanceMap2 = distanceMap;
 		
-		BOOST_FOREACH(CompactSpan*& i, stack)
+		std::list<CompactSpan*>::iterator it = stack.begin(), end = stack.end();
+		
+		finished = true;
+		
+		while(it != end)
 		{
-			if (!i)
-			{
-				++failed;
-				continue;
-			}
-			
-			unsigned int reg = regionMap[i];
+			CompactSpan & i = **it;
+			unsigned int reg = regionMap[&i];
+			assert(reg == 0);
 			unsigned int dist = UINT_MAX;
 			
 			for(int dir = Direction::Begin; dir < Direction::End; ++dir)
 			{
-				if (i->neighbours[dir])
+				if (i.neighbours[dir])
 				{
-					CompactSpan& n = *i->neighbours[dir];
+					CompactSpan& n = *(i.neighbours[dir]);
 					const unsigned int nr = regionMap[&n];
 					const unsigned int nd = distanceMap[&n];
-					if (n._walkable == i->_walkable && nr > 0 && (nr & RC_BORDER_REG) == 0 && (nd + 2) < dist)
+					if (n._walkable == i._walkable && nr > 0 && (nr & RC_BORDER_REG) == 0 && (nd + 2) < dist)
 					{
 						reg = nr;
 						dist = nd + 2;
@@ -274,9 +274,14 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 			
 			if (reg)
 			{
-				regionMap2[i] = reg;
-				distanceMap2[i] = dist;
-				i = 0;
+				regionMap2[&i] = reg;
+				distanceMap2[&i] = dist;
+				it = stack.erase(it);
+				finished = false;
+			}
+			else
+			{
+				++it;
 			}
 		}
 		
@@ -356,7 +361,7 @@ void CompactHeightfield::findConnections(std::vector<Region> & regions, IntMap& 
 				{
 					unsigned int floorId = regionMap[&k];
 					if (floorId != 0 && floorId <= _maxRegions)
-						reg.addFloorRegion(floorId);
+						reg.floors.insert(floorId);
 				}
 			}
 			
@@ -540,13 +545,22 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 {
 	IntMap distance, regions;
 	
+	for(int i = 0, size = _xsize * _zsize; i < size; ++i)
+	{
+		BOOST_FOREACH(CompactSpan& j, _cells[i])
+		{
+			distance[&j] = 0;
+			regions[&j] = 0;
+		}
+	}
 	
 	std::cout << "Building regions... 1\n";
 	buildDistanceField();
 
 	std::cout << "Building regions... 2\n";
 	blurDistanceField(distance, 1);
-	
+	//blurDistanceField(distance, 2);
+	//return;
 	unsigned int regionID = 1;
 	
 	if (_borderSize > 0)
@@ -586,12 +600,13 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 	}
 	
 	std::cout << "Building regions... 4\n";
-	expandRegions(8, level, regions, distance);
+	expandRegions(8, 0, regions, distance);
 	
 	_maxRegions = regionID;
 	std::cout << "Building regions... 5, maxRegions=" << _maxRegions << "\n";
 	filterSmallRegions(minRegionArea, mergeRegionSize, regions);
 	
+	std::cout << "Building regions... 6, maxRegions=" << _maxRegions << "\n";
 	BOOST_FOREACH(IntMap::value_type& i, regions)
 	{
 		i.first->_regionID = i.second;
