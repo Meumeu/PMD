@@ -91,6 +91,7 @@ set (HDRS
 	src/RigidBody.h
 	src/MainMenu.h
 	src/OgreConverter.h
+	src/DebugDrawer.h
 
 	src/btOgre/BtOgreGP.h
 	src/btOgre/BtOgrePG.h
@@ -284,6 +285,7 @@ set(SRCS
 	src/main.cpp
 	src/MainMenu.cpp
 	src/OgreConverter.cpp
+	src/DebugDrawer.cpp
 
 	src/btOgre/BtOgre.cpp
 
@@ -469,7 +471,7 @@ install(TARGETS poniesmustdie
 
 install(FILES resources/models/Sinbad.zip
 		resources/models/Examples.material
-		resources/models/r2skin.jpg
+		resources/models/Debug.material
 		resources/models/rockwall.tga
 	DESTINATION share/pmd/models)
 

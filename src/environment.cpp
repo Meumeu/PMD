@@ -36,6 +36,8 @@
 #include "Recast/RecastHeightfield.h"
 #include "Recast/RecastCompactHeightfield.h"
 
+#include "DebugDrawer.h"
+
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
 	const btCollisionObject* colObj0,
@@ -74,6 +76,8 @@ static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Ve
 
 Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
 {
+	new DebugDrawer(_sceneManager, 0.5);
+	
 	while (!level.eof())
 	{
 		std::string MeshName;
@@ -109,7 +113,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
-	Recast::Heightfield heightfield(0.1f, 0.1f, M_PI/4, 1); //FIXME: adjust values
+	Recast::Heightfield heightfield(0.5f, 0.1f, M_PI/4, 1); //FIXME: adjust values
 
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
@@ -121,7 +125,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToHeightField(transform, heightfield);
 	}
 	
-	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
+	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, false, false); //FIXME: adjust values
 	chf.buildRegions(8, 20); //FIXME: adjust values
 	
 	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
@@ -135,21 +139,25 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	{
 		for(int z = 0; z < chf._zsize; ++z)
 		{
-			float x0 = (0.5 + x + chf._xmin) * chf._cs;
-			float z0 = (0.5 + z + chf._zmin) * chf._cs;
+			float x0 = (x + chf._xmin) * chf._cs;
+			float z0 = (z + chf._zmin) * chf._cs;
 			BOOST_FOREACH(Recast::CompactSpan& span, chf._cells[x + z * chf._xsize])
 			{
-				Ogre::Entity * e;
 				if (!span._walkable) continue;
-				//if (span._height > 1000000) continue;
-				//float y0 = (span._bottom + span._height) * chf._ch;
 				float y0 = span._bottom * chf._ch;
-				//y0 += span._borderDistance * 0.01;
-				e = _sceneManager->createEntity("chf");
-				sg->addEntity(e, Ogre::Vector3(x0, y0+0.1, z0));
-				e = _sceneManager->createEntity("chf");
-				sg->addEntity(e, Ogre::Vector3(x0, y0+0.1, z0),
-					Ogre::Quaternion(Ogre::Degree(180), Ogre::Vector3::UNIT_X));
+				Ogre::Vector3 v[8];
+				v[0] = Ogre::Vector3(x0, y0, z0);
+				v[1] = Ogre::Vector3(x0, y0, z0+chf._cs);
+				v[2] = Ogre::Vector3(x0+chf._cs, y0, z0+chf._cs);
+				v[3] = Ogre::Vector3(x0+chf._cs, y0, z0);
+				v[4] = Ogre::Vector3(x0+chf._cs, y0+0.001, z0+chf._cs);
+				v[5] = Ogre::Vector3(x0, y0+0.001, z0+chf._cs);
+				v[6] = Ogre::Vector3(x0, y0+0.001, z0);
+				v[7] = Ogre::Vector3(x0+chf._cs, y0+0.001, z0);
+				unsigned int r = span._regionID;
+				Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+				
+				DebugDrawer::getSingleton().drawCuboid(v, c, true);
 			}
 			/*BOOST_FOREACH(Recast::Span const & span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
 			{
@@ -162,7 +170,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			
 		}
 	}
-
+	DebugDrawer::getSingleton().build();
+	
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
 
 	btRigidBody::btRigidBodyConstructionInfo rbci(0, 0, _TriMeshShape.get());
@@ -188,5 +197,6 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
+	delete DebugDrawer::getSingletonPtr();
 	_world.removeRigidBody(_EnvBody.get());
 }
