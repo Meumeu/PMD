@@ -211,7 +211,7 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 	int dir = 0;
 	std::vector<Contour::Vertex> out;
 	
-	while((start._flag & (1 << dir)) == 0) ++dir;
+	while((start._tmpData & (1 << dir)) == 0) ++dir;
 	
 	const int startdir = dir;
 	
@@ -219,7 +219,7 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 	int iter = 40000;
 	while(currentSpan != &start || dir != startdir)
 	{
-		if (currentSpan->_flag & (1 << dir))
+		if (currentSpan->_tmpData & (1 << dir))
 		{
 			Contour::Vertex v(x, getCornerHeight(*currentSpan, dir), z);
 			switch(dir)
@@ -256,7 +256,7 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 			
 			out.push_back(v);
 			
-			currentSpan->_flag &= ~(1 << dir); // Remove visited edges
+			currentSpan->_tmpData &= ~(1 << dir); // Remove visited edges
 			dir = (dir + 1) % 4; // Rotate clockwise
 		}
 		else
@@ -476,16 +476,16 @@ static void markBoundaries(boost::scoped_array<std::vector<CompactSpan> > & cell
 			{
 				if (!cell[i]._regionID || (cell[i]._regionID & RC_BORDER_REG))
 				{
-					cell[i]._flag = 0;
+					cell[i]._tmpData = 0;
 				}
 				else
 				{
-					cell[i]._flag = 0xf;
+					cell[i]._tmpData = 0xf;
 					for(int dir = Direction::Begin; dir < Direction::End; ++dir)
 					{
 						const unsigned int r = cell[i].neighbours[dir] ? cell[i].neighbours[dir]->_regionID : 0;
 						if (r == cell[i]._regionID)
-							cell[i]._flag &= ~(1 << dir);
+							cell[i]._tmpData &= ~(1 << dir);
 					}
 				}
 			}
@@ -510,8 +510,8 @@ ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, co
 			std::vector<CompactSpan> & cell = chf._cells[x + z * chf._xsize];
 			for(int i = 0, n = cell.size(); i < n; ++i)
 			{
-				if (cell[i]._flag == 0xf) cell[i]._flag = 0;
-				if (cell[i]._flag == 0) continue;
+				if (cell[i]._tmpData == 0xf) cell[i]._tmpData = 0;
+				if (cell[i]._tmpData == 0) continue;
 				if (cell[i]._regionID == 0) continue;
 				if (cell[i]._regionID & RC_BORDER_REG) continue;
 				

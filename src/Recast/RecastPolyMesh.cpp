@@ -1,5 +1,7 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
+// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -16,34 +18,8 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <float.h>
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "Recast.h"
-#include "RecastAlloc.h"
-#include "RecastAssert.h"
+#include "RecastPolyMesh.h"
 
 namespace Recast
 {
-rcPolyMesh* rcAllocPolyMesh()
-{
-	rcPolyMesh* pmesh = (rcPolyMesh*)rcAlloc(sizeof(rcPolyMesh), RC_ALLOC_PERM);
-	memset(pmesh, 0, sizeof(rcPolyMesh));
-	return pmesh;
-}
-
-void rcFreePolyMesh(rcPolyMesh* pmesh)
-{
-	if (!pmesh) return;
-	rcFree(pmesh->verts);
-	rcFree(pmesh->polys);
-	rcFree(pmesh->regs);
-	rcFree(pmesh->flags);
-	rcFree(pmesh->areas);
-	rcFree(pmesh);
-}
 }

@@ -104,7 +104,7 @@ struct CompactHeightfield::Region
 	}
 };
 
-void CompactHeightfield::blurDistanceField(IntMap& out, int threshold)
+void CompactHeightfield::blurDistanceField(boost::scoped_array< unsigned int >& out, int threshold)
 {
 	for(size_t i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
@@ -112,7 +112,7 @@ void CompactHeightfield::blurDistanceField(IntMap& out, int threshold)
 		{
 			if (span._borderDistance <= threshold)
 			{
-				out[&span] = threshold;
+				out[span._tmpData] = threshold;
 			}
 			else
 			{
@@ -132,26 +132,30 @@ void CompactHeightfield::blurDistanceField(IntMap& out, int threshold)
 					else
 						d += 2 * span._borderDistance;
 				}
-				out[&span] = (d + 5) / 9;
+				out[span._tmpData] = (d + 5) / 9;
 			}
 		}
 	}
-	
-	BOOST_FOREACH(IntMap::value_type& i, out)
+	for(size_t i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
-		i.first->_borderDistance = i.second;
+		BOOST_FOREACH(CompactSpan& span, _cells[i])
+		{
+			span._borderDistance = out[span._tmpData];
+		}
 	}
 }
 
-bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsigned int region, IntMap& regionMap, IntMap& distanceMap)
+bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsigned int region,
+	boost::scoped_array<unsigned int>& regions,
+	boost::scoped_array<unsigned int>& distances)
 {
 	const bool walkable = span._walkable;
 	const unsigned int lvl = level > 2 ? level - 2 : 0;
 	std::vector<CompactSpan *> stack;
 	bool ret = false;
 	
-	regionMap[&span] = region;
-	distanceMap[&span] = 0;
+	regions[span._tmpData] = region;
+	distances[span._tmpData] = 0;
 	
 	stack.push_back(&span);
 	
@@ -166,8 +170,8 @@ bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsig
 			{
 				CompactSpan& neighbour = *span.neighbours[dir];
 				if (neighbour._walkable != walkable) continue;
-				if (regionMap[&neighbour] & RC_BORDER_REG) continue;
-				if (regionMap[&neighbour] != 0 && regionMap[&neighbour] != region)
+				if (regions[neighbour._tmpData] & RC_BORDER_REG) continue;
+				if (regions[neighbour._tmpData] != 0 && regions[neighbour._tmpData] != region)
 					neighbourHasRegion = true;
 				
 				const int dir2 = (dir + 1) % 4;
@@ -175,8 +179,8 @@ bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsig
 				{
 					CompactSpan& neighbour2 = *neighbour.neighbours[dir2];
 					if (neighbour2._walkable != walkable) continue;
-					if (regionMap[&neighbour2] & RC_BORDER_REG) continue;
-					if (regionMap[&neighbour2] != 0 && regionMap[&neighbour2] != region)
+					if (regions[neighbour2._tmpData] & RC_BORDER_REG) continue;
+					if (regions[neighbour2._tmpData] != 0 && regions[neighbour2._tmpData] != region)
 						neighbourHasRegion = true;
 				}
 			}
@@ -184,7 +188,7 @@ bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsig
 		
 		if (neighbourHasRegion)
 		{
-			regionMap[&span] = 0;
+			regions[span._tmpData] = 0;
 		}
 		else
 		{
@@ -196,10 +200,10 @@ bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsig
 					CompactSpan& neighbour = *span.neighbours[dir];
 					if (neighbour._walkable != walkable) continue;
 					
-					if (neighbour._borderDistance >= lvl && regionMap[&neighbour] == 0)
+					if (neighbour._borderDistance >= lvl && regions[neighbour._tmpData] == 0)
 					{
-						regionMap[&neighbour] = region;
-						distanceMap[&neighbour] = 0;
+						regions[neighbour._tmpData] = region;
+						distances[neighbour._tmpData] = 0;
 						stack.push_back(&neighbour);
 					}
 				}
@@ -210,7 +214,10 @@ bool CompactHeightfield::fillRegion(CompactSpan& span, unsigned int level, unsig
 	return ret;
 }
 
-void CompactHeightfield::paintRectRegion(const int minx, const int maxx, const int minz, const int maxz, const unsigned int regionID, CompactHeightfield::IntMap& regionMap)
+void CompactHeightfield::paintRectRegion(
+	const int minx, const int maxx,
+	const int minz, const int maxz,
+	const unsigned int regionID, boost::scoped_array<unsigned int>& regions)
 {
 	for(int x = minx; x < maxx; ++x)
 	{
@@ -218,13 +225,15 @@ void CompactHeightfield::paintRectRegion(const int minx, const int maxx, const i
 		{
 			BOOST_FOREACH(CompactSpan& span, _cells[x + z * _xsize])
 			{
-				if (span._walkable) regionMap[&span] = regionID;
+				if (span._walkable) regions[span._tmpData] = regionID;
 			}
 		}
 	}
 }
 
-void CompactHeightfield::expandRegions(const int maxIter, const unsigned int level, IntMap& regionMap, IntMap& distanceMap)
+void CompactHeightfield::expandRegions(const int maxIter, const unsigned int level,
+	boost::scoped_array<unsigned int>& regions,
+	boost::scoped_array<unsigned int>& distances)
 {
 	std::list<CompactSpan*> stack;
 	
@@ -232,19 +241,19 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 	{
 		BOOST_FOREACH(CompactSpan& j, _cells[i])
 		{
-			assert(distanceMap.find(&j) != distanceMap.end());
-			assert(regionMap.find(&j) != regionMap.end());
-			if ((distanceMap[&j] >= level) && (regionMap[&j] == 0) && j._walkable)
+			if ((distances[j._tmpData] >= level) && (regions[j._tmpData] == 0) && j._walkable)
 				stack.push_back(&j);
 		}
 	}
 	
 	int iter = maxIter;
 	bool finished = false;
+	boost::scoped_array<unsigned int> regionsCopy(new unsigned int[_spanNumber]);
+	boost::scoped_array<unsigned int> distancesCopy(new unsigned int[_spanNumber]);
 	while((iter > 0) && (stack.size() > 0) && !finished)
 	{
-		IntMap regionMap2 = regionMap;
-		IntMap distanceMap2 = distanceMap;
+		memcpy(&regionsCopy[0], &regions[0], sizeof(unsigned int)*_spanNumber);
+		memcpy(&distancesCopy[0], &distances[0], sizeof(unsigned int)*_spanNumber);
 		
 		std::list<CompactSpan*>::iterator it = stack.begin(), end = stack.end();
 		
@@ -253,7 +262,7 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 		while(it != end)
 		{
 			CompactSpan & i = **it;
-			unsigned int reg = regionMap[&i];
+			unsigned int reg = regions[i._tmpData];
 			assert(reg == 0);
 			unsigned int dist = UINT_MAX;
 			
@@ -262,8 +271,8 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 				if (i.neighbours[dir])
 				{
 					CompactSpan& n = *(i.neighbours[dir]);
-					const unsigned int nr = regionMap[&n];
-					const unsigned int nd = distanceMap[&n];
+					const unsigned int nr = regions[n._tmpData];
+					const unsigned int nd = distances[n._tmpData];
 					if (n._walkable == i._walkable && nr > 0 && (nr & RC_BORDER_REG) == 0 && (nd + 2) < dist)
 					{
 						reg = nr;
@@ -274,8 +283,8 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 			
 			if (reg)
 			{
-				regionMap2[&i] = reg;
-				distanceMap2[&i] = dist;
+				regionsCopy[i._tmpData] = reg;
+				distancesCopy[i._tmpData] = dist;
 				it = stack.erase(it);
 				finished = false;
 			}
@@ -285,27 +294,26 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 			}
 		}
 		
-		regionMap = regionMap2;
-		distanceMap = distanceMap2;
+		memcpy(&regions[0], &regionsCopy[0], sizeof(unsigned int)*_spanNumber);
+		memcpy(&distances[0], &distancesCopy[0], sizeof(unsigned int)*_spanNumber);
 		
 		if (level > 0)
 			--iter;
 	}
 }
 
-bool isSolidEdge(CompactSpan & span, int dir, CompactHeightfield::IntMap & regionMap)
+static bool isSolidEdge(CompactSpan & span, int dir, boost::scoped_array<unsigned int> & regions)
 {
 	unsigned int r = 0;
 	if (span.neighbours[dir])
 	{
-		CompactSpan & n = *span.neighbours[dir];
-		r = regionMap[&n];
+		r = regions[span.neighbours[dir]->_tmpData];
 	}
 	
-	return r != regionMap[&span];
+	return r != regions[span._tmpData];
 }
 
-void walkContour(CompactSpan & span, int dir, CompactHeightfield::IntMap & regionMap, std::set<unsigned int> & connections)
+static void walkContour(CompactSpan & span, int dir, boost::scoped_array<unsigned int> & regions, std::set<unsigned int> & connections)
 {
 	int dir0 = dir;
 	
@@ -320,7 +328,7 @@ void walkContour(CompactSpan & span, int dir, CompactHeightfield::IntMap & regio
 	{
 		CompactSpan& s = *i;
 		
-		if (isSolidEdge(s, dir, regionMap))
+		if (isSolidEdge(s, dir, regions))
 		{
 			unsigned int r = 0;
 			if (s.neighbours[dir]) r = s.neighbours[dir]->_regionID;
@@ -342,13 +350,13 @@ void walkContour(CompactSpan & span, int dir, CompactHeightfield::IntMap & regio
 	} while(--iter > 0 && (i != &span || dir != dir0));
 }
 
-void CompactHeightfield::findConnections(std::vector<Region> & regions, IntMap& regionMap)
+void CompactHeightfield::findConnections(std::vector< Recast::CompactHeightfield::Region >& regions, boost::scoped_array< unsigned int >& regionMap)
 {
 	for(size_t i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
 		BOOST_FOREACH(CompactSpan& j, _cells[i])
 		{
-			unsigned int r = regionMap[&j];
+			unsigned int r = regionMap[j._tmpData];
 			if (r == 0 || r > _maxRegions)
 				continue;
 			
@@ -359,7 +367,7 @@ void CompactHeightfield::findConnections(std::vector<Region> & regions, IntMap& 
 			{
 				if (&j != &k)
 				{
-					unsigned int floorId = regionMap[&k];
+					unsigned int floorId = regionMap[k._tmpData];
 					if (floorId != 0 && floorId <= _maxRegions)
 						reg.floors.insert(floorId);
 				}
@@ -489,7 +497,7 @@ void CompactHeightfield::mergeTooSmallRegions(std::vector<Region> & regions, con
 	}
 }
 
-void CompactHeightfield::compressRegionId(std::vector<Region> & regions, IntMap& regionMap)
+void CompactHeightfield::compressRegionId(std::vector< Recast::CompactHeightfield::Region >& regions, boost::scoped_array< unsigned int >& regionMap)
 {
 	BOOST_FOREACH(Region& r, regions)
 	{
@@ -519,13 +527,13 @@ void CompactHeightfield::compressRegionId(std::vector<Region> & regions, IntMap&
 	{
 		BOOST_FOREACH(CompactSpan& s, _cells[i])
 		{
-			unsigned int & r = regionMap[&s];
+			unsigned int & r = regionMap[s._tmpData];
 			if ((r & RC_BORDER_REG) == 0) r = regions[r].id;
 		}
 	}
 }
 
-void CompactHeightfield::filterSmallRegions(const int minRegionArea, const int mergeRegionSize, IntMap& regionMap)
+void CompactHeightfield::filterSmallRegions(const int minRegionArea, const int mergeRegionSize, boost::scoped_array< unsigned int >& regionMap)
 {
 	std::vector<Region> regions;
 	
@@ -543,16 +551,19 @@ void CompactHeightfield::filterSmallRegions(const int minRegionArea, const int m
 
 void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRegionSize)
 {
-	IntMap distance, regions;
-	
+	unsigned int spanNb = 0;
+	//Store an ID of each span in its tmp field
 	for(int i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
 		BOOST_FOREACH(CompactSpan& j, _cells[i])
 		{
-			distance[&j] = 0;
-			regions[&j] = 0;
+			j._tmpData = spanNb++;
 		}
 	}
+	assert(spanNb == _spanNumber);
+	boost::scoped_array<unsigned int> regions(new unsigned int[_spanNumber]),distance(new unsigned int[_spanNumber]);
+	memset(&regions[0], 0, _spanNumber * sizeof(unsigned int));
+	memset(&distance[0], 0, _spanNumber * sizeof(unsigned int));
 	
 	std::cout << "Building regions... 1\n";
 	buildDistanceField();
@@ -588,7 +599,7 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 		{
 			BOOST_FOREACH(CompactSpan& j, _cells[i])
 			{
-				if (j._borderDistance < level || regions[&j] != 0 || j._walkable == false)
+				if (j._borderDistance < level || regions[j._tmpData] != 0 || j._walkable == false)
 					continue;
 				if (fillRegion(j, level, regionID, regions, distance))
 				{
@@ -607,9 +618,12 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 	filterSmallRegions(minRegionArea, mergeRegionSize, regions);
 	
 	std::cout << "Building regions... 6, maxRegions=" << _maxRegions << "\n";
-	BOOST_FOREACH(IntMap::value_type& i, regions)
+	for(int i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
-		i.first->_regionID = i.second;
+		BOOST_FOREACH(CompactSpan& j, _cells[i])
+		{
+			j._regionID = regions[j._tmpData];
+		}
 	}
 }
 

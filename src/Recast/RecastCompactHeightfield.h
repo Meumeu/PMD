@@ -35,13 +35,13 @@ class Heightfield;
 struct CompactSpan
 {
 	CompactSpan(int bottom, int height, bool walkable = true):
-		_bottom(bottom), _height(height), _regionID(0), _walkable(walkable), _flag(0) {}
+		_bottom(bottom), _height(height), _regionID(0), _walkable(walkable), _tmpData(0) {}
 	int _bottom;                     ///< The lower extent of the span. (Measured from the heightfield's base.)
 	int _height;                     ///< The height of the span.  (Measured from #_bottom.)
 	unsigned int _regionID;          ///< The id of the region the span belongs to. (Or zero if not in a region.)
 	bool _walkable;
-	char _flag;
-	unsigned short _borderDistance;   ///< Border distance data (number of cells x2, sqrt(2) == 1.5)
+	unsigned int _tmpData;           ///< temporary data used by various algorithms, initialise it before use
+	unsigned short _borderDistance;  ///< Border distance data (number of cells x2, sqrt(2) == 1.5)
 	
 	CompactSpan * neighbours[Direction::End];
 };
@@ -63,7 +63,6 @@ public:
 			   const bool filterLowHangingWalkableObstacles = true, const bool filterLedgeSpans = true,
 			   const int borderSize = 1);
 	
-	typedef std::map<CompactSpan *, unsigned int> IntMap;
 	void buildRegions(const int minRegionArea, const int mergeRegionSize);
 
 private:
@@ -74,15 +73,15 @@ private:
 	
 	// The following functions are the different steps performed by buildRegions()
 	void buildDistanceField();
-	void blurDistanceField(IntMap& out, int threshold = 1);
-	bool fillRegion(Recast::CompactSpan& span, unsigned int level, unsigned int region, Recast::CompactHeightfield::IntMap& regionMap, Recast::CompactHeightfield::IntMap& distanceMap);
-	void paintRectRegion(const int minx, const int maxx, const int minz, const int maxz, const unsigned int regionID, IntMap& regionMap);
-	void expandRegions(const int maxIter, const unsigned int level, IntMap& regionMap, IntMap& distanceMap);
-	void findConnections(std::vector<Region> & regions, IntMap& regionMap);
+	void blurDistanceField(boost::scoped_array<unsigned int>& out, int threshold = 1);
+	bool fillRegion(Recast::CompactSpan& span, unsigned int level, unsigned int region, boost::scoped_array<unsigned int>& regions, boost::scoped_array<unsigned int>& distances);
+	void paintRectRegion(const int minx, const int maxx, const int minz, const int maxz, const unsigned int regionID, boost::scoped_array<unsigned int>& regions);
+	void expandRegions(const int maxIter, const unsigned int level, boost::scoped_array<unsigned int>& regions, boost::scoped_array<unsigned int>& distances);
+	void findConnections(std::vector<Region> & regions, boost::scoped_array<unsigned int>& regionMap);
 	void removeTooSmallRegions(std::vector<Region> & regions, const int minRegionArea);
 	void mergeTooSmallRegions(std::vector<Region> & regions, const int mergeRegionSize);
-	void compressRegionId(std::vector<Region> & regions, IntMap& regionMap);
-	void filterSmallRegions(const int minRegionArea, const int mergeRegionSize, IntMap& regionMap);
+	void compressRegionId(std::vector<Region> & regions, boost::scoped_array<unsigned int>& regionMap);
+	void filterSmallRegions(const int minRegionArea, const int mergeRegionSize, boost::scoped_array<unsigned int>& regionMap);
 	
 	
 	void erodeWalkableArea(int radius);
@@ -91,6 +90,7 @@ public:
 	int _zmin;
 	int _xsize;					///< The width of the heightfield. (Along the x-axis in cell units.)
 	int _zsize;					///< The height of the heightfield. (Along the z-axis in cell units.)
+	unsigned int _spanNumber;  ///< Total number of compact spans
 	int _walkableHeight;			///< The walkable height used during the build of the field.  (See: rcConfig::walkableHeight)
 	int _walkableClimb;			///< The walkable climb used during the build of the field. (See: rcConfig::walkableClimb)
 	int _borderSize;				///< The AABB border size used during the build of the field. (See: rcConfig::borderSize)

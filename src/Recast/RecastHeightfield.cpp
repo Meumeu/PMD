@@ -119,9 +119,9 @@ private:
 static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in, Ogre::Plane const & p)
 {
 	std::vector<Ogre::Vector3> out;
+	out.reserve(7);
 	
-	std::vector<float> d;
-	d.resize(in.size());
+	std::vector<float> d(in.size(),0);
 	std::transform(in.begin(), in.end(), d.begin(), PlaneDistance(p));
 	
 	size_t n = in.size();
@@ -144,11 +144,11 @@ static std::vector<Ogre::Vector3> clipPoly(std::vector<Ogre::Vector3> const & in
 }
 
 static bool getPolyMinMax(
-	std::vector<Ogre::Vector3> in,
+	std::vector<Ogre::Vector3> const& in,
 	float x, float z, float cs, float ch,
 	int& min, int& max)
 {
-	std::vector<Ogre::Vector3> clippedIn = clipPoly(clipPoly(clipPoly(clipPoly(in,
+	std::vector<Ogre::Vector3> const& clippedIn = clipPoly(clipPoly(clipPoly(clipPoly(in,
 		Ogre::Plane(Ogre::Vector3::UNIT_X, x)),
 		Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_X, -x-cs)),
 		Ogre::Plane(Ogre::Vector3::UNIT_Z, z)),

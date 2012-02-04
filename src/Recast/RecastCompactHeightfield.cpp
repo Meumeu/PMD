@@ -128,6 +128,7 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 /// @see rcAllocCompactHeightfield, rcHeightfield, rcCompactHeightfield, rcConfig
 CompactHeightfield::CompactHeightfield(const float walkableHeight, const float walkableClimb, const Heightfield& hf, const float radius,
 	const bool filterLowHangingWalkableObstacles, const bool filterLedgeSpans, const int borderSize) :
+	_spanNumber(0),
 	_walkableHeight(ceil(walkableHeight / hf.getCellHeight())),
 	_walkableClimb(floor(walkableClimb / hf.getCellHeight())),
 	_borderSize(borderSize),
@@ -141,7 +142,7 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 	_cells.reset(new std::vector<CompactSpan>[_xsize * _zsize]);
 	
 	// Fill in cells and spans.
-	int n1 = 0, n2 = 0;
+	int n1 = 0;
 	
 	for (int z = 0; z < _zsize; ++z)
 	{
@@ -167,13 +168,13 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 					if (height < _walkableHeight ) continue;
 					
 					vspan.push_back(CompactSpan(bottom, height));
-					n2++;
+					_spanNumber++;
 				}
 			}
 		}
 	}
 	
-	std::cout << n1 << " spans, " << n2 << " compactspans\n";
+	std::cout << n1 << " spans, " << _spanNumber << " compactspans\n";
 	
 
 	// Find neighbour connections.
