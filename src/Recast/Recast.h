@@ -1,6 +1,7 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
 // Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
+// Copyright 2012 Guillaume Meunier <guillaume.meunier@centraliens.net>
 // This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
@@ -26,86 +27,8 @@
 
 namespace Recast
 {
-
-class Heightfield;
 class CompactHeightfield;
-class ContourSet;
 
-/// The value of PI used by Recast.
-static const float RC_PI = 3.14159265f;
-
-/// Recast log categories.
-/// @see rcContext
-enum rcLogCategory
-{
-	RC_LOG_PROGRESS = 1,	///< A progress log entry.
-	RC_LOG_WARNING,			///< A warning log entry.
-	RC_LOG_ERROR,			///< An error log entry.
-};
-
-/// Recast performance timer categories.
-/// @see rcContext
-enum rcTimerLabel
-{
-	/// The user defined total time of the build.
-	RC_TIMER_TOTAL,
-	/// A user defined build time.
-	RC_TIMER_TEMP,
-	/// The time to rasterize the triangles. (See: #rcRasterizeTriangle)
-	RC_TIMER_RASTERIZE_TRIANGLES,
-	/// The time to build the compact heightfield. (See: #rcBuildCompactHeightfield)
-	RC_TIMER_BUILD_COMPACTHEIGHTFIELD,
-	/// The total time to build the contours. (See: #rcBuildContours)
-	RC_TIMER_BUILD_CONTOURS,
-	/// The time to trace the boundaries of the contours. (See: #rcBuildContours)
-	RC_TIMER_BUILD_CONTOURS_TRACE,
-	/// The time to simplify the contours. (See: #rcBuildContours)
-	RC_TIMER_BUILD_CONTOURS_SIMPLIFY,
-	/// The time to filter ledge spans. (See: #rcFilterLedgeSpans)
-	RC_TIMER_FILTER_BORDER,
-	/// The time to filter low height spans. (See: #rcFilterWalkableLowHeightSpans)
-	RC_TIMER_FILTER_WALKABLE,
-	/// The time to apply the median filter. (See: #rcMedianFilterWalkableArea)
-	RC_TIMER_MEDIAN_AREA,
-	/// The time to filter low obstacles. (See: #rcFilterLowHangingWalkableObstacles)
-	RC_TIMER_FILTER_LOW_OBSTACLES,
-	/// The time to build the polygon mesh. (See: #rcBuildPolyMesh)
-	RC_TIMER_BUILD_POLYMESH,
-	/// The time to merge polygon meshes. (See: #rcMergePolyMeshes)
-	RC_TIMER_MERGE_POLYMESH,
-	/// The time to erode the walkable area. (See: #rcErodeWalkableArea)
-	RC_TIMER_ERODE_AREA,
-	/// The time to mark a box area. (See: #rcMarkBoxArea)
-	RC_TIMER_MARK_BOX_AREA,
-	/// The time to mark a cylinder area. (See: #rcMarkCylinderArea)
-	RC_TIMER_MARK_CYLINDER_AREA,
-	/// The time to mark a convex polygon area. (See: #rcMarkConvexPolyArea)
-	RC_TIMER_MARK_CONVEXPOLY_AREA,
-	/// The total time to build the distance field. (See: #rcBuildDistanceField)
-	RC_TIMER_BUILD_DISTANCEFIELD,
-	/// The time to build the distances of the distance field. (See: #rcBuildDistanceField)
-	RC_TIMER_BUILD_DISTANCEFIELD_DIST,
-	/// The time to blur the distance field. (See: #rcBuildDistanceField)
-	RC_TIMER_BUILD_DISTANCEFIELD_BLUR,
-	/// The total time to build the regions. (See: #rcBuildRegions, #rcBuildRegionsMonotone)
-	RC_TIMER_BUILD_REGIONS,
-	/// The total time to apply the watershed algorithm. (See: #rcBuildRegions)
-	RC_TIMER_BUILD_REGIONS_WATERSHED,
-	/// The time to expand regions while applying the watershed algorithm. (See: #rcBuildRegions)
-	RC_TIMER_BUILD_REGIONS_EXPAND,
-	/// The time to flood regions while applying the watershed algorithm. (See: #rcBuildRegions)
-	RC_TIMER_BUILD_REGIONS_FLOOD,
-	/// The time to filter out small regions. (See: #rcBuildRegions, #rcBuildRegionsMonotone)
-	RC_TIMER_BUILD_REGIONS_FILTER,
-	/// The time to build heightfield layers. (See: #rcBuildHeightfieldLayers)
-	RC_TIMER_BUILD_LAYERS, 
-	/// The time to build the polygon mesh detail. (See: #rcBuildPolyMeshDetail)
-	RC_TIMER_BUILD_POLYMESHDETAIL,
-	/// The time to merge polygon mesh details. (See: #rcMergePolyMeshDetails)
-	RC_TIMER_MERGE_POLYMESHDETAIL,
-	/// The maximum number of timers.  (Used for iterating timers.)
-	RC_MAX_TIMERS
-};
 
 /// Specifies a configuration to use when performing Recast builds.
 /// @ingroup recast
@@ -174,70 +97,6 @@ struct rcConfig
 	/// The maximum distance the detail mesh surface should deviate from heightfield
 	/// data. (For height detail only.) [Limit: >=0] [Units: wu] 
 	float detailSampleMaxError;
-};
-
-
-/// Represents a heightfield layer within a layer set.
-/// @see rcHeightfieldLayerSet
-struct HeightfieldLayer
-{
-	float _bmin[3];				///< The minimum bounds in world space. [(x, y, z)]
-	float _bmax[3];				///< The maximum bounds in world space. [(x, y, z)]
-	float _cs;					///< The size of each cell. (On the xz-plane.)
-	float _ch;					///< The height of each cell. (The minimum increment along the y-axis.)
-	int _width;					///< The width of the heightfield. (Along the x-axis in cell units.)
-	int _height;					///< The height of the heightfield. (Along the z-axis in cell units.)
-	int _minx;					///< The minimum x-bounds of usable data.
-	int _maxx;					///< The maximum x-bounds of usable data.
-	int _miny;					///< The minimum y-bounds of usable data. (Along the z-axis.)
-	int _maxy;					///< The maximum y-bounds of usable data. (Along the z-axis.)
-	int _hmin;					///< The minimum height bounds of usable data. (Along the y-axis.)
-	int _hmax;					///< The maximum height bounds of usable data. (Along the y-axis.)
-	unsigned char* _heights;		///< The heightfield. [Size: (width - borderSize*2) * (h - borderSize*2)]
-	unsigned char* _areas;		///< Area ids. [Size: Same as #heights]
-	unsigned char* _cons;		///< Packed neighbor connection information. [Size: Same as #heights]
-};
-
-/// Represents a set of heightfield layers.
-/// @ingroup recast
-/// @see rcAllocHeightfieldLayerSet, rcFreeHeightfieldLayerSet 
-/*struct rcHeightfieldLayerSet
-{
-	rcHeightfieldLayer* layers;			///< The layers in the set. [Size: #nlayers]
-	int nlayers;						///< The number of layers in the set.
-};*/
-
-/// Represents a polygon mesh suitable for use in building a navigation mesh. 
-/// @ingroup recast
-struct rcPolyMesh
-{
-	unsigned short* verts;	///< The mesh vertices. [Form: (x, y, z) * #nverts]
-	unsigned short* polys;	///< Polygon and neighbor data. [Length: #maxpolys * 2 * #nvp]
-	unsigned short* regs;	///< The region id assigned to each polygon. [Length: #maxpolys]
-	unsigned short* flags;	///< The user defined flags for each polygon. [Length: #maxpolys]
-	unsigned char* areas;	///< The area id assigned to each polygon. [Length: #maxpolys]
-	int nverts;				///< The number of vertices.
-	int npolys;				///< The number of polygons.
-	int maxpolys;			///< The number of allocated polygons.
-	int nvp;				///< The maximum number of vertices per polygon.
-	float bmin[3];			///< The minimum bounds in world space. [(x, y, z)]
-	float bmax[3];			///< The maximum bounds in world space. [(x, y, z)]
-	float cs;				///< The size of each cell. (On the xz-plane.)
-	float ch;				///< The height of each cell. (The minimum increment along the y-axis.)
-	int borderSize;			///< The AABB border size used to generate the source data from which the mesh was derived.
-};
-
-/// Contains triangle meshes that represent detailed height data associated 
-/// with the polygons in its associated polygon mesh object.
-/// @ingroup recast
-struct rcPolyMeshDetail
-{
-	unsigned int* meshes;	///< The sub-mesh data. [Size: 4*#nmeshes] 
-	float* verts;			///< The mesh vertices. [Size: 3*#nverts] 
-	unsigned char* tris;	///< The mesh triangles. [Size: 4*#ntris] 
-	int nmeshes;			///< The number of sub-meshes defined by #meshes.
-	int nverts;				///< The number of vertices in #verts.
-	int ntris;				///< The number of triangles in #tris.
 };
 
 /// Heighfield border flag.

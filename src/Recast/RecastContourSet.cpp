@@ -1,5 +1,8 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
+// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
+// Copyright 2012 Guillaume Meunier <guillaume.meunier@centraliens.net>
+// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
