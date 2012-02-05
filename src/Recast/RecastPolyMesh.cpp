@@ -22,6 +22,8 @@
 #include <assert.h>
 #include <list>
 #include <climits>
+#include <map>
+#include <stdint.h>
 
 #include "RecastPolyMesh.h"
 #include "RecastContourSet.h"
@@ -30,7 +32,49 @@ namespace Recast
 {
 typedef std::list<std::pair<bool, unsigned int> > IndexList;
 
-unsigned int PolyMesh::addVertex(Recast::Vertex const & v)
+
+void PolyMesh::fillPolygonNeighbours()
+{
+	typedef std::map<std::pair<Vertex, Vertex>, std::vector<std::pair<size_t, uint8_t> > > PolygonMap;
+	
+	PolygonMap pmap;
+	for(size_t i = 0, size = polys.size(); i < size; ++i)
+	{
+		for(int j = 0, k = 2 ; j < 3; k = j++)
+		{
+			Vertex const & v1 = verts[polys[i].vertices[j]];
+			Vertex const & v2 = verts[polys[i].vertices[k]];
+			if (v1 < v2)
+			{
+				pmap[std::make_pair(v1, v2)].push_back(std::make_pair(i, j));
+			}
+			else
+			{
+				pmap[std::make_pair(v2, v1)].push_back(std::make_pair(i, j));
+			}
+		}
+	}
+	
+	BOOST_FOREACH(PolygonMap::value_type const & i, pmap)
+	{
+		if (i.second.size() == 1) continue;
+		assert(i.second.size() == 2);
+		
+		size_t poly1 = i.second[0].first;
+		size_t poly2 = i.second[1].first;
+		uint8_t edge1 = i.second[0].second;
+		uint8_t edge2 = i.second[1].second;
+		
+		assert(polys[poly1].neighbours[edge1] == -1);
+		assert(polys[poly2].neighbours[edge2] == -1);
+		
+		polys[poly1].neighbours[edge1] = poly2;
+		polys[poly2].neighbours[edge2] = poly1;
+	}
+	
+}
+
+unsigned int PolyMesh::addVertex(Vertex const & v)
 {
 	verts.push_back(v);
 	return verts.size() - 1;
@@ -233,6 +277,8 @@ PolyMesh::PolyMesh(const Recast::ContourSet& cset)
 		assert(cont.verts.size() >= 3);
 		triangulate(cont);
 	}
+	
+	fillPolygonNeighbours();
 }
 
 }

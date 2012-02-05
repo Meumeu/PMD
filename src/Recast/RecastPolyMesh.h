@@ -39,6 +39,9 @@ public:
 			vertices[0] = v1;
 			vertices[1] = v2;
 			vertices[2] = v3;
+			neighbours[0] = -1;
+			neighbours[1] = -1;
+			neighbours[2] = -1;
 		}
 		int regionID;
 		int flags;
@@ -51,6 +54,7 @@ public:
 	
 	unsigned int addVertex(Vertex const & v);
 	void triangulate(Contour const & cont);
+	void fillPolygonNeighbours();
 	
 public:
 	PolyMesh(ContourSet const & cset);

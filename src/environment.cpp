@@ -136,13 +136,6 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	Recast::ContourSet cs(chf, 1.3, 12, Recast::RC_CONTOUR_TESS_WALL_EDGES | Recast::RC_CONTOUR_TESS_AREA_EDGES);
 	Recast::PolyMesh pm(cs);
 	
-	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
-	Ogre::MeshManager::getSingleton().createPlane(
-		"chf",
-		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-		plane,
-		chf._cs, chf._cs, 1, 1, true, 1, 1, 1, Ogre::Vector3::UNIT_Z);
-	
 #if DEBUG_RECAST == 1 || DEBUG_RECAST == 2
 	for(int x = 0; x < chf._xsize; ++x)
 	{
@@ -250,10 +243,27 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			v[i].z = (pm.verts[p.vertices[i]].z + chf._zmin) * chf._cs;
 		}
 		
-		std::cout << v[0] << ", " << v[1] << ", " << v[2] << "\n";
-		
 		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
 		DebugDrawer::getSingleton().drawTri(v, c, true);
+		
+		Ogre::Vector3 centre = (v[0] + v[1] + v[2]) / 3;
+		
+		for(int i = 0; i < 3; i++)
+		{
+			if (p.neighbours[i] == -1) continue;
+			Recast::PolyMesh::Polygon const & neighbour = pm.polys[p.neighbours[i]];
+			
+			Ogre::Vector3 ncentre(0, 0, 0);
+			for(int i = 0; i < 3; i++)
+			{
+				ncentre.x += (pm.verts[neighbour.vertices[i]].x + chf._xmin) * chf._cs;
+				ncentre.y += pm.verts[neighbour.vertices[i]].y * chf._ch;
+				ncentre.z += (pm.verts[neighbour.vertices[i]].z + chf._zmin) * chf._cs;
+			}
+			ncentre /= 3;
+			
+			DebugDrawer::getSingleton().drawLine(centre + Ogre::Vector3(0, 0.5, 0), ncentre + Ogre::Vector3(0, 0.5, 0), c * 2);
+		}
 	}
 #endif
 	DebugDrawer::getSingleton().build();
