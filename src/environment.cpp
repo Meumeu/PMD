@@ -131,7 +131,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToHeightField(transform, heightfield);
 	}
 	
-	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
+	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6); //FIXME: adjust values
 	chf.buildRegions(8, 20); //FIXME: adjust values
 	Recast::ContourSet cs(chf, 1.3, 12, Recast::RC_CONTOUR_TESS_WALL_EDGES | Recast::RC_CONTOUR_TESS_AREA_EDGES);
 	Recast::PolyMesh pm(cs);
@@ -144,6 +144,24 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			float x0 = (x + chf._xmin) * chf._cs;
 			float z0 = (z + chf._zmin) * chf._cs;
 #if DEBUG_RECAST == 1
+			BOOST_FOREACH(Recast::Span const& span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
+			{
+				float y1 = span._smin * chf._ch;
+				float y2 = span._smax * chf._ch;
+				Ogre::Vector3 v[8];
+				v[0] = Ogre::Vector3(x0, y1, z0);
+				v[1] = Ogre::Vector3(x0, y1, z0+chf._cs);
+				v[2] = Ogre::Vector3(x0+chf._cs, y1, z0+chf._cs);
+				v[3] = Ogre::Vector3(x0+chf._cs, y1, z0);
+				v[4] = Ogre::Vector3(x0+chf._cs, y2, z0+chf._cs);
+				v[5] = Ogre::Vector3(x0, y2, z0+chf._cs);
+				v[6] = Ogre::Vector3(x0, y2, z0);
+				v[7] = Ogre::Vector3(x0+chf._cs, y2, z0);
+				
+				DebugDrawer::getSingleton().drawCuboid(v, span._walkable ? Ogre::ColourValue::Blue : Ogre::ColourValue::Green, true);
+			}
+#endif
+#if DEBUG_RECAST == 2
 			BOOST_FOREACH(Recast::CompactSpan& span, chf._cells[x + z * chf._xsize])
 			{
 				if (!span._walkable) continue;
@@ -162,27 +180,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 				
 				DebugDrawer::getSingleton().drawCuboid(v, c, true);
 			}
-#else
-#if DEBUG_RECAST == 2
-			BOOST_FOREACH(Recast::Span const& span, heightfield.getSpans(x + chf._xmin, z + chf._zmin))
-			{
-				float y1 = span._smin * chf._ch;
-				float y2 = span._smax * chf._ch;
-				Ogre::Vector3 v[8];
-				v[0] = Ogre::Vector3(x0, y1, z0);
-				v[1] = Ogre::Vector3(x0, y1, z0+chf._cs);
-				v[2] = Ogre::Vector3(x0+chf._cs, y1, z0+chf._cs);
-				v[3] = Ogre::Vector3(x0+chf._cs, y1, z0);
-				v[4] = Ogre::Vector3(x0+chf._cs, y2, z0+chf._cs);
-				v[5] = Ogre::Vector3(x0, y2, z0+chf._cs);
-				v[6] = Ogre::Vector3(x0, y2, z0);
-				v[7] = Ogre::Vector3(x0+chf._cs, y2, z0);
-				
-				DebugDrawer::getSingleton().drawCuboid(v, Ogre::ColourValue::Blue, true);
-			}
 #endif
-#endif
-		}
+	}
 	}
 #endif
 
@@ -262,7 +261,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			}
 			ncentre /= 3;
 			
-			DebugDrawer::getSingleton().drawLine(centre + Ogre::Vector3(0, 0.5, 0), ncentre + Ogre::Vector3(0, 0.5, 0), c * 2);
+			DebugDrawer::getSingleton().drawLine(centre + Ogre::Vector3(0, 0.5, 0), ncentre + Ogre::Vector3(0, 0.5, 0), Ogre::ColourValue::White);
 		}
 	}
 #endif

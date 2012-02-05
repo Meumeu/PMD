@@ -163,7 +163,7 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 					if (!s->_walkable) continue;
 					
 					const int bottom = s->_smax;
-					const int height = ((next == spans.end()) ? INT_MAX : next->_smin) - bottom;
+					const int height = ((next == spans.end()) ? MAX_HEIGHT : next->_smin) - bottom;
 
 					if (height < _walkableHeight ) continue;
 					
