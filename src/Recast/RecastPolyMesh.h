@@ -20,24 +20,40 @@
 
 #ifndef RECAST_POLYMESH_H
 #define RECAST_POLYMESH_H
+
+#include <vector>
+#include "Recast.h"
+
 namespace Recast{
+	
+class ContourSet;
+class Contour;
 
 class PolyMesh
-{
-	unsigned short* verts;	///< The mesh vertices. [Form: (x, y, z) * #nverts]
-	unsigned short* polys;	///< Polygon and neighbor data. [Length: #maxpolys * 2 * #nvp]
-	unsigned short* regs;	///< The region id assigned to each polygon. [Length: #maxpolys]
-	unsigned short* flags;	///< The user defined flags for each polygon. [Length: #maxpolys]
-	unsigned char* areas;	///< The area id assigned to each polygon. [Length: #maxpolys]
-	int nverts;				///< The number of vertices.
-	int npolys;				///< The number of polygons.
-	int maxpolys;			///< The number of allocated polygons.
-	int nvp;				///< The maximum number of vertices per polygon.
-	float bmin[3];			///< The minimum bounds in world space. [(x, y, z)]
-	float bmax[3];			///< The maximum bounds in world space. [(x, y, z)]
-	float cs;				///< The size of each cell. (On the xz-plane.)
-	float ch;				///< The height of each cell. (The minimum increment along the y-axis.)
-	int borderSize;			///< The AABB border size used to generate the source data from which the mesh was derived.
+{	
+public:
+	struct Polygon
+	{
+		Polygon(int v1, int v2, int v3, int r) : regionID(r)
+		{
+			vertices[0] = v1;
+			vertices[1] = v2;
+			vertices[2] = v3;
+		}
+		int regionID;
+		int flags;
+		int vertices[3];
+		int neighbours[3];
+	};
+	
+	std::vector<Vertex> verts;        ///< The mesh vertices
+	std::vector<Polygon> polys;       ///< Polygon and neighbour data
+	
+	unsigned int addVertex(Vertex const & v);
+	void triangulate(Contour const & cont);
+	
+public:
+	PolyMesh(ContourSet const & cset);
 };
 }
 

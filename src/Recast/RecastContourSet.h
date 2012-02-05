@@ -24,28 +24,10 @@
 #include "Recast.h"
 
 namespace Recast
-{
+{	
 /// Represents a simple, non-overlapping contour in field space.
 struct Contour
 {
-	struct Vertex
-	{
-		Vertex(int _x, int _y, int _z, int _flag = 0) :
-			x(_x), y(_y), z(_z), flag(_flag) {}
-		int x, y, z;
-		int flag;
-		
-		bool operator<(Vertex const & v) const
-		{
-			return (x < v.x) || ((x == v.x) && (z < v.z));
-		}
-		
-		bool operator>(Vertex const & v) const
-		{
-			return (x > v.x) || ((x == v.x) && (z > v.z));
-		}
-	};
-	
 	std::vector<Vertex> verts;      ///< Simplified contour vertex and connection data.
 	std::vector<Vertex> rverts;     ///< Raw contour vertex and connection data.
 	
@@ -57,6 +39,7 @@ struct Contour
 /// @ingroup recast
 class ContourSet
 {
+	friend class PolyMesh;
 public:
 	ContourSet(CompactHeightfield& chf, const float maxError, const int maxEdgeLen, const int buildFlags);
 	
@@ -65,8 +48,6 @@ private:
 	
 	float _cs;			///< The size of each cell. (On the xz-plane.)
 	float _ch;			///< The height of each cell. (The minimum increment along the y-axis.)
-	int _xsize;			///< The width of the set. (Along the x-axis in cell units.) 
-	int _zsize;			///< The height of the set. (Along the z-axis in cell units.) 
 	int _borderSize;		///< The AABB border size used to generate the source data from which the contours were derived.
 };
 }

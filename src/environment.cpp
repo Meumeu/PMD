@@ -38,10 +38,11 @@
 #include "Recast/RecastHeightfield.h"
 #include "Recast/RecastCompactHeightfield.h"
 #include "Recast/RecastContourSet.h"
+#include "Recast/RecastPolyMesh.h"
 
 #include "DebugDrawer.h"
 
-#define DEBUG_RECAST 4
+#define DEBUG_RECAST 5
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -133,6 +134,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6, true, true); //FIXME: adjust values
 	chf.buildRegions(8, 20); //FIXME: adjust values
 	Recast::ContourSet cs(chf, 1.3, 12, Recast::RC_CONTOUR_TESS_WALL_EDGES | Recast::RC_CONTOUR_TESS_AREA_EDGES);
+	Recast::PolyMesh pm(cs);
 	
 	Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
 	Ogre::MeshManager::getSingleton().createPlane(
@@ -233,6 +235,25 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
 			DebugDrawer::getSingleton().drawLine(a, b, c);
 		}
+	}
+#endif
+
+#if DEBUG_RECAST == 5
+	BOOST_FOREACH(Recast::PolyMesh::Polygon const & p, pm.polys)
+	{
+		unsigned int r = p.regionID;
+		Ogre::Vector3 v[3];
+		for(int i = 0; i < 3; i++)
+		{
+			v[i].x = (pm.verts[p.vertices[i]].x + chf._xmin) * chf._cs;
+			v[i].y = pm.verts[p.vertices[i]].y * chf._ch;
+			v[i].z = (pm.verts[p.vertices[i]].z + chf._zmin) * chf._cs;
+		}
+		
+		std::cout << v[0] << ", " << v[1] << ", " << v[2] << "\n";
+		
+		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+		DebugDrawer::getSingleton().drawTri(v, c, true);
 	}
 #endif
 	DebugDrawer::getSingleton().build();

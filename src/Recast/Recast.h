@@ -296,6 +296,34 @@ static const unsigned char RC_WALKABLE_AREA = 63;
 /// to another span. (Has no neighbor.)
 static const int RC_NOT_CONNECTED = 0x3f;
 
+struct Vertex
+{
+	Vertex(int _x, int _y, int _z, int _flag = 0) :
+		x(_x), y(_y), z(_z), flag(_flag) {}
+	int x, y, z;
+	int flag;
+	
+	bool operator<(Vertex const & v) const
+	{
+		return (x < v.x) || ((x == v.x) && (z < v.z));
+	}
+	
+	bool operator>(Vertex const & v) const
+	{
+		return (x > v.x) || ((x == v.x) && (z > v.z));
+	}
+
+	bool operator<=(Vertex const & v) const
+	{
+		return (x < v.x) || ((x == v.x) && (z <= v.z));
+	}
+	
+	bool operator>=(Vertex const & v) const
+	{
+		return (x > v.x) || ((x == v.x) && (z >= v.z));
+	}
+};
+
 struct Direction
 {
 	enum

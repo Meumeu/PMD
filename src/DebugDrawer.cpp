@@ -290,7 +290,18 @@ void DebugDrawer::buildQuad(const Ogre::Vector3 *vertices,
  
         for (int i = 0; i < 4; ++i) addLineIndices(index + i, index + ((i + 1) % 4));
 }
+
+void DebugDrawer::buildTri(const Ogre::Vector3 *vertices,
+                          const Ogre::ColourValue& colour,
+                          float alpha)
+{
+        int index = addLineVertex(vertices[0], Ogre::ColourValue(colour.r, colour.g, colour.b, alpha));
+        addLineVertex(vertices[1], Ogre::ColourValue(colour.r, colour.g, colour.b, alpha));
+        addLineVertex(vertices[2], Ogre::ColourValue(colour.r, colour.g, colour.b, alpha));
  
+        for (int i = 0; i < 3; ++i) addLineIndices(index + i, index + ((i + 1) % 3));
+}
+
 void DebugDrawer::buildCircle(const Ogre::Vector3 &centre,
 							  float radius,
 	                          int segmentsCount,
@@ -574,6 +585,14 @@ void DebugDrawer::drawQuad(const Ogre::Vector3 *vertices,
 {
 	buildQuad(vertices, colour);
 	if (isFilled) buildFilledQuad(vertices, colour, fillAlpha);
+}
+
+void DebugDrawer::drawTri(const Ogre::Vector3 *vertices,
+                     const Ogre::ColourValue& colour,
+                     bool isFilled)
+{
+	buildTri(vertices, colour);
+	if (isFilled) buildFilledTriangle(vertices, colour, fillAlpha);
 }
  
 void DebugDrawer::drawCuboid(const Ogre::Vector3 *vertices,

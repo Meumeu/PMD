@@ -112,7 +112,7 @@ static bool isBorderVertex(const CompactSpan& span, int dir)
 	return false;
 }
 
-static float calcPointSegmentSqrDistance(Contour::Vertex const & p, Contour::Vertex const & a, Contour::Vertex const & b)
+static float calcPointSegmentSqrDistance(Vertex const & p, Vertex const & a, Vertex const & b)
 {
 	float abx = b.x - a.x;
 	float abz = b.z - a.z;
@@ -135,7 +135,7 @@ static float calcPointSegmentSqrDistance(Contour::Vertex const & p, Contour::Ver
 
 static float calcPolygonArea(Contour const & cont)
 {
-	std::vector<Contour::Vertex> const & verts = cont.verts;
+	std::vector<Vertex> const & verts = cont.verts;
 	int n = verts.size();
 	int area = 0;
 	
@@ -147,15 +147,15 @@ static float calcPolygonArea(Contour const & cont)
 	return (area + 1) / 2;
 }
 
-static bool ileft(Contour::Vertex const & a, Contour::Vertex const & b, Contour::Vertex const & c)
+static bool ileft(Vertex const & a, Vertex const & b, Vertex const & c)
 {
 	return (b.x - a.x) * (c.z - a.z) - (b.z * a.z) * (c.x - a.x) <= 0;
 }
 
 static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const & cb)
 {
-	std::vector<Contour::Vertex> const & vertsa = ca.verts;
-	std::vector<Contour::Vertex> const & vertsb = cb.verts;
+	std::vector<Vertex> const & vertsa = ca.verts;
+	std::vector<Vertex> const & vertsb = cb.verts;
 	int closest = INT_MAX;
 	int ia = -1;
 	int ib = -1;
@@ -165,13 +165,13 @@ static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const 
 	
 	for(int i = 0; i < na; ++i)
 	{
-		Contour::Vertex const & va_prev = vertsa[(i + na - 1) % na];
-		Contour::Vertex const & va = vertsa[i];
-		Contour::Vertex const & va_next = vertsa[(i + 1) % na];
+		Vertex const & va_prev = vertsa[(i + na - 1) % na];
+		Vertex const & va = vertsa[i];
+		Vertex const & va_next = vertsa[(i + 1) % na];
 		
 		for(int j = 0; j < nb; j++)
 		{
-			Contour::Vertex const & vb = vertsb[j];
+			Vertex const & vb = vertsb[j];
 			const int d = (va.x - vb.x) * (va.x - vb.x) + (va.z - vb.z) * (va.z - vb.z);
 			if (d < closest && ileft(va_prev, va, vb) && ileft(va, va_next, vb))
 			{
@@ -187,7 +187,7 @@ static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const 
 
 static void mergeContours(Contour & ca, Contour & cb)
 {
-	std::vector<Contour::Vertex> out;
+	std::vector<Vertex> out;
 	std::pair<int, int> idx = getClosestVertices(ca, cb);
 	
 	const int na = ca.verts.size();
@@ -208,10 +208,10 @@ static void mergeContours(Contour & ca, Contour & cb)
 	cb.verts.clear();
 }
 
-static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & start)
+static std::vector<Vertex> walkContour(int x, int z, CompactSpan & start)
 {
 	int dir = 0;
-	std::vector<Contour::Vertex> out;
+	std::vector<Vertex> out;
 	
 	while((start._tmpData & (1 << dir)) == 0) ++dir;
 	
@@ -223,7 +223,7 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 	{
 		if (currentSpan->_tmpData & (1 << dir))
 		{
-			Contour::Vertex v(x, getCornerHeight(*currentSpan, dir), z);
+			Vertex v(x, getCornerHeight(*currentSpan, dir), z);
 			switch(dir)
 			{
 				case Direction::Left:
@@ -276,15 +276,15 @@ static std::vector<Contour::Vertex> walkContour(int x, int z, CompactSpan & star
 	return out;
 }
 
-static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
+static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
 {
 	assert(verts.size() > 0);
 	
-	std::vector<Contour::Vertex> out;
+	std::vector<Vertex> out;
 	
 	// Add initial points.
 	bool hasConnections = false;
-	BOOST_FOREACH(Contour::Vertex const &i, verts)
+	BOOST_FOREACH(Vertex const &i, verts)
 	{
 		if ((i.flag & RC_CONTOUR_REG_MASK) != 0)
 		{
@@ -297,15 +297,15 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 	{
 		// The contour has some portals to other regions.
 		// Add a new point to every location where the region changes.
-		for(std::vector<Contour::Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
+		for(std::vector<Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
 		{
-			std::vector<Contour::Vertex>::const_iterator next = it; ++next;
+			std::vector<Vertex>::const_iterator next = it; ++next;
 			if (next == verts.end()) next = verts.begin();
 			
 			if (((it->flag & RC_CONTOUR_REG_MASK) != (next->flag & RC_CONTOUR_REG_MASK)) ||
 			(it->flag & RC_AREA_BORDER) != (next->flag & RC_AREA_BORDER))
 			{
-				out.push_back(Contour::Vertex(it->x, it->y, it->z, it - verts.begin()));
+				out.push_back(Vertex(it->x, it->y, it->z, it - verts.begin()));
 			}
 		}
 	}
@@ -316,16 +316,16 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 		// create some initial points for the simplification process. 
 		// Find lower-left and upper-right vertices of the contour.
 		
-		std::vector<Contour::Vertex>::const_iterator lowerleft = verts.begin();
-		std::vector<Contour::Vertex>::const_iterator upperright = verts.begin();
-		for(std::vector<Contour::Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
+		std::vector<Vertex>::const_iterator lowerleft = verts.begin();
+		std::vector<Vertex>::const_iterator upperright = verts.begin();
+		for(std::vector<Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
 		{
 			if (*it < *lowerleft) lowerleft = it;
 			if (*it > *upperright) upperright = it;
 		}
 		
-		Contour::Vertex ll = *lowerleft; ll.flag = lowerleft - verts.begin();
-		Contour::Vertex ur = *upperright; ur.flag = upperright - verts.begin();
+		Vertex ll = *lowerleft; ll.flag = lowerleft - verts.begin();
+		Vertex ur = *upperright; ur.flag = upperright - verts.begin();
 		
 		out.push_back(ll);
 		out.push_back(ur);
@@ -338,8 +338,8 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 	while(i < out.size())
 	{
 		const int ii = (i + 1) % out.size();
-		const Contour::Vertex a = out[i];
-		const Contour::Vertex b = out[ii];
+		const Vertex a = out[i];
+		const Vertex b = out[ii];
 		
 		// Traverse the segment in lexilogical order so that the
 		// max deviation is calculated similarly when traversing
@@ -380,7 +380,7 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 		// add new point, else continue to next segment.
 		if (maxi != -1 && maxd > maxError * maxError)
 		{
-			Contour::Vertex v = verts[maxi]; v.flag = maxi;
+			Vertex v = verts[maxi]; v.flag = maxi;
 			out.insert(out.begin() + i + 1, v);
 		}
 		else
@@ -397,8 +397,8 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 		
 		while(i < out.size())
 		{
-			Contour::Vertex const& a = out[i];
-			Contour::Vertex const& b = out[(i + 1) % out.size()];
+			Vertex const& a = out[i];
+			Vertex const& b = out[(i + 1) % out.size()];
 			const int ci = (a.flag + 1) % n;
 			int maxi = -1;
 			
@@ -429,7 +429,7 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 			
 			if (maxi != -1)
 			{
-				Contour::Vertex v = verts[maxi];
+				Vertex v = verts[maxi];
 				v.flag = maxi;
 				out.insert(out.begin() + i + 1, v);
 			}
@@ -442,10 +442,10 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 	
 	// The edge vertex flag is take from the current raw point,
 	// and the neighbour region is take from the next raw point.
-	BOOST_FOREACH(Contour::Vertex& v, out)
+	BOOST_FOREACH(Vertex& v, out)
 	{
-		const Contour::Vertex& a = verts[(v.flag + 1) % n];
-		const Contour::Vertex& b = verts[v.flag];
+		const Vertex& a = verts[(v.flag + 1) % n];
+		const Vertex& b = verts[v.flag];
 		
 		v.flag = (a.flag & RC_CONTOUR_REG_MASK) | (b.flag & RC_BORDER_VERTEX);
 	}
@@ -453,13 +453,13 @@ static std::vector<Contour::Vertex> simplifyContour(std::vector<Contour::Vertex>
 	return out;
 }
 
-static void removeDegenerateSegments(std::vector<Contour::Vertex> & verts)
+static void removeDegenerateSegments(std::vector<Vertex> & verts)
 {
-	std::vector<Contour::Vertex>::iterator it = verts.begin();
+	std::vector<Vertex>::iterator it = verts.begin();
 	
 	while(it != verts.end())
 	{
-		std::vector<Contour::Vertex>::iterator next = it; ++next;
+		std::vector<Vertex>::iterator next = it; ++next;
 		if (next == verts.end()) next = verts.begin();
 		
 		if (it->x == next->x && it->z == next->z)
@@ -500,8 +500,6 @@ static void markBoundaries(boost::scoped_array<std::vector<CompactSpan> > & cell
 ContourSet::ContourSet(Recast::CompactHeightfield& chf, const float maxError, const int maxEdgeLen, const int buildFlags) :
 	_cs(chf._cs),
 	_ch(chf._ch),
-	_xsize(chf._xsize - 2 * chf._borderSize),
-	_zsize(chf._zsize - 2 * chf._borderSize),
 	_borderSize(chf._borderSize)
 {
 	// Mark boundaries
