@@ -238,9 +238,9 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		Ogre::Vector3 v[3];
 		for(int i = 0; i < 3; i++)
 		{
-			v[i].x = (pm.verts[p.vertices[i]].x + chf._xmin) * chf._cs;
-			v[i].y = pm.verts[p.vertices[i]].y * chf._ch;
-			v[i].z = (pm.verts[p.vertices[i]].z + chf._zmin) * chf._cs;
+			v[i].x = (p.vertices[i].x + chf._xmin) * chf._cs;
+			v[i].y = p.vertices[i].y * chf._ch;
+			v[i].z = (p.vertices[i].z + chf._zmin) * chf._cs;
 		}
 		
 		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
@@ -256,9 +256,9 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			Ogre::Vector3 ncentre(0, 0, 0);
 			for(int i = 0; i < 3; i++)
 			{
-				ncentre.x += (pm.verts[neighbour.vertices[i]].x + chf._xmin) * chf._cs;
-				ncentre.y += pm.verts[neighbour.vertices[i]].y * chf._ch;
-				ncentre.z += (pm.verts[neighbour.vertices[i]].z + chf._zmin) * chf._cs;
+				ncentre.x += (neighbour.vertices[i].x + chf._xmin) * chf._cs;
+				ncentre.y += neighbour.vertices[i].y * chf._ch;
+				ncentre.z += (neighbour.vertices[i].z + chf._zmin) * chf._cs;
 			}
 			ncentre /= 3;
 			

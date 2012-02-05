@@ -300,6 +300,7 @@ struct Vertex
 {
 	Vertex(int _x, int _y, int _z, int _flag = 0) :
 		x(_x), y(_y), z(_z), flag(_flag) {}
+	Vertex() {}
 	int x, y, z;
 	int flag;
 	

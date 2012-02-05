@@ -34,7 +34,7 @@ class PolyMesh
 public:
 	struct Polygon
 	{
-		Polygon(int v1, int v2, int v3, int r) : regionID(r)
+		Polygon(Vertex v1, Vertex v2, Vertex v3, int r) : regionID(r)
 		{
 			vertices[0] = v1;
 			vertices[1] = v2;
@@ -45,14 +45,12 @@ public:
 		}
 		int regionID;
 		int flags;
-		int vertices[3];
+		Vertex vertices[3];
 		int neighbours[3];
 	};
 	
-	std::vector<Vertex> verts;        ///< The mesh vertices
 	std::vector<Polygon> polys;       ///< Polygon and neighbour data
 	
-	unsigned int addVertex(Vertex const & v);
 	void triangulate(Contour const & cont);
 	void fillPolygonNeighbours();
 	

@@ -42,8 +42,8 @@ void PolyMesh::fillPolygonNeighbours()
 	{
 		for(int j = 0, k = 2 ; j < 3; k = j++)
 		{
-			Vertex const & v1 = verts[polys[i].vertices[j]];
-			Vertex const & v2 = verts[polys[i].vertices[k]];
+			Vertex const & v1 = polys[i].vertices[j];
+			Vertex const & v2 = polys[i].vertices[k];
 			if (v1 < v2)
 			{
 				pmap[std::make_pair(v1, v2)].push_back(std::make_pair(i, j));
@@ -72,12 +72,6 @@ void PolyMesh::fillPolygonNeighbours()
 		polys[poly2].neighbours[edge2] = poly1;
 	}
 	
-}
-
-unsigned int PolyMesh::addVertex(Vertex const & v)
-{
-	verts.push_back(v);
-	return verts.size() - 1;
 }
 
 static int det(Vertex const & a, Vertex const & b, Vertex const & c)
@@ -162,10 +156,7 @@ static bool diagonal(Contour const & cont, IndexList const & indices, IndexList:
 		if (left_or_colinear(a, b, vnext) && left_or_colinear(b, a, vprev)) return false;
 	}
 	
-	
-	
 	// Check if (i, j) is a diagonal, ie. if it intersects no edge
-	
 	for(IndexList::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it)
 	{
 		IndexList::const_iterator it2 = it; ++it2; if (it2 == end) it2 = indices.begin();
@@ -245,9 +236,9 @@ void PolyMesh::triangulate(Contour const & cont)
 		IndexList::iterator it2 = it1; ++it2; if (it2 == end) it2 = indices.begin();
 		
 		polys.push_back(
-			Polygon(addVertex(cont.verts[it0->second]),
-				addVertex(cont.verts[it1->second]),
-				addVertex(cont.verts[it2->second]),
+			Polygon(cont.verts[it0->second],
+				cont.verts[it1->second],
+				cont.verts[it2->second],
 				cont.reg));
 		
 		indices.erase(it1);
@@ -264,9 +255,9 @@ void PolyMesh::triangulate(Contour const & cont)
 	IndexList::iterator it2 = it1; ++it2; if (it2 == end) it2 = indices.begin();
 	
 	polys.push_back(
-		Polygon(addVertex(cont.verts[it0->second]),
-			addVertex(cont.verts[it1->second]),
-			addVertex(cont.verts[it2->second]),
+		Polygon(cont.verts[it0->second],
+			cont.verts[it1->second],
+			cont.verts[it2->second],
 			cont.reg));
 }
 	
