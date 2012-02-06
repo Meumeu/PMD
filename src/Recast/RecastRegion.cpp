@@ -25,7 +25,6 @@
 #include <climits>
 
 #include "RecastCompactHeightfield.h"
-#include <iostream>
 #include <list>
 
 namespace Recast
@@ -567,13 +566,9 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 	memset(&regions[0], 0, _spanNumber * sizeof(unsigned int));
 	memset(&distance[0], 0, _spanNumber * sizeof(unsigned int));
 	
-	std::cout << "Building regions... 1\n";
 	buildDistanceField();
 
-	std::cout << "Building regions... 2\n";
 	blurDistanceField(distance, 1);
-	//blurDistanceField(distance, 2);
-	//return;
 	unsigned int regionID = 1;
 	
 	if (_borderSize > 0)
@@ -589,10 +584,8 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 	unsigned int level = _maxDistance;
 	if (level % 2) ++level;
 	
-	std::cout << "Building regions... 3, level=" << level << ", maxDistance=" << _maxDistance << "\n";
 	while(level > 0)
 	{
-		std::cout << "level " << level << "\n";
 		level = (level > 2) ? (level - 2) : 0;
 		
 		expandRegions(8, level, regions, distance);
@@ -605,21 +598,17 @@ void CompactHeightfield::buildRegions(const int minRegionArea, const int mergeRe
 					continue;
 				if (fillRegion(j, level, regionID, regions, distance))
 				{
-					std::cout << "New region " << regionID << " at " << i % _xsize << ", " << i / _xsize << "\n";
 					++regionID;
 				}
 			}
 		}
 	}
 	
-	std::cout << "Building regions... 4\n";
 	expandRegions(8, 0, regions, distance);
 	
 	_maxRegions = regionID;
-	std::cout << "Building regions... 5, maxRegions=" << _maxRegions << "\n";
 	filterSmallRegions(minRegionArea, mergeRegionSize, regions);
 	
-	std::cout << "Building regions... 6, maxRegions=" << _maxRegions << "\n";
 	for(int i = 0, size = _xsize * _zsize; i < size; ++i)
 	{
 		BOOST_FOREACH(CompactSpan& j, _cells[i])

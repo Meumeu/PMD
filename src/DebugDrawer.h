@@ -3,7 +3,9 @@
  
 #include <OGRE/OgreSingleton.h>
 #include <map>
- 
+#include <boost/cstdint.hpp>
+using boost::uint64_t;
+
 typedef std::pair<Ogre::Vector3, Ogre::ColourValue> VertexPair;
 
 #define DEFAULT_ICOSPHERE_RECURSION_LEVEL	1

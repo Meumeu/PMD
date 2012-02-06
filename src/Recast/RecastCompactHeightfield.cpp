@@ -177,7 +177,6 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 		}
 	}
 	
-	std::cout << n1 << " spans, " << _spanNumber << " compactspans\n";
 	
 
 	// Find neighbour connections.

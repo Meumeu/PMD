@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <boost/foreach.hpp>
+#include <boost/date_time.hpp>
 
 #include <OgreVector3.h>
 #include <OgreVertexIndexData.h>
@@ -87,6 +88,7 @@ void OgreConverter::AddIndexData(Ogre::IndexData * data, int offset)
 
 OgreConverter::OgreConverter(Ogre::Entity& entity)
 {
+	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 	if (entity.getMesh()->sharedVertexData)
 	{
 		AddVertices(entity.getMesh()->sharedVertexData);
@@ -105,6 +107,9 @@ OgreConverter::OgreConverter(Ogre::Entity& entity)
 			AddVertices(submesh->vertexData);
 		}
 	}
+	boost::posix_time::time_duration t = boost::posix_time::microsec_clock::universal_time() - start;
+	
+	std::cout << "Read triangles: " << t << "\n";
 }
 
 static btVector3 Ogre2Bullet(Ogre::Vector3 const& v)
@@ -114,6 +119,7 @@ static btVector3 Ogre2Bullet(Ogre::Vector3 const& v)
 
 void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const
 {
+	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 	BOOST_FOREACH(Face const& i, Faces)
 	{
 		Ogre::Vector3 v1 = transform * Vertices[i.VertexIndices[0]];
@@ -125,10 +131,14 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 			Ogre2Bullet(v2),
 			Ogre2Bullet(v3));
 	}
+	boost::posix_time::time_duration t = boost::posix_time::microsec_clock::universal_time() - start;
+	
+	std::cout << "Convert to bullet: " << t << "\n";
 }
 
 void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField) const
 {
+	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 	BOOST_FOREACH(Face const& i, Faces)
 	{
 		heightField.rasterizeTriangle(
@@ -136,5 +146,8 @@ void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Hei
 			transform * Vertices[i.VertexIndices[1]],
 			transform * Vertices[i.VertexIndices[2]]);
 	}
+	boost::posix_time::time_duration t = boost::posix_time::microsec_clock::universal_time() - start;
+	
+	std::cout << "Rasterization: " << t << "\n";
 }
 

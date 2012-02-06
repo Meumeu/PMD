@@ -19,6 +19,7 @@
 #include "environment.h"
 
 #include <boost/foreach.hpp>
+#include <boost/date_time.hpp>
 #include <OgreEntity.h>
 #include <OgreSceneManager.h>
 #include <OgreStaticGeometry.h>
@@ -42,7 +43,7 @@
 
 #include "DebugDrawer.h"
 
-#define DEBUG_RECAST 5
+#define DEBUG_RECAST 0
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -84,6 +85,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 {
 	new DebugDrawer(_sceneManager, 0.5);
 	
+	boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
 	while (!level.eof())
 	{
 		std::string MeshName;
@@ -117,10 +119,13 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		}
 	}
 
+	boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
+	boost::posix_time::ptime t3 = boost::posix_time::microsec_clock::universal_time();
 	Recast::Heightfield heightfield(0.2f, 0.01f, M_PI/4, 1); //FIXME: adjust values
 
+	boost::posix_time::ptime t4 = boost::posix_time::microsec_clock::universal_time();
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		//sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
@@ -131,11 +136,16 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToHeightField(transform, heightfield);
 	}
 	
+	boost::posix_time::ptime t5 = boost::posix_time::microsec_clock::universal_time();
 	Recast::CompactHeightfield chf(2.0, 0.9, heightfield, 0.6); //FIXME: adjust values
+	boost::posix_time::ptime t6 = boost::posix_time::microsec_clock::universal_time();
 	chf.buildRegions(8, 20); //FIXME: adjust values
+	boost::posix_time::ptime t7 = boost::posix_time::microsec_clock::universal_time();
 	Recast::ContourSet cs(chf, 1.3, 12, Recast::RC_CONTOUR_TESS_WALL_EDGES | Recast::RC_CONTOUR_TESS_AREA_EDGES);
+	boost::posix_time::ptime t8 = boost::posix_time::microsec_clock::universal_time();
 	Recast::PolyMesh pm(cs);
-	
+	boost::posix_time::ptime t9 = boost::posix_time::microsec_clock::universal_time();
+
 #if DEBUG_RECAST == 1 || DEBUG_RECAST == 2
 	for(int x = 0; x < chf._xsize; ++x)
 	{
@@ -266,28 +276,101 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	}
 #endif
 	DebugDrawer::getSingleton().build();
+	boost::posix_time::ptime t10 = boost::posix_time::microsec_clock::universal_time();
 	
 	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
+	boost::posix_time::ptime t11 = boost::posix_time::microsec_clock::universal_time();
 
 	btRigidBody::btRigidBodyConstructionInfo rbci(0, 0, _TriMeshShape.get());
 	_EnvBody = boost::shared_ptr<btRigidBody>(new btRigidBody(rbci));
+	boost::posix_time::ptime t12 = boost::posix_time::microsec_clock::universal_time();
 
 	_world.addRigidBody(_EnvBody.get());
+	boost::posix_time::ptime t13 = boost::posix_time::microsec_clock::universal_time();
 
 	btTriangleInfoMap * triinfomap = new btTriangleInfoMap();
 	btGenerateInternalEdgeInfo(_TriMeshShape.get(), triinfomap);
 	gContactAddedCallback = CustomMaterialCombinerCallback;
 	_EnvBody->setCollisionFlags(_EnvBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT);
 	_EnvBody->setContactProcessingThreshold(0);
+	boost::posix_time::ptime t14 = boost::posix_time::microsec_clock::universal_time();
 
 
 	sg->build();
-	sg->setCastShadows(true);
+	//sg->setCastShadows(true);
+	boost::posix_time::ptime t15 = boost::posix_time::microsec_clock::universal_time();
 	
 	BOOST_FOREACH(Block const& block, _blocks)
 	{
 		_sceneManager->destroyEntity(block._entity);
 	}
+	boost::posix_time::ptime t16 = boost::posix_time::microsec_clock::universal_time();
+
+	std::stringstream str;
+	
+	str << "Read level file: .  .  .  .  .  .  .  .  .  .  " << t2 - t1;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create static geometry:.  .  .  .  .  .  .  .  " << t3 - t2;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create heightfield: .  .  .  .  .  .  .  .  .  " << t4 - t3;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Convert to Bullet and Recast::Heightfield:  .  " << t5 - t4;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create CompactHeightfield:.  .  .  .  .  .  .  " << t6 - t5;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Build regions:.  .  .  .  .  .  .  .  .  .  .  " << t7 - t6;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create contours: .  .  .  .  .  .  .  .  .  .  " << t8 - t7;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create polymesh: .  .  .  .  .  .  .  .  .  .  " << t9 - t8;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create debug drawer:.  .  .  .  .  .  .  .  .  " << t10 - t9;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create triangle mesh shape:  .  .  .  .  .  .  " << t11- t10;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Create rigid body:  .  .  .  .  .  .  .  .  .  " << t12 - t11;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Add rigid body : .  .  .  .  .  .  .  .  .  .  " << t13 - t12;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Add material callback: .  .  .  .  .  .  .  .  " << t14 - t13;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Build static geometry: .  .  .  .  .  .  .  .  " << t15 - t14;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Clean up temporary variables:.  .  .  .  .  .  " << t16 - t15;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
+
+	str << "Total: . .  .  . .  .  .  .  .  .  .  .  .  .  " << t16 - t1;
+	Ogre::LogManager::getSingleton().logMessage(str.str());
+	str.str("");
 }
 
 Environment::~Environment()

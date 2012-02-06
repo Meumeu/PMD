@@ -19,7 +19,6 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#include <iostream>
 #include <climits>
 
 #include <boost/foreach.hpp>
@@ -163,8 +162,6 @@ void CompactHeightfield::erodeWalkableArea(int radius)
 			}
 		}
 	}
-	
-	std::cout << n << " spans eroded\n";
 }
 
 // TODO: le reste de ce fichier

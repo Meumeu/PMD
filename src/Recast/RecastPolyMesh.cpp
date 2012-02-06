@@ -24,7 +24,8 @@
 #include <list>
 #include <climits>
 #include <map>
-#include <stdint.h>
+#include <boost/cstdint.hpp>
+using boost::uint8_t;
 
 #include "RecastPolyMesh.h"
 #include "RecastContourSet.h"

@@ -226,7 +226,7 @@ void Game::go(void)
 		_Env = boost::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));
 	}
 
-	btVector3 PlayerPosition(40, 10, 0);
+	btVector3 PlayerPosition(0, 10, 0);
 	_Player = boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Sinbad.mesh", 1.8, 100, PlayerPosition, 0));
 	
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));

@@ -27,8 +27,9 @@
 namespace Recast
 {	
 /// Represents a simple, non-overlapping contour in field space.
-struct Contour
+class Contour
 {
+public:
 	std::vector<Vertex> verts;      ///< Simplified contour vertex and connection data.
 	std::vector<Vertex> rverts;     ///< Raw contour vertex and connection data.
 	
