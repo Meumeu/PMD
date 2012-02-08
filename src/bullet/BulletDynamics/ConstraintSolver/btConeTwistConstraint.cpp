@@ -819,51 +819,53 @@ void btConeTwistConstraint::computeConeLimitInfo(const btQuaternion& qCone,
 												 btScalar& swingLimit) // out
 {
 	swingAngle = qCone.getAngle();
-	btAssert(swingAngle <= SIMD_EPSILON);
-	
-	vSwingAxis = btVector3(qCone.x(), qCone.y(), qCone.z());
-	vSwingAxis.normalize();
-	btAssert(fabs(vSwingAxis.x()) <= SIMD_EPSILON);
-
-	// Compute limit for given swing. tricky:
-	// Given a swing axis, we're looking for the intersection with the bounding cone ellipse.
-	// (Since we're dealing with angles, this ellipse is embedded on the surface of a sphere.)
-
-	// For starters, compute the direction from center to surface of ellipse.
-	// This is just the perpendicular (ie. rotate 2D vector by PI/2) of the swing axis.
-	// (vSwingAxis is the cone rotation (in z,y); change vars and rotate to (x,y) coords.)
-	btScalar xEllipse =  vSwingAxis.y();
-	btScalar yEllipse = -vSwingAxis.z();
-
-	// Now, we use the slope of the vector (using x/yEllipse) and find the length
-	// of the line that intersects the ellipse:
-	//  x^2   y^2
-	//  --- + --- = 1, where a and b are semi-major axes 2 and 1 respectively (ie. the limits)
-	//  a^2   b^2
-	// Do the math and it should be clear.
-
-	swingLimit = m_swingSpan1; // if xEllipse == 0, we have a pure vSwingAxis.z rotation: just use swingspan1
-	if (fabs(xEllipse) > SIMD_EPSILON)
+	btAssert(swingAngle >=0 );
+	if (swingAngle > SIMD_EPSILON)
 	{
-		btScalar surfaceSlope2 = (yEllipse*yEllipse)/(xEllipse*xEllipse);
-		btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);
-		norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);
-		btScalar swingLimit2 = (1 + surfaceSlope2) / norm;
-		swingLimit = sqrt(swingLimit2);
+		vSwingAxis = btVector3(qCone.x(), qCone.y(), qCone.z());
+		vSwingAxis.normalize();
+		btAssert(fabs(vSwingAxis.x()) <= SIMD_EPSILON);
+
+		// Compute limit for given swing. tricky:
+		// Given a swing axis, we're looking for the intersection with the bounding cone ellipse.
+		// (Since we're dealing with angles, this ellipse is embedded on the surface of a sphere.)
+
+		// For starters, compute the direction from center to surface of ellipse.
+		// This is just the perpendicular (ie. rotate 2D vector by PI/2) of the swing axis.
+		// (vSwingAxis is the cone rotation (in z,y); change vars and rotate to (x,y) coords.)
+		btScalar xEllipse =  vSwingAxis.y();
+		btScalar yEllipse = -vSwingAxis.z();
+
+		// Now, we use the slope of the vector (using x/yEllipse) and find the length
+		// of the line that intersects the ellipse:
+		//  x^2   y^2
+		//  --- + --- = 1, where a and b are semi-major axes 2 and 1 respectively (ie. the limits)
+		//  a^2   b^2
+		// Do the math and it should be clear.
+
+		swingLimit = m_swingSpan1; // if xEllipse == 0, we have a pure vSwingAxis.z rotation: just use swingspan1
+		if (fabs(xEllipse) > SIMD_EPSILON)
+		{
+			btScalar surfaceSlope2 = (yEllipse*yEllipse)/(xEllipse*xEllipse);
+			btScalar norm = 1 / (m_swingSpan2 * m_swingSpan2);
+			norm += surfaceSlope2 / (m_swingSpan1 * m_swingSpan1);
+			btScalar swingLimit2 = (1 + surfaceSlope2) / norm;
+			swingLimit = sqrt(swingLimit2);
+		}
+
+		// test!
+		/*swingLimit = m_swingSpan2;
+		if (fabs(vSwingAxis.z()) > SIMD_EPSILON)
+		{
+		btScalar mag_2 = m_swingSpan1*m_swingSpan1 + m_swingSpan2*m_swingSpan2;
+		btScalar sinphi = m_swingSpan2 / sqrt(mag_2);
+		btScalar phi = asin(sinphi);
+		btScalar theta = atan2(fabs(vSwingAxis.y()),fabs(vSwingAxis.z()));
+		btScalar alpha = 3.14159f - theta - phi;
+		btScalar sinalpha = sin(alpha);
+		swingLimit = m_swingSpan1 * sinphi/sinalpha;
+		}*/
 	}
-
-	// test!
-	/*swingLimit = m_swingSpan2;
-	if (fabs(vSwingAxis.z()) > SIMD_EPSILON)
-	{
-	btScalar mag_2 = m_swingSpan1*m_swingSpan1 + m_swingSpan2*m_swingSpan2;
-	btScalar sinphi = m_swingSpan2 / sqrt(mag_2);
-	btScalar phi = asin(sinphi);
-	btScalar theta = atan2(fabs(vSwingAxis.y()),fabs(vSwingAxis.z()));
-	btScalar alpha = 3.14159f - theta - phi;
-	btScalar sinalpha = sin(alpha);
-	swingLimit = m_swingSpan1 * sinphi/sinalpha;
-	}*/
 }
 
 btVector3 btConeTwistConstraint::GetPointForAngle(btScalar fAngleInRadians, btScalar fLength) const
