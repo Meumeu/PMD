@@ -76,7 +76,7 @@ endif()
 find_package(Boost QUIET)
 
 # Set up referencing of Boost
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(SYSTEM ${Boost_INCLUDE_DIR})
 add_definitions(-DBOOST_ALL_NO_LIB)
 set(OGRE_LIBRARIES ${OGRE_LIBRARIES} ${Boost_LIBRARIES} ${CEGUI-OGRE_LIBRARIES})
 
@@ -407,15 +407,18 @@ set(SRCS
 	src/bullet/LinearMath/btConvexHull.cpp
 )
 
-include_directories( ${OIS_INCLUDE_DIRS}
+include_directories(SYSTEM
+	${OIS_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
 	${CEGUI-OGRE_INCLUDE_DIRS}
-	"src/bullet"
-	"src/btOgre"
 )
 
 add_subdirectory(src/Recast)
-INCLUDE_DIRECTORIES(src/Recast/Include)
+INCLUDE_DIRECTORIES(
+	src/Recast/Include
+	"src/bullet"
+	"src/btOgre"
+	)
 
 add_executable(poniesmustdie WIN32 ${HDRS} ${recast_HDRS} ${SRCS}
 ${recast_SRCS})
