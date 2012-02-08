@@ -212,7 +212,9 @@ int IcoSphere::addToVertices(std::list<VertexPair> *target, const Ogre::Vector3 
  
 // ===============================================================================================
 
-template<> DebugDrawer* Ogre::Singleton<DebugDrawer>::ms_Singleton = 0;
+namespace Ogre {
+template<> ::DebugDrawer* Singleton< ::DebugDrawer>::ms_Singleton = 0;
+}
 DebugDrawer* DebugDrawer::getSingletonPtr(void)
 {
     return ms_Singleton;

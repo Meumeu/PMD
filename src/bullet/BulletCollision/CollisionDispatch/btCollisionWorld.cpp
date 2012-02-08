@@ -491,7 +491,7 @@ void	btCollisionWorld::rayTestSingle(const btTransform& rayFromTrans,const btTra
 						
 					}
 					
-					void Process(int i)
+					void ProcessImpl(int i)
 					{
 						const btCollisionShape* childCollisionShape = m_compoundShape->getChildShape(i);
 						const btTransform& childTrans = m_compoundShape->getChildTransform(i);
@@ -517,7 +517,7 @@ void	btCollisionWorld::rayTestSingle(const btTransform& rayFromTrans,const btTra
 					
 					void Process(const btDbvtNode* leaf)
 					{
-						Process(leaf->dataAsInt);
+						ProcessImpl(leaf->dataAsInt);
 					}
 				};
 				
@@ -544,7 +544,7 @@ void	btCollisionWorld::rayTestSingle(const btTransform& rayFromTrans,const btTra
 				{
 					for (int i = 0, n = compoundShape->getNumChildShapes(); i < n; ++i)
 					{
-						rayCB.Process(i);
+						rayCB.ProcessImpl(i);
 					}	
 				}
 			}
