@@ -652,7 +652,7 @@ namespace BtOgre {
 	//------------------------------------------------------------------------------------------------
 	btBoxShape* AnimatedMeshToShapeConverter::createAlignedBox(unsigned char bone, 
 															   const Vector3 &bonePosition,
-															   const Quaternion &boneOrientation)
+															   const Quaternion & /*boneOrientation */)
 	{
 		unsigned int vertex_count;
 		Vector3* vertices;

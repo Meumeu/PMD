@@ -12,7 +12,8 @@ endif()
 set(MODELS
 	poney.blend
 	wall.blend
-	niveau.blend)
+	niveau.blend
+	niveau2.blend)
 
 set(MODELS_OUT)
 

@@ -120,6 +120,26 @@ static void filterLedgeSpans(std::list<Span> & spans, int x, int z, const Height
 	}
 }
 
+std::pair<int, const CompactSpan *> CompactHeightfield::findSpan(IntVertex const & v) const
+{
+	if (v.x < 0 || v.z < 0 || v.x >= _xsize || v.z >= _zsize) return std::make_pair(INT_MAX, (const CompactSpan*)0);
+	
+	const CompactSpan * best = (const CompactSpan *)0;
+	int bestdist = INT_MAX;
+	
+	BOOST_FOREACH(CompactSpan const & span, _cells[v.x + v.z * _xsize])
+	{
+		int dist = std::abs(v.y - span._bottom);
+		if (dist < bestdist)
+		{
+			bestdist = dist;
+			best = &span;
+		}
+	}
+	
+	return std::make_pair(bestdist, best);
+}
+
 /// @par
 ///
 /// This is just the beginning of the process of fully building a compact heightfield.

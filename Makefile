@@ -3,12 +3,12 @@
 
 OGRE_PLUGINS_DIR=`pkg-config OGRE --variable=plugindir`
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include
-LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
+CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE gts | sed s/-I/-I/g` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include -march=corei7-avx
+LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE gts` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
 
-CXXFLAGS_REL = -O3 -DNDEBUG
+CXXFLAGS_REL = -O2 -DNDEBUG
 CXXFLAGS_DBG = -g
 
 ifeq (y,$(PHYSICS_DEBUG))
@@ -39,7 +39,7 @@ SRC = $(shell find $(SRCDIR)/ -name *.cpp)
 BLENDERSRC = $(shell find $(BLENDERDIR) -name *.blend)
 BLENDERZIP = $(patsubst $(BLENDERDIR)/%.blend,dist/share/pmd/models/%.zip,$(BLENDERSRC))
 
-OTHER_MODELS = resources/models/Sinbad.zip resources/models/Examples.material resources/models/rockwall.tga
+OTHER_MODELS = resources/models/Sinbad.zip resources/models/Examples.material resources/models/rockwall.tga resources/models/Debug.material
 GUI_FILES = resources/gui/DejaVuSans-10.font \
 	resources/gui/DejaVuSans.ttf \
 	resources/gui/MainMenu.layout \
@@ -72,27 +72,27 @@ install: dist/bin/poniesmustdie $(BLENDERZIP)
 	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
 	$(CP) -r resources/levels/* $(PREFIX)/share/pmd/levels
 
-dist/bin/poniesmustdie: $(OBJS)
+dist/bin/poniesmustdie: $(OBJS) Makefile
 	echo Linking $(notdir $@)
 	$(MKDIR) -p dist/bin
 	$(CXX) $(LDFLAGS) $(OBJS) -o $@
 
-$(OBJDIR)/release/bullet/%.o: $(SRCDIR)/bullet/%.cpp
+$(OBJDIR)/release/bullet/%.o: $(SRCDIR)/bullet/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
-$(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
-$(OBJDIR)/debug/bullet/%.o: $(SRCDIR)/bullet/%.cpp
+$(OBJDIR)/debug/bullet/%.o: $(SRCDIR)/bullet/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
 
-$(OBJDIR)/debug/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/debug/%.o: $(SRCDIR)/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
 	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -Wall -Werror -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@

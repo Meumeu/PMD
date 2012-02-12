@@ -200,14 +200,21 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;;src/bullet;src/Recast"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				BufferSecurityCheck="false"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="2"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				CallingConvention="0"
 				DisableSpecificWarnings="4244;4305"
 				ForcedIncludeFiles=""
 			/>
@@ -281,14 +288,21 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
 				AdditionalIncludeDirectories="&quot;$(OGRE_HOME)\include&quot;;&quot;$(OGRE_HOME)\include\OIS&quot;;&quot;$(OGRE_HOME)\include\OGRE&quot;;D:/Dev/boost_1_48_0;&quot;D:\Dev\CEGUI-0.7.5\cegui\include&quot;;src/bullet;src/Recast"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;BT_USE_DOUBLE_PRECISION"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				BufferSecurityCheck="false"
+				EnableFunctionLevelLinking="false"
+				EnableEnhancedInstructionSet="2"
+				FloatingPointModel="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="3"
+				CallingConvention="1"
 				DisableSpecificWarnings="4244;4305"
 				ForcedIncludeFiles=""
 			/>
@@ -354,6 +368,10 @@
 			</File>
 			<File
 				RelativePath=".\src\CharacterController.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\src\DebugDrawer.cpp"
 				>
 			</File>
 			<File
@@ -912,27 +930,11 @@
 				Name="Recast"
 				>
 				<File
-					RelativePath=".\src\Recast\Recast.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastAlloc.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\src\Recast\RecastCompactHeightfield.cpp"
 					>
 				</File>
 				<File
 					RelativePath=".\src\Recast\RecastCompactHeightfieldArea.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastCompactHeightfieldContour.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastContext.cpp"
 					>
 				</File>
 				<File
@@ -944,31 +946,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastHeightfieldFilter.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastLayers.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastMesh.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastMeshDetail.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\src\Recast\RecastPolyMesh.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastPolyMeshDetail.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\src\Recast\RecastRasterization.cpp"
 					>
 				</File>
 				<File
@@ -996,6 +974,10 @@
 			</File>
 			<File
 				RelativePath=".\src\CharacterController.h"
+				>
+			</File>
+			<File
+				RelativePath=".\src\DebugDrawer.h"
 				>
 			</File>
 			<File
@@ -1798,11 +1780,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastAlloc.h"
+					RelativePath=".\src\Recast\RecastCompactHeightfield.h"
 					>
 				</File>
 				<File
-					RelativePath=".\src\Recast\RecastAssert.h"
+					RelativePath=".\src\Recast\RecastContourSet.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastHeightfield.h"
 					>
 				</File>
 			</Filter>

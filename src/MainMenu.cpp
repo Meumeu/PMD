@@ -51,19 +51,19 @@ void MainMenu::Enter(void)
 	btn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MainMenu::Quit, this));
 }
 
-bool MainMenu::Options(const CEGUI::EventArgs& e)
+bool MainMenu::Options(const CEGUI::EventArgs & /* e */)
 {
 	throw std::runtime_error("Unimplemented");
 }
 
-bool MainMenu::StartGame(const CEGUI::EventArgs& e)
+bool MainMenu::StartGame(const CEGUI::EventArgs & /* e */)
 {
 	boost::shared_ptr<AppState> g(new Game);
 	AppStateManager::Enter(g);
 	return true;
 }
 
-bool MainMenu::Quit(const CEGUI::EventArgs &e)
+bool MainMenu::Quit(const CEGUI::EventArgs & /* e */)
 {
 	_Shutdown = true;
 	return true;

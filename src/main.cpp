@@ -27,15 +27,15 @@
 #include <windows.h>
 #include <shlobj.h>
 
-int main(int argc, char *argv[]);
+int main(/* int argc, char *argv[] */);
 
 INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 {
-	return main(0, 0);
+	return main(/* 0, 0 */);
 }
 #endif
 
-int main(int argc, char *argv[])
+int main(/* int argc, char *argv[] */)
 {
 	try
 	{

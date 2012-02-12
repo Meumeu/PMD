@@ -39,7 +39,7 @@ class CameraCollisionCallback : public btCollisionWorld::RayResultCallback
 public:
 	CameraCollisionCallback(const btRigidBody * player) :  _hitfraction(1), _player(player) {};
 	virtual ~CameraCollisionCallback() {};
-	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+	virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool /* normalInWorldSpace */)
 	{
 		if (rayResult.m_collisionObject != _player)
 		{

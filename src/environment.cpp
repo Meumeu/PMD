@@ -43,13 +43,13 @@
 
 #include "DebugDrawer.h"
 
-#define DEBUG_RECAST 0
+#define DEBUG_RECAST 5
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
 	const btCollisionObject* colObj0,
-	int partId0,
-	int index0,
+	int /* partId0 */,
+	int /* index0 */,
 	const btCollisionObject* colObj1,
 	int partId1,
 	int index1)
@@ -221,6 +221,10 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 #if DEBUG_RECAST == 4
 	BOOST_FOREACH(Recast::Contour const & cont, cs._conts)
 	{
+		std::cerr << "Region " << cont.reg << "\n";
+		unsigned int r = cont.reg;
+		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+		std::cerr << "   " << c << "\n";
 		size_t n = cont.verts.size();
 		for(size_t i = 0; i < n; ++i)
 		{
@@ -233,8 +237,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 			                 cont.verts[j].y * chf._ch,
 			                (cont.verts[j].z + chf._zmin) * chf._cs);
 			
-			unsigned int r = cont.reg;
-			Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
+			
 			DebugDrawer::getSingleton().drawLine(a, b, c);
 		}
 	}

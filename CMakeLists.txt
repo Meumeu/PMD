@@ -42,6 +42,8 @@ find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 pkg_check_modules(CEGUI-OGRE REQUIRED CEGUI-OGRE)
 use_pkgconfig(CEGUI_PKGC CEGUI-OGRE)
+pkg_check_modules(gts REQUIRED gts)
+use_pkgconfig(GTS_PKGC gts)
 
 if(NOT OIS_FOUND)
 	message(SEND_ERROR "Failed to find OIS.")
@@ -411,6 +413,7 @@ include_directories(SYSTEM
 	${OIS_INCLUDE_DIRS}
 	${OGRE_INCLUDE_DIRS}
 	${CEGUI-OGRE_INCLUDE_DIRS}
+	${GTS_INCLUDE_DIRS}
 )
 
 add_subdirectory(src/Recast)
@@ -426,7 +429,7 @@ ${recast_SRCS})
 add_subdirectory(blender)
 add_dependencies(poniesmustdie generate_models)
 
-target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system)
+target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system ${GTS_LIBRARIES})
 
 if(CMAKE_COMPILER_IS_GNUCC)
 	add_definitions(-Wall)

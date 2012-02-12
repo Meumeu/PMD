@@ -19,46 +19,36 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#ifndef RECAST_POLYMESH_H
-#define RECAST_POLYMESH_H
+#ifndef RECAST_POLYMESHDETAIL_H
+#define RECAST_POLYMESHDETAIL_H
 
-#include <vector>
+#include <set>
+
 #include "Recast.h"
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
-namespace Recast{
-	
-class ContourSet;
-class Contour;
+namespace Recast
+{
+class PolyMesh;
+class CompactHeightfield;
 
-class PolyMesh
-{	
+class PolyMeshDetail
+{
 public:
-	struct Polygon
+	class DelaunayTriangulation
 	{
-		static const size_t NVertices = 3;
-		Polygon(IntVertex v1, IntVertex v2, IntVertex v3, int r) : regionID(r)
-		{
-			vertices[0] = v1;
-			vertices[1] = v2;
-			vertices[2] = v3;
-			neighbours[0] = -1;
-			neighbours[1] = -1;
-			neighbours[2] = -1;
-		}
-		int regionID;
-		int flags;
-		IntVertex vertices[NVertices];
-		int neighbours[NVertices];
+	public:
+		DelaunayTriangulation(FloatVertex const & v1, FloatVertex const & v2, FloatVertex const & v3) {}
+		DelaunayTriangulation & operator<<(FloatVertex const & v);
+		DelaunayTriangulation & operator<<(const std::vector< Recast::FloatVertex >& vertices);
 	};
-	
-	std::vector<Polygon> polys;       ///< Polygon and neighbour data
-	
-	void triangulate(Contour const & cont);
-	void fillPolygonNeighbours();
+private:
+	//std::vector<Triangle> meshes;
 	
 public:
-	PolyMesh(ContourSet const & cset);
+	PolyMeshDetail(PolyMesh const & pm, CompactHeightfield const & chf, const float sampleDist, const float sampleMaxError);
 };
 }
 
-#endif
+#endif // RECAST_POLYMESHDETAIL_H
