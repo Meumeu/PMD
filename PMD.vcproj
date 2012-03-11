@@ -950,6 +950,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\src\Recast\RecastPolyMeshDetail.cpp"
+					>
+				</File>
+				<File
 					RelativePath=".\src\Recast\RecastRegion.cpp"
 					>
 				</File>
@@ -1789,6 +1793,10 @@
 				</File>
 				<File
 					RelativePath=".\src\Recast\RecastHeightfield.h"
+					>
+				</File>
+				<File
+					RelativePath=".\src\Recast\RecastPolyMeshDetail.h"
 					>
 				</File>
 			</Filter>
