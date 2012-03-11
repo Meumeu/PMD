@@ -115,7 +115,7 @@ static bool isBorderVertex(const CompactSpan& span, int dir)
 	return false;
 }
 
-static float calcPointSegmentSqrDistance(Vertex const & p, Vertex const & a, Vertex const & b)
+static float calcPointSegmentSqrDistance(IntVertex const & p, IntVertex const & a, IntVertex const & b)
 {
 	float abx = b.x - a.x;
 	float abz = b.z - a.z;
@@ -138,7 +138,7 @@ static float calcPointSegmentSqrDistance(Vertex const & p, Vertex const & a, Ver
 
 static float calcPolygonArea(Contour const & cont)
 {
-	std::vector<Vertex> const & verts = cont.verts;
+	std::vector<IntVertex> const & verts = cont.verts;
 	int n = verts.size();
 	int area = 0;
 	
@@ -150,15 +150,15 @@ static float calcPolygonArea(Contour const & cont)
 	return (area + 1) / 2;
 }
 
-static bool ileft(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool ileft(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return (b.x - a.x) * (c.z - a.z) - (b.z * a.z) * (c.x - a.x) <= 0;
 }
 
 static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const & cb)
 {
-	std::vector<Vertex> const & vertsa = ca.verts;
-	std::vector<Vertex> const & vertsb = cb.verts;
+	std::vector<IntVertex> const & vertsa = ca.verts;
+	std::vector<IntVertex> const & vertsb = cb.verts;
 	int closest = INT_MAX;
 	int ia = -1;
 	int ib = -1;
@@ -168,13 +168,13 @@ static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const 
 	
 	for(int i = 0; i < na; ++i)
 	{
-		Vertex const & va_prev = vertsa[(i + na - 1) % na];
-		Vertex const & va = vertsa[i];
-		Vertex const & va_next = vertsa[(i + 1) % na];
+		IntVertex const & va_prev = vertsa[(i + na - 1) % na];
+		IntVertex const & va = vertsa[i];
+		IntVertex const & va_next = vertsa[(i + 1) % na];
 		
 		for(int j = 0; j < nb; j++)
 		{
-			Vertex const & vb = vertsb[j];
+			IntVertex const & vb = vertsb[j];
 			const int d = (va.x - vb.x) * (va.x - vb.x) + (va.z - vb.z) * (va.z - vb.z);
 			if (d < closest && ileft(va_prev, va, vb) && ileft(va, va_next, vb))
 			{
@@ -190,7 +190,7 @@ static std::pair<int, int> getClosestVertices(Contour const & ca, Contour const 
 
 static void mergeContours(Contour & ca, Contour & cb)
 {
-	std::vector<Vertex> out;
+	std::vector<IntVertex> out;
 	std::pair<int, int> idx = getClosestVertices(ca, cb);
 	
 	const int na = ca.verts.size();
@@ -211,10 +211,10 @@ static void mergeContours(Contour & ca, Contour & cb)
 	cb.verts.clear();
 }
 
-static std::vector<Vertex> walkContour(int x, int z, CompactSpan & start)
+static std::vector<IntVertex> walkContour(int x, int z, CompactSpan & start)
 {
 	int dir = 0;
-	std::vector<Vertex> out;
+	std::vector<IntVertex> out;
 	
 	while((start._tmpData & (1 << dir)) == 0) ++dir;
 	
@@ -226,7 +226,7 @@ static std::vector<Vertex> walkContour(int x, int z, CompactSpan & start)
 	{
 		if (currentSpan->_tmpData & (1 << dir))
 		{
-			Vertex v(x, getCornerHeight(*currentSpan, dir), z);
+			IntVertex v(x, getCornerHeight(*currentSpan, dir), z);
 			switch(dir)
 			{
 				case Direction::Left:
@@ -279,15 +279,15 @@ static std::vector<Vertex> walkContour(int x, int z, CompactSpan & start)
 	return out;
 }
 
-static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
+static std::vector<IntVertex> simplifyContour(std::vector<IntVertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
 {
 	assert(verts.size() > 0);
 	
-	std::vector<Vertex> out;
+	std::vector<IntVertex> out;
 	
 	// Add initial points.
 	bool hasConnections = false;
-	BOOST_FOREACH(Vertex const &i, verts)
+	BOOST_FOREACH(IntVertex const &i, verts)
 	{
 		if ((i.flag & RC_CONTOUR_REG_MASK) != 0)
 		{
@@ -300,15 +300,15 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 	{
 		// The contour has some portals to other regions.
 		// Add a new point to every location where the region changes.
-		for(std::vector<Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
+		for(std::vector<IntVertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
 		{
-			std::vector<Vertex>::const_iterator next = it; ++next;
+			std::vector<IntVertex>::const_iterator next = it; ++next;
 			if (next == verts.end()) next = verts.begin();
 			
 			if (((it->flag & RC_CONTOUR_REG_MASK) != (next->flag & RC_CONTOUR_REG_MASK)) ||
 			(it->flag & RC_AREA_BORDER) != (next->flag & RC_AREA_BORDER))
 			{
-				out.push_back(Vertex(it->x, it->y, it->z, it - verts.begin()));
+				out.push_back(IntVertex(it->x, it->y, it->z, it - verts.begin()));
 			}
 		}
 	}
@@ -319,16 +319,16 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 		// create some initial points for the simplification process. 
 		// Find lower-left and upper-right vertices of the contour.
 		
-		std::vector<Vertex>::const_iterator lowerleft = verts.begin();
-		std::vector<Vertex>::const_iterator upperright = verts.begin();
-		for(std::vector<Vertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
+		std::vector<IntVertex>::const_iterator lowerleft = verts.begin();
+		std::vector<IntVertex>::const_iterator upperright = verts.begin();
+		for(std::vector<IntVertex>::const_iterator it = verts.begin(); it != verts.end(); ++it)
 		{
 			if (*it < *lowerleft) lowerleft = it;
 			if (*it > *upperright) upperright = it;
 		}
 		
-		Vertex ll = *lowerleft; ll.flag = lowerleft - verts.begin();
-		Vertex ur = *upperright; ur.flag = upperright - verts.begin();
+		IntVertex ll = *lowerleft; ll.flag = lowerleft - verts.begin();
+		IntVertex ur = *upperright; ur.flag = upperright - verts.begin();
 		
 		out.push_back(ll);
 		out.push_back(ur);
@@ -341,8 +341,8 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 	while(i < out.size())
 	{
 		const int ii = (i + 1) % out.size();
-		const Vertex a = out[i];
-		const Vertex b = out[ii];
+		const IntVertex a = out[i];
+		const IntVertex b = out[ii];
 		
 		// Traverse the segment in lexilogical order so that the
 		// max deviation is calculated similarly when traversing
@@ -383,7 +383,7 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 		// add new point, else continue to next segment.
 		if (maxi != -1 && maxd > maxError * maxError)
 		{
-			Vertex v = verts[maxi]; v.flag = maxi;
+			IntVertex v = verts[maxi]; v.flag = maxi;
 			out.insert(out.begin() + i + 1, v);
 		}
 		else
@@ -400,8 +400,8 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 		
 		while(i < out.size())
 		{
-			Vertex const& a = out[i];
-			Vertex const& b = out[(i + 1) % out.size()];
+			IntVertex const& a = out[i];
+			IntVertex const& b = out[(i + 1) % out.size()];
 			const int ci = (a.flag + 1) % n;
 			int maxi = -1;
 			
@@ -432,7 +432,7 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 			
 			if (maxi != -1)
 			{
-				Vertex v = verts[maxi];
+				IntVertex v = verts[maxi];
 				v.flag = maxi;
 				out.insert(out.begin() + i + 1, v);
 			}
@@ -445,10 +445,10 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 	
 	// The edge vertex flag is take from the current raw point,
 	// and the neighbour region is take from the next raw point.
-	BOOST_FOREACH(Vertex& v, out)
+	BOOST_FOREACH(IntVertex& v, out)
 	{
-		const Vertex& a = verts[(v.flag + 1) % n];
-		const Vertex& b = verts[v.flag];
+		const IntVertex& a = verts[(v.flag + 1) % n];
+		const IntVertex& b = verts[v.flag];
 		
 		v.flag = (a.flag & RC_CONTOUR_REG_MASK) | (b.flag & RC_BORDER_VERTEX);
 	}
@@ -456,13 +456,13 @@ static std::vector<Vertex> simplifyContour(std::vector<Vertex> const & verts, co
 	return out;
 }
 
-static void removeDegenerateSegments(std::vector<Vertex> & verts)
+static void removeDegenerateSegments(std::vector<IntVertex> & verts)
 {
-	std::vector<Vertex>::iterator it = verts.begin();
+	std::vector<IntVertex>::iterator it = verts.begin();
 	
 	while(it != verts.end())
 	{
-		std::vector<Vertex>::iterator next = it; ++next;
+		std::vector<IntVertex>::iterator next = it; ++next;
 		if (next == verts.end()) next = verts.begin();
 		
 		if (it->x == next->x && it->z == next->z)

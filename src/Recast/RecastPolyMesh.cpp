@@ -25,6 +25,8 @@
 #include <climits>
 #include <map>
 #include <boost/cstdint.hpp>
+#include <boost/static_assert.hpp>
+
 using boost::uint8_t;
 
 #include "RecastPolyMesh.h"
@@ -37,15 +39,15 @@ typedef std::list<std::pair<bool, unsigned int> > IndexList;
 
 void PolyMesh::fillPolygonNeighbours()
 {
-	typedef std::map<std::pair<Vertex, Vertex>, std::vector<std::pair<size_t, uint8_t> > > PolygonMap;
+	typedef std::map<std::pair<IntVertex, IntVertex>, std::vector<std::pair<size_t, uint8_t> > > PolygonMap;
 	
 	PolygonMap pmap;
 	for(size_t i = 0, size = polys.size(); i < size; ++i)
 	{
-		for(int j = 0, k = 2 ; j < 3; k = j++)
+		for(size_t j = 0, k = Polygon::NVertices - 1; j < Polygon::NVertices; k = j++)
 		{
-			Vertex const & v1 = polys[i].vertices[j];
-			Vertex const & v2 = polys[i].vertices[k];
+			IntVertex const & v1 = polys[i].vertices[j];
+			IntVertex const & v2 = polys[i].vertices[k];
 			if (v1 < v2)
 			{
 				pmap[std::make_pair(v1, v2)].push_back(std::make_pair(i, j));
@@ -76,36 +78,36 @@ void PolyMesh::fillPolygonNeighbours()
 	
 }
 
-static int det(Vertex const & a, Vertex const & b, Vertex const & c)
+static int det(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return (b.x - a.x) * (c.z - a.z) - (b.z - a.z) * (c.x - a.x);
 }
 
 // Returns true if c is strictly on the left of segment (a, b)
-static bool left(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool left(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return det(a, b, c) < 0;
 }
 
 // Returns true if c is strictly on the right of segment (a, b)
-static bool right(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool right(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return det(a, b, c) > 0;
 }
 
 // Returns true if a, b, c are colinear
-static bool colinear(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool colinear(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return det(a, b, c) == 0;
 }
 
 // Returns true if c is on the left of or on segment (a, b)
-static bool left_or_colinear(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool left_or_colinear(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return det(a, b, c) <= 0;
 }
 
-static bool intersect_properly(Vertex const & a, Vertex const & b, Vertex const & c, Vertex const & d)
+static bool intersect_properly(IntVertex const & a, IntVertex const & b, IntVertex const & c, IntVertex const & d)
 {
 	if (colinear(a, b, c)) return false;
 	if (colinear(a, b, d)) return false;
@@ -118,17 +120,17 @@ static bool intersect_properly(Vertex const & a, Vertex const & b, Vertex const 
 	return true;
 }
 
-static bool between(Vertex const & a, Vertex const & b, Vertex const & c)
+static bool between(IntVertex const & a, IntVertex const & b, IntVertex const & c)
 {
 	return colinear(a, b, c) && ((a <= c && c <= b) || (a >= c && c >= b));
 }
 
-static bool intersect(Vertex const & a, Vertex const & b, Vertex const & c, Vertex const & d)
+static bool intersect(IntVertex const & a, IntVertex const & b, IntVertex const & c, IntVertex const & d)
 {
 	return intersect_properly(a, b, c, d) || between(a, b, c) || between(a, b, d) || between(c, d, a) || between(c, d, b);
 }
 
-static bool horizontal_equal(Vertex const & a, Vertex const & b)
+static bool horizontal_equal(IntVertex const & a, IntVertex const & b)
 {
 	return a.x == b.x && a.z == b.z;
 }
@@ -136,8 +138,8 @@ static bool horizontal_equal(Vertex const & a, Vertex const & b)
 // Returns true if (i, j) is inside the contour
 static bool diagonal(Contour const & cont, IndexList const & indices, IndexList::const_iterator i, IndexList::const_iterator j)
 {
-	Vertex const & a = cont.verts[i->second];
-	Vertex const & b = cont.verts[j->second];
+	IntVertex const & a = cont.verts[i->second];
+	IntVertex const & b = cont.verts[j->second];
 
 	// Check if (i,j) is inside the contour in the neighbourhood of i
 	IndexList::const_iterator next = i, prev = i;
@@ -146,8 +148,8 @@ static bool diagonal(Contour const & cont, IndexList const & indices, IndexList:
 	if (prev == indices.begin()) prev = indices.end();
 	--prev;
 	
-	Vertex const & vprev = cont.verts[prev->second];
-	Vertex const & vnext = cont.verts[next->second];
+	IntVertex const & vprev = cont.verts[prev->second];
+	IntVertex const & vnext = cont.verts[next->second];
 	
 	if (!right(vprev, a, vnext))
 	{
@@ -165,8 +167,8 @@ static bool diagonal(Contour const & cont, IndexList const & indices, IndexList:
 		
 		if (!(i == it || i == it2 || j == it || j == it2))
 		{
-			Vertex const & c = cont.verts[i->second];
-			Vertex const & d = cont.verts[j->second];
+			IntVertex const & c = cont.verts[i->second];
+			IntVertex const & d = cont.verts[j->second];
 			
 			if (!(horizontal_equal(a, c) || horizontal_equal(a, d) || horizontal_equal(b, c) || horizontal_equal(b, d)))
 			{
@@ -265,6 +267,8 @@ void PolyMesh::triangulate(Contour const & cont)
 	
 PolyMesh::PolyMesh(const Recast::ContourSet& cset)
 {
+	BOOST_STATIC_ASSERT(Polygon::NVertices == 3);
+	
 	BOOST_FOREACH(Contour const & cont, cset._conts)
 	{
 		assert(cont.verts.size() >= 3);

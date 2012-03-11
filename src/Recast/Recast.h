@@ -27,9 +27,6 @@
 
 namespace Recast
 {
-class CompactHeightfield;
-
-
 /// Specifies a configuration to use when performing Recast builds.
 /// @ingroup recast
 struct rcConfig
@@ -155,34 +152,125 @@ static const unsigned char RC_WALKABLE_AREA = 63;
 /// to another span. (Has no neighbor.)
 static const int RC_NOT_CONNECTED = 0x3f;
 
-struct Vertex
+template<typename T> struct Vertex
 {
-	Vertex(int _x, int _y, int _z, int _flag = 0) :
+	Vertex(T _x, T _y, T _z, int _flag = 0) :
 		x(_x), y(_y), z(_z), flag(_flag) {}
-	Vertex() {}
-	int x, y, z;
+	
+	Vertex() : x(0), y(0), z(0), flag(0) {}
+	
+	T x, y, z;
 	int flag;
 	
-	bool operator<(Vertex const & v) const
+	bool operator<(Vertex<T> const & v) const
 	{
 		return (x < v.x) || ((x == v.x) && (z < v.z));
 	}
 	
-	bool operator>(Vertex const & v) const
+	bool operator>(Vertex<T> const & v) const
 	{
 		return (x > v.x) || ((x == v.x) && (z > v.z));
 	}
 
-	bool operator<=(Vertex const & v) const
+	bool operator<=(Vertex<T> const & v) const
 	{
 		return (x < v.x) || ((x == v.x) && (z <= v.z));
 	}
 	
-	bool operator>=(Vertex const & v) const
+	bool operator>=(Vertex<T> const & v) const
 	{
 		return (x > v.x) || ((x == v.x) && (z >= v.z));
 	}
+	
+	Vertex<T> operator+(Vertex<T> const & rhs) const
+	{
+		return Vertex<T>(x + rhs.x, y + rhs.y, z + rhs.z, flag);
+	}
+	
+	Vertex<T> operator-(Vertex<T> const & rhs) const
+	{
+		return Vertex<T>(x - rhs.x, y - rhs.y, z - rhs.z, flag);
+	}
+	
+	Vertex<T> operator/(T value) const
+	{
+		return Vertex<T>(x / value, y / value, z / value, flag);
+	}
+
+	Vertex<T> operator*(T value) const
+	{
+		return Vertex<T>(x * value, y * value, z * value, flag);
+	}
+	
+	Vertex<T> & operator+=(Vertex<T> const & rhs)
+	{
+		x += rhs.x;
+		y += rhs.y;
+		z += rhs.z;
+		
+		return *this;
+	}
+	
+	Vertex<T> & operator-=(Vertex<T> const & rhs)
+	{
+		x -= rhs.x;
+		y -= rhs.y;
+		z -= rhs.z;
+		
+		return *this;
+	}
+	
+	Vertex<T> & operator/=(T value)
+	{
+		x /= value;
+		y /= value;
+		z /= value;
+		
+		return *this;
+	}
+	
+	Vertex<T> & operator*=(T value)
+	{
+		x *= value;
+		y *= value;
+		z *= value;
+		
+		return *this;
+	}
+	
+	bool operator==(Vertex<T> const & rhs) const
+	{
+		return x == rhs.x && y == rhs.y && z == rhs.z;
+	}
+	
+	T dot(Vertex<T> const & rhs) const
+	{
+		return x * rhs.x + y * rhs.y + z * rhs.z;
+	}
+	
+	T dot2d(Vertex<T> const & rhs) const
+	{
+		return x * rhs.x + z * rhs.z;
+	}
+	
+	static T det(Vertex<T> const & v1, Vertex<T> const & v2, Vertex<T> const & v3)
+	{
+		return v1.x * v2.y * v3.z + v1.y * v2.z * v3.x + v1.z * v2.x * v3.y - v1.x * v2.z * v3.y - v1.y * v2.x * v3.z - v1.z * v2.y * v3.x;
+	}
+
+	static T det2d(Vertex<T> const & v1, Vertex<T> const & v2)
+	{
+		return v1.x * v2.z - v2.x * v1.z;
+	}
 };
+
+template<class T> Vertex<T> operator*(T value, Vertex<T> const & rhs)
+{
+	return rhs * value;
+}
+
+typedef Vertex<int> IntVertex;
+typedef Vertex<float> FloatVertex;
 
 struct Direction
 {

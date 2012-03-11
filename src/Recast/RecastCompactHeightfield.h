@@ -65,6 +65,7 @@ public:
 			   const int borderSize = 1);
 	
 	void buildRegions(const int minRegionArea, const int mergeRegionSize);
+	std::pair<int, const CompactSpan *> findSpan(IntVertex const & v) const;
 
 private:
 	struct Region;

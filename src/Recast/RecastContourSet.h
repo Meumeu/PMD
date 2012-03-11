@@ -25,13 +25,15 @@
 #include "Recast.h"
 
 namespace Recast
-{	
+{
+class CompactHeightfield;
+
 /// Represents a simple, non-overlapping contour in field space.
 class Contour
 {
 public:
-	std::vector<Vertex> verts;      ///< Simplified contour vertex and connection data.
-	std::vector<Vertex> rverts;     ///< Raw contour vertex and connection data.
+	std::vector<IntVertex> verts;      ///< Simplified contour vertex and connection data.
+	std::vector<IntVertex> rverts;     ///< Raw contour vertex and connection data.
 	
 	unsigned short reg;	///< The region id of the contour.
 	unsigned char area;	///< The area id of the contour.

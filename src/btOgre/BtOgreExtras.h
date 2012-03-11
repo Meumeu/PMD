@@ -232,13 +232,13 @@ public:
 		}
 	}
 
-	void drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
+	void drawLine(const btVector3& from,const btVector3& to,const btVector3& /* color */)
 	{
 		mLineDrawer->addPoint(Convert::toOgre(from));
 		mLineDrawer->addPoint(Convert::toOgre(to));
 	}
 
-	void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color)
+	void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int /* lifeTime */,const btVector3& /* color */)
 	{
 		mLineDrawer->addPoint(Convert::toOgre(PointOnB));
 		mLineDrawer->addPoint(Convert::toOgre(PointOnB) + (Convert::toOgre(normalOnB) * distance * 20));
@@ -249,7 +249,7 @@ public:
 		Ogre::LogManager::getSingleton().logMessage(warningString);
 	}
 
-	void draw3dText(const btVector3& location,const char* textString)
+	void draw3dText(const btVector3& /* location */,const char* /* textString */)
 	{
 	}
 	
