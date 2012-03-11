@@ -6,6 +6,8 @@ SET(recast_SRCS
 	src/Recast/RecastCompactHeightfieldArea.cpp
 	src/Recast/RecastRegion.cpp
 
+	src/Recast/cdt/quadedge.cpp
+
 	PARENT_SCOPE
 )
 
@@ -15,6 +17,11 @@ SET(recast_HDRS
 	src/Recast/RecastCompactHeightfield.h
 	src/Recast/RecastContourSet.h
 	src/Recast/RecastPolyMesh.h
+
+	src/Recast/cdt/quadedge.h
+	src/Recast/cdt/dllist.h
+	src/Recast/cdt/common.h
+	src/Recast/cdt/geom2d.h
 
 	PARENT_SCOPE
 )
