@@ -91,7 +91,7 @@ void Heightfield::addSpan(const int x, const int z,
 		}
 		else
 		{
-			target++;
+			++target;
 		}
 	}
 	

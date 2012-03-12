@@ -251,7 +251,7 @@ void CompactHeightfield::expandRegions(const int maxIter, const unsigned int lev
 	bool finished = false;
 	boost::scoped_array<unsigned int> regionsCopy(new unsigned int[_spanNumber]);
 	boost::scoped_array<unsigned int> distancesCopy(new unsigned int[_spanNumber]);
-	while((iter > 0) && (stack.size() > 0) && !finished)
+	while((iter > 0) && (!stack.empty()) && !finished)
 	{
 		memcpy(&regionsCopy[0], &regions[0], sizeof(unsigned int)*_spanNumber);
 		memcpy(&distancesCopy[0], &distances[0], sizeof(unsigned int)*_spanNumber);

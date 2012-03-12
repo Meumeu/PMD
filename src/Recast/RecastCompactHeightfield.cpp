@@ -165,14 +165,12 @@ CompactHeightfield::CompactHeightfield(const float walkableHeight, const float w
 	_cells.reset(new std::vector<CompactSpan>[_xsize * _zsize]);
 	
 	// Fill in cells and spans.
-	int n1 = 0;
 	
 	for (int z = 0; z < _zsize; ++z)
 	{
 		for (int x = 0; x < _xsize; ++x)
 		{
 			std::list<Span> spans = hf.getSpans(x + _xmin, z + _zmin);
-			n1 += spans.size();
 			
 			if (filterLowHangingWalkableObstacles) Recast::filterLowHangingWalkableObstacles(spans, _walkableClimb);
 			if (filterLedgeSpans) Recast::filterLedgeSpans(spans, x + _xmin, z + _zmin, hf, _walkableClimb, _walkableHeight);

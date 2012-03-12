@@ -281,7 +281,7 @@ static std::vector<IntVertex> walkContour(int x, int z, CompactSpan & start)
 
 static std::vector<IntVertex> simplifyContour(std::vector<IntVertex> const & verts, const float maxError, const int maxEdgeLen, const int buildFlags)
 {
-	assert(verts.size() > 0);
+	assert(!verts.empty());
 	
 	std::vector<IntVertex> out;
 	

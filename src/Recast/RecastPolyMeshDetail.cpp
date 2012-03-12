@@ -173,7 +173,7 @@ public:
 		// Find the polygon centre
 		CompactSpanPosition centre_position;
 		for(size_t i = 0, size = height.size(); i < size; ++i) height[i] = 0;
-		while(stack.size())
+		while(!stack.empty())
 		{
 			CompactSpanPosition pos = stack.back(); stack.pop_back();
 			
