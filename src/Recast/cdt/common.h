@@ -24,128 +24,18 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#ifndef TRUE
-#define TRUE 		1
-#endif
-
-#ifndef FALSE
-#define FALSE 		0
-#endif
-
-#ifndef ON
-#define ON		1
-#define OFF		0
-#endif
-
-#define NIL(type) 	((type*)0)
-
-#ifndef MAX
-#define MAX(a, b) 	((a) >= (b) ? (a) : (b))
-#define MIN(a, b) 	((a) <= (b) ? (a) : (b))
-#endif
-
-#ifndef ABS
-#define ABS(a)		((a) >= 0 ? (a) : -(a))
-#endif
-
-#define SGN(a) 		((a) > 0 ? 1 : ((a) < 0 ? -1 : 0))
-
-#define forever		for(;;)
-
-typedef int    Switch;
-typedef float  Sreal;
-typedef double Lreal;
-typedef char * charPtr;
-
-inline int max(int a, int b)
-{
-	return (a >= b) ? a : b;
-}
-
-inline int min(int a, int b)
-{
-	return (a < b) ? a : b;
-}
-
-inline int max(int a, int b, int c)
-{
-	return (a >= b) ? (a >= c ? a : c)
-	                : (b >= c ? b : c);
-}
-
-inline int min(int a, int b, int c)
-{
-	return (a < b) ? (a < c ? a : c)
-	               : (b < c ? b : c);
-}
-
-inline float max(float a, float b)
-{
-	return (a >= b) ? a : b;
-}
-
-inline float min(float a, float b)
-{
-	return (a < b) ? a : b;
-}
-
-inline float max(float a, float b, float c)
-{
-	return (a >= b) ? (a >= c ? a : c)
-	                : (b >= c ? b : c);
-}
-
-inline float min(float a, float b, float c)
-{
-	return (a < b) ? (a < c ? a : c)
-	               : (b < c ? b : c);
-}
-
-inline double max(double a, double b)
-{
-	return (a >= b) ? a : b;
-}
-
-inline double min(double a, double b)
-{
-	return (a < b) ? a : b;
-}
-
-inline double max(double a, double b, double c)
-{
-	return (a >= b) ? (a >= c ? a : c)
-	                : (b >= c ? b : c);
-}
-
-inline double min(double a, double b, double c)
-{
-	return (a < b) ? (a < c ? a : c)
-	               : (b < c ? b : c);
-}
-
-inline int imin(double a, double b, double c)
-{
-	return (a < b) ? (a < c ? 0 : 2)
-	               : (b < c ? 1 : 2);
-}
-
-#include <stdlib.h>
-#include <assert.h>
+#include <cstdlib>
+#include <cassert>
 
 #ifdef NDEBUG
 #	define Assert(e)	(void(0))
 #	define Warning(msg)	(void(0))
-#	define Error(msg)	(void(0))
 #else
 #	define Assert(e)	assert(e)
 #	define Warning(msg) \
 		(cerr << "Warning: " << msg \
 		      << ", file " << __FILE__ \
 		      << ", line " << __LINE__ << "\n")
-#	define Error(msg) \
-		((cerr << "Error: " << msg \
-		       << ", file " << __FILE__ \
-		       << ", line " << __LINE__ << "\n"), exit(1))
 #endif
 #define Abort(msg) \
 		((cerr << "Fatal Error: " << msg \
@@ -153,4 +43,3 @@ inline int imin(double a, double b, double c)
 		       << ", line " << __LINE__ << "\n"), abort())
 	
 #endif
-

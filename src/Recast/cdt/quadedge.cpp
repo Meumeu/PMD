@@ -23,17 +23,20 @@
 
 #include "quadedge.h"
 
+#include <stdexcept>
+
+namespace Delaunay {
 
 /*********************** Basic Topological Operators ************************/
 
-Edge* Mesh::MakeEdge(bool constrained = FALSE)
+Edge* Mesh::MakeEdge(bool constrained = false)
 {
 	QuadEdge *qe = new QuadEdge(constrained);
 	qe->p = edges.insert(edges.first(), qe);
 	return qe->edges();
 }
 
-Edge* Mesh::MakeEdge(Point2d *a, Point2d *b, bool constrained = FALSE)
+Edge* Mesh::MakeEdge(Point2d *a, Point2d *b, bool constrained = false)
 {
 	Edge *e = MakeEdge(constrained);
 	e->EndPoints(a, b);
@@ -84,9 +87,9 @@ QuadEdge::~QuadEdge()
 {
 	// If there are no other edges from the origin or the destination
 	// the corresponding data pointers should be deleted:
-	if (e[0].data != NIL(Point2d) && e[0].next == e)
+	if (e[0].data && e[0].next == e)
 		delete e[0].data;
-	if (e[2].data != NIL(Point2d) && e[2].next == (e+2))
+	if (e[2].data && e[2].next == (e+2))
 		delete e[2].data;
 
 	// Detach edge from the rest of the subdivision:
@@ -113,9 +116,9 @@ Mesh::Mesh(const Point2d& a, const Point2d& b, const Point2d& c)
 	Point2d *db = new Point2d(b);
 	Point2d *dc = new Point2d(c);
 
-	Edge* ea = MakeEdge(da, db, TRUE);
-   	Edge* eb = MakeEdge(db, dc, TRUE);
-	Edge* ec = MakeEdge(dc, da, TRUE);
+	Edge* ea = MakeEdge(da, db, true);
+   	Edge* eb = MakeEdge(db, dc, true);
+	Edge* ec = MakeEdge(dc, da, true);
 
 	Splice(ea->Sym(), eb);
 	Splice(eb->Sym(), ec);
@@ -137,10 +140,10 @@ Mesh::Mesh(const Point2d& a, const Point2d& b,
 	Point2d *dc = new Point2d(c);
 	Point2d *dd = new Point2d(d);
 
-	Edge* ea = MakeEdge(da, db, TRUE);
-	Edge* eb = MakeEdge(db, dc, TRUE);
-	Edge* ec = MakeEdge(dc, dd, TRUE);
-	Edge* ed = MakeEdge(dd, da, TRUE);
+	Edge* ea = MakeEdge(da, db, true);
+	Edge* eb = MakeEdge(db, dc, true);
+	Edge* ec = MakeEdge(dc, dd, true);
+	Edge* ed = MakeEdge(dd, da, true);
 
 	Splice(ea->Sym(), eb);
 	Splice(eb->Sym(), ec);
@@ -185,7 +188,7 @@ Mesh::Mesh( int numVertices, double *bdryVertices )
 
 	// Create all edges:
 	for (i = 0; i < numVertices; i++) {
-		edges[i] = MakeEdge(verts[i], verts[i+1], TRUE);
+		edges[i] = MakeEdge(verts[i], verts[i+1], true);
 	}
 	edges[numVertices] = edges[0];
 
@@ -238,7 +241,7 @@ Point2d snap(const Point2d& x, const Point2d& a, const Point2d& b)
 	Real t1 = (x-a) | (b-a);
 	Real t2 = (x-b) | (a-b);
 	
-	Real t = MAX(t1,t2) / (t1 + t2);
+	Real t = std::max(t1,t2) / (t1 + t2);
 	
 	return ((t1 > t2) ? ((1-t)*a + t*b) : ((1-t)*b + t*a));
 }
@@ -271,12 +274,12 @@ inline Real TriArea(const Point2d& a, const Point2d& b, const Point2d& c)
 // Returns twice the area of the oriented triangle (a, b, c), i.e., the
 // area is positive if the triangle is oriented counterclockwise.
 {
-	return (b[X] - a[X])*(c[Y] - a[Y]) - (b[Y] - a[Y])*(c[X] - a[X]);
+	return (b.getX() - a.getX())*(c.getY() - a.getY()) - (b.getY() - a.getY())*(c.getX() - a.getX());
 }
 
 bool InCircle(const Point2d& a, const Point2d& b,
                  const Point2d& c, const Point2d& d)
-// Returns TRUE if the point d is inside the circle defined by the
+// Returns true if the point d is inside the circle defined by the
 // points a, b, c. See Guibas and Stolfi (1985) p.107.
 {
 	Real az = a | a;
@@ -291,27 +294,27 @@ bool InCircle(const Point2d& a, const Point2d& b,
 }
 
 bool ccw(const Point2d& a, const Point2d& b, const Point2d& c)
-// Returns TRUE if the points a, b, c are in a counterclockwise order
+// Returns true if the points a, b, c are in a counterclockwise order
 {
 	Real det = TriArea(a, b, c);
 	return (det > 0);
 }
 
 bool cw(const Point2d& a, const Point2d& b, const Point2d& c)
-// Returns TRUE if the points a, b, c are in a clockwise order
+// Returns true if the points a, b, c are in a clockwise order
 {
 	Real det = TriArea(a, b, c);
 	return (det < 0);
 }
 
 bool RightOf(const Point2d& x, Edge* e)
-// Returns TRUE if the point x is strictly to the right of e
+// Returns true if the point x is strictly to the right of e
 {
 	return ccw(x, *(e->Dest()), *(e->Org()));
 }
 
 bool LeftOf(const Point2d& x, Edge* e)
-// Returns TRUE if the point x is strictly to the left of e
+// Returns true if the point x is strictly to the left of e
 {
 	return cw(x, *(e->Dest()), *(e->Org()));
 }
@@ -324,10 +327,10 @@ bool OnEdge(const Point2d& x, Edge* e)
 	Point2d a = e->Org2d(), b = e->Dest2d();
 	Real t1 = (x - a).norm(), t2 = (x - b).norm(), t3;
 	if (t1 <= EPS || t2 <= EPS)
-		return TRUE;
+		return true;
 	t3 = (a - b).norm();
 	if (t1 > t3 || t2 > t3)
-	    return FALSE;
+	    return false;
 	Line line(a, b);
 	return (x == line);
 }
@@ -338,34 +341,18 @@ Point2d Intersect(Edge *e, const Line& l)
 	return l.intersect(e->Org2d(), e->Dest2d());
 }
 
-Point2d CircumCenter(const Point2d& a, const Point2d& b, const Point2d& c)
-// Returns the center of the circle through points a, b, c.
-// From Graphics Gems I, p.22
-{
-	Real d1, d2, d3, c1, c2, c3;
-
-	d1 = (b - a) | (c - a);
-	d2 = (b - c) | (a - c);
-	d3 = (a - b) | (c - b);
-	c1 = d2 * d3;
-	c2 = d3 * d1;
-	c3 = d1 * d2;
-	return ((c2 + c3)*a + (c3 + c1)*c + (c1 + c2)*b) / (2*(c1 + c2 + c3));
-}
-
-
 /************* An Incremental Algorithm for the Construction of *************/
 /************************ Delaunay Diagrams *********************************/
 
 bool hasLeftFace(Edge *e)
-// Returns TRUE if there is a triangular face to the left of e.
+// Returns true if there is a triangular face to the left of e.
 {
 	return (e->Lprev()->Org() == e->Lnext()->Dest() &&
 	        LeftOf(e->Lprev()->Org2d(), e));
 }
 	
 inline bool hasRightFace(Edge *e)
-// Returns TRUE if there is a triangular face to the right of e.
+// Returns true if there is a triangular face to the right of e.
 {
 	return hasLeftFace(e->Sym());
 }
@@ -431,14 +418,14 @@ void Mesh::Triangulate(Edge *first)
 }
 
 static bool coincide(const Point2d& a, const Point2d& b, Real dist)
-// Returns TRUE if the points a and b are closer than dist to each other.
+// Returns true if the points a and b are closer than dist to each other.
 // This is useful for creating nicer meshes, by preventing points from
 // being too close to each other.
 {
 	Vector2d d = a - b;
 
-	if (fabs(d[X]) > dist || fabs(d[Y]) > dist)
-		return FALSE;
+	if (fabs(d.getX()) > dist || fabs(d.getY()) > dist)
+		return false;
 
 	return ((d|d) <= dist*dist);
 }
@@ -447,24 +434,24 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 // Inserts a new site into a CDT. This is basically the Guibas-Stolfi
 // incremental site insertion algorithm, except that is does not flip
 // constraining edges (in fact, it does not even test them.)
-// Returns NIL(Edge) if insertion has failed; otherwise, returns an edge
+// Returns 0 if insertion has failed; otherwise, returns an edge
 // whose origin is the new site.
 {
 	Edge *e = Locate(x);
-	if (e == NIL(Edge))
-	    return e;
+	if (!e)
+		return e;
 
 	if (coincide(x, e->Org2d(), dist))
 		return e;
 	if (coincide(x, e->Dest2d(), dist))
-	    return e->Sym();
+		return e->Sym();
 
 	bool hasLeft = hasLeftFace(e);
 	bool hasRight = hasRightFace(e);
 
 	if (!hasLeft && !hasRight) {
 		Warning("InsertSite: edge does not have any faces");
-		return NIL(Edge);
+		return 0;
 	}
 
 	// x should be inside a face adjacent to e:
@@ -475,7 +462,7 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 	                      LeftOf(x, e->Oprev()) && LeftOf(x, e->Dnext());
 	if (!insideLeft && !insideRight) {
 		Warning("InsertSite: point not in a face adjacent to edge");
-		return NIL(Edge);
+		return 0;
 	}	                    
 
 	if (insideLeft  && coincide(x, e->Onext()->Dest2d(), dist))
@@ -528,13 +515,13 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 	// x is not on e, should be in face to the left of e:
 	if (!insideLeft) {
 		Warning("InsertSite: point is not to the left of edge");
-		return NIL(Edge);
+		return 0;
 	}
 
 	// x should be strictly inside the left face:
 	if (OnEdge(x, e->Onext()) || OnEdge(x, e->Dprev())) {
 		Warning("InsertSite: point is not strictly inside face");
-		return NIL(Edge);
+		return 0;
 	}
 
 	// Now, hopefully, x is strictly inside the left face of e,
@@ -551,7 +538,7 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 
 	// Examine suspect edges to ensure that the Delaunay condition
 	// is satisfied.
-   	do {
+   while (true) {
 		Edge* t = e->Oprev();
 		if (!e->isConstrained() &&
 			InCircle(e->Org2d(), t->Dest2d(), e->Dest2d(), x)) {
@@ -562,7 +549,7 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 			return startingEdge;
 		else  // pop a suspect edge
 		    e = e->Onext()->Lprev();
-	} while (TRUE);
+	}
 }
 
 void Mesh::InsertEdge(const Point2d& a, const Point2d& b)
@@ -574,13 +561,14 @@ void Mesh::InsertEdge(const Point2d& a, const Point2d& b)
 	    aa = ea->Org2d();
 	if ((eb = InsertSite(b)))
 	    bb = eb->Org2d();
-	if (ea == NIL(Edge) || eb == NIL(Edge)) {
+	if (!ea || !eb) {
 		Warning("InsertEdge: could not insert endpoints of edge");
 		return;
 	}
 
 	startingEdge = ea;
-	if ((ea = Locate(aa)) == NIL(Edge)) {
+	ea =  Locate(aa);
+	if (!ea) {
 		Warning("InsertEdge: could not locate an endpoint");
 	    return;
 	}
@@ -624,7 +612,7 @@ void Mesh::InsertEdge(const Point2d& a, const Point2d& b)
 				Warning("InsertEdge: infinite loop");
 				return;
 			}
-		} while (TRUE);
+		} while (true);
 
 		// check to see if an edge is already there:
 		if (ea->Dest2d() == ab) {
@@ -640,7 +628,7 @@ void Mesh::InsertEdge(const Point2d& a, const Point2d& b)
 
 		t = ea;
 
-		while (TRUE) {
+		while (true) {
 			if (t->Lnext()->Dest2d() == ab) {
 				if (t->Lnext()->Lnext()->Lnext() == ea) {
 					// edge is already there
@@ -681,7 +669,11 @@ void Mesh::InsertEdge(const Point2d& a, const Point2d& b)
 	}
 }
 
-bool BruteForceLocate = FALSE;
+static int imin(double a, double b, double c)
+{
+	return (a < b) ? (a < c ? 0 : 2)
+	: (b < c ? 1 : 2);
+}
 
 Edge* Mesh::Locate(const Point2d& x)
 // The goals of this routine are as follows:
@@ -691,13 +683,10 @@ Edge* Mesh::Locate(const Point2d& x)
 //   containing x (up to numerical round-off); 
 // In the event of failure, we pass the search to BruteForceLocate.
 {
-	if (::BruteForceLocate)
-		return BruteForceLocate(x);
-
 	Edge* e = startingEdge;
 	int iterations = 0;
 
-	while (TRUE) {
+	while (true) {
 		iterations++;
 
 		if (iterations > numEdges()) {
@@ -822,9 +811,7 @@ Edge* Mesh::BruteForceLocate(const Point2d& x)
 
 	}
 
-	// if we're here, it must be because we failed :-{
-	Warning("Locate: Could not locate using brute force");
-	return NIL(Edge);
+	throw std::runtime_error("Locate: Could not locate using brute force");
 }
 
 
@@ -888,3 +875,4 @@ void Mesh::ApplyVertices( void (*f)( void *arg, void *vertex ), void *arg )
 	}
 }
 
+}

@@ -23,6 +23,8 @@
 #ifndef LLIST_H
 #define LLIST_H
 
+namespace Delaunay {
+
 typedef void* Ldata;
 
 class Llist;
@@ -51,7 +53,6 @@ public:
 	LlistPos next(LlistPos p) const     { return p->next; }
 	LlistPos prev(LlistPos p) const     { return p->prev; }
 	Ldata retrieve(LlistPos p) const    { return p->next->data; }
-	void store(LlistPos p, Ldata d)     { p->next->data = d; }
 	int length() const                  { return len; }
 	LlistNode* insert(LlistPos, Ldata);
 	void remove(LlistPos);
@@ -77,6 +78,8 @@ inline Llist::~Llist()
 {
 	while (!empty()) remove(first());
 	delete node;
+}
+
 }
 
 #endif

@@ -24,16 +24,16 @@
 #ifndef GEOM2D_H
 #define GEOM2D_H
 
-#include <math.h>
-#include <stdlib.h>
+#include <cmath>
+#include <cstdlib>
+#include <stdexcept>
 #include "common.h"
 
 #define EPS 1e-6
-#define X 0
-#define Y 1
-#define Z 2
 
-typedef Lreal Real;
+namespace Delaunay {
+
+typedef double Real;
 
 class Vector2d {
 	Real x, y;
@@ -41,8 +41,8 @@ public:
 	Vector2d()                          { x = 0; y = 0; }
 	Vector2d(Real a, Real b)            { x = a; y = b; }
 	Vector2d(const Vector2d &v)         { *this = v; }
-	Real& operator[](int i)             { return ((Real *)this)[i]; }
-	const Real& operator[](int i) const { return ((Real *)this)[i]; }
+	Real const& getX() const {return x;}
+	Real const& getY() const {return y;}
 	Real norm() const;
 	Real normalize();
 	bool operator==(const Vector2d&) const;
@@ -58,7 +58,6 @@ typedef Vector2d Point2d;
 
 class Line {
 public:
-	Line()	{}
 	Line(const Point2d&, const Point2d&);
 	void set(const Point2d&, const Point2d&);
 	Real eval(const Point2d&) const;
@@ -80,7 +79,7 @@ inline Real Vector2d::normalize()
 	Real len = norm();
 
 	if (len == 0.0)
-		throw len;
+		throw std::range_error("Can't normalize a null vector");
 	else {
 		x /= len;
 		y /= len;
@@ -133,12 +132,12 @@ inline Line::Line(const Point2d& p, const Point2d& q)
 	Vector2d t = q - p;
 	Real len = t.norm();
 
-	a =   t[Y] / len;
-	b = - t[X] / len;
-	// c = -(a*p[X] + b*p[Y]);
+	a =   t.getY() / len;
+	b = - t.getX() / len;
+	// c = -(a*p.getX() + b*p.getY());
 
 	// less efficient, but more robust -- seth.
-	c = -0.5 * ((a*p[X] + b*p[Y]) + (a*q[X] + b*q[Y]));
+	c = -0.5 * ((a*p.getX() + b*p.getY()) + (a*q.getX() + b*q.getY()));
 }
 
 inline void Line::set(const Point2d& p, const Point2d& q)
@@ -149,7 +148,7 @@ inline void Line::set(const Point2d& p, const Point2d& q)
 inline Real Line::eval(const Point2d& p) const
 // Plugs point p into the line equation.
 {
-	return (a * p[X] + b* p[Y] + c);
+	return (a * p.getX() + b* p.getY() + c);
 }
 
 inline Point2d Line::intersect(const Point2d& p1, const Point2d& p2) const
@@ -157,16 +156,8 @@ inline Point2d Line::intersect(const Point2d& p1, const Point2d& p2) const
 {
         // assumes that segment (p1,p2) crosses the line
         Vector2d d = p2 - p1;
-        Real t = - eval(p1) / (a*d[X] + b*d[Y]);
+        Real t = - eval(p1) / (a*d.getX() + b*d.getY());
         return (p1 + t*d);
-}
-
-inline int Line::classify(const Point2d& p) const
-// Returns -1, 0, or 1, if p is to the left of, on,
-// or right of the line, respectively.
-{
-	Real d = eval(p);
-	return (d < -EPS) ? -1 : (d > EPS ? 1 : 0);
 }
 
 inline bool operator==(const Point2d& point, const Line& line)
@@ -174,7 +165,7 @@ inline bool operator==(const Point2d& point, const Line& line)
 // around the line).
 {
 	Real tmp = line.eval(point);
-	return(ABS(tmp) <= EPS);
+	return(std::abs(tmp) <= EPS);
 }
 
 inline bool operator<(const Point2d& point, const Line& line)
@@ -184,4 +175,5 @@ inline bool operator<(const Point2d& point, const Line& line)
 	return (line.eval(point) < -EPS);
 }
 
+}
 #endif

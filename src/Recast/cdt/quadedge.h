@@ -26,6 +26,8 @@
 #include "geom2d.h"
 #include "dllist.h"
 
+namespace Delaunay {
+
 class QuadEdge;
 class Mesh;
 
@@ -38,7 +40,7 @@ class Edge {
 	Edge *next;
 	Point2d *data;
   public:
-	Edge()	{ data = 0; }
+	Edge(): data(0) {}
 	Edge* Rot();
 	Edge* invRot();
 	Edge* Sym();
@@ -70,7 +72,7 @@ class QuadEdge {
 	QuadEdge(bool);
 	Edge *edges()           { return e; }
 	bool isConstrained() { return c; }
-	void Constrain()        { c = TRUE; }
+	void Constrain()        { c = true; }
 	~QuadEdge();
 };
 
@@ -99,7 +101,7 @@ class Mesh {
 	~Mesh();
 };
 
-inline QuadEdge::QuadEdge(bool constrained = FALSE)
+inline QuadEdge::QuadEdge(bool constrained = false)
 {
 	e[0].num = 0, e[1].num = 1, e[2].num = 2, e[3].num = 3;
 	e[0].mark = 0, e[1].mark = 0, e[2].mark = 0, e[3].mark = 0;
@@ -212,6 +214,8 @@ inline bool Edge::isConstrained()
 inline void Edge::Constrain()
 {
 	QEdge()->Constrain();
+}
+
 }
 
 #endif /* QUADEDGE_H */
