@@ -132,9 +132,8 @@ void MainMenu::Update(float dt)
 }
 
 MainMenu::MainMenu(void): AppState(),
-	_Shutdown(false)
-{
-}
+	_Camera(0), _SceneMgr(0), _Viewport(0),
+	_Shutdown(false) {}
 
 MainMenu::~MainMenu()
 {
