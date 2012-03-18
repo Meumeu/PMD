@@ -22,11 +22,7 @@
 #ifndef RECAST_POLYMESHDETAIL_H
 #define RECAST_POLYMESHDETAIL_H
 
-#include <set>
-
 #include "Recast.h"
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 
 namespace Recast
 {
@@ -36,13 +32,6 @@ class CompactHeightfield;
 class PolyMeshDetail
 {
 public:
-	class DelaunayTriangulation
-	{
-	public:
-		DelaunayTriangulation(FloatVertex const & v1, FloatVertex const & v2, FloatVertex const & v3) {}
-		DelaunayTriangulation & operator<<(FloatVertex const & v);
-		DelaunayTriangulation & operator<<(const std::vector< Recast::FloatVertex >& vertices);
-	};
 private:
 	//std::vector<Triangle> meshes;
 	

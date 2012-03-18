@@ -76,6 +76,8 @@ class QuadEdge {
 	~QuadEdge();
 };
 
+bool hasLeftFace(Edge *e);
+
 class Mesh {
   private:
 	Edge *startingEdge;
@@ -98,6 +100,17 @@ class Mesh {
 	int  numEdges() const { return edges.length(); }
 	void ApplyVertices( void (*f)( void *, void * ), void * );
 	void ApplyEdges( void (*f)( void *, void *, bool ), void * );
+
+	template <class T>
+	void ApplyTriangles(T& functionoid) const
+	{
+		for (LlistPos p = edges.first(); !edges.isEnd(p); p = edges.next(p))
+		{
+			Edge *e = ((QuadEdge *)edges.retrieve(p))->edges();
+			if (hasLeftFace(e))
+				functionoid(e->Org2d(), e->Dest2d(), e->Lprev()->Org2d());
+		}
+	}
 	~Mesh();
 };
 

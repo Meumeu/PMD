@@ -44,7 +44,7 @@ void PolyMesh::fillPolygonNeighbours()
 	PolygonMap pmap;
 	for(size_t i = 0, size = polys.size(); i < size; ++i)
 	{
-		for(size_t j = 0, k = Polygon::NVertices - 1; j < Polygon::NVertices; k = j++)
+		for(uint8_t j = 0, k = Polygon::NVertices - 1; j < Polygon::NVertices; k = j++)
 		{
 			IntVertex const & v1 = polys[i].vertices[j];
 			IntVertex const & v2 = polys[i].vertices[k];

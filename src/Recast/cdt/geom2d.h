@@ -28,12 +28,13 @@
 #include <cstdlib>
 #include <stdexcept>
 #include "common.h"
+#include "../Recast.h"
 
 #define EPS 1e-6
 
 namespace Delaunay {
 
-typedef double Real;
+typedef float Real;
 
 class Vector2d {
 	Real x, y;
@@ -41,6 +42,7 @@ public:
 	Vector2d()                          { x = 0; y = 0; }
 	Vector2d(Real a, Real b)            { x = a; y = b; }
 	Vector2d(const Vector2d &v)         { *this = v; }
+	Vector2d(const Recast::FloatVertex & v): x(v.x), y(v.z) {}
 	Real const& getX() const {return x;}
 	Real const& getY() const {return y;}
 	Real norm() const;

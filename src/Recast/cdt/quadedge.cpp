@@ -450,8 +450,7 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 	bool hasRight = hasRightFace(e);
 
 	if (!hasLeft && !hasRight) {
-		Warning("InsertSite: edge does not have any faces");
-		return 0;
+		throw std::runtime_error("InsertSite: edge does not have any faces");
 	}
 
 	// x should be inside a face adjacent to e:
@@ -461,9 +460,8 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 	bool insideRight = hasRight && (onEdge || RightOf(x, e)) &&
 	                      LeftOf(x, e->Oprev()) && LeftOf(x, e->Dnext());
 	if (!insideLeft && !insideRight) {
-		Warning("InsertSite: point not in a face adjacent to edge");
-		return 0;
-	}	                    
+		throw std::runtime_error("InsertSite: point not in a face adjacent to edge");
+	}
 
 	if (insideLeft  && coincide(x, e->Onext()->Dest2d(), dist))
 		return e->Lprev();
@@ -514,14 +512,12 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 
 	// x is not on e, should be in face to the left of e:
 	if (!insideLeft) {
-		Warning("InsertSite: point is not to the left of edge");
-		return 0;
+		throw std::runtime_error("InsertSite: point is not to the left of edge");
 	}
 
 	// x should be strictly inside the left face:
 	if (OnEdge(x, e->Onext()) || OnEdge(x, e->Dprev())) {
-		Warning("InsertSite: point is not strictly inside face");
-		return 0;
+		throw std::runtime_error("InsertSite: point is not strictly inside face");
 	}
 
 	// Now, hopefully, x is strictly inside the left face of e,
