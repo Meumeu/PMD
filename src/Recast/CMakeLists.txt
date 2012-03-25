@@ -20,6 +20,8 @@ SET(recast_HDRS
 	src/Recast/RecastPolyMesh.h
 	src/Recast/RecastPolyMeshDetail.h
 
+	src/Recast/PolygonUtils.h
+
 	src/Recast/cdt/quadedge.h
 	src/Recast/cdt/dllist.h
 	src/Recast/cdt/common.h

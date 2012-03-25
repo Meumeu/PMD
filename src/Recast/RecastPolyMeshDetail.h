@@ -30,13 +30,25 @@ class PolyMesh;
 class CompactHeightfield;
 
 class PolyMeshDetail
-{
-public:
-private:
-	//std::vector<Triangle> meshes;
-	
+{	
 public:
 	PolyMeshDetail(PolyMesh const & pm, CompactHeightfield const & chf, const float sampleDist, const float sampleMaxError);
+	struct Triangle
+	{
+		Triangle(FloatVertex v1, FloatVertex v2, FloatVertex v3)
+		{
+			_vertices[0] = v1;
+			_vertices[1] = v2;
+			_vertices[2] = v3;
+			_neighbours[0] = -1;
+			_neighbours[1] = -1;
+			_neighbours[2] = -1;
+		}
+		FloatVertex _vertices[3];
+		int _neighbours[3];
+	};
+private:
+	std::vector<Triangle> _meshes;       ///< Triangle and neighbour data
 };
 }
 

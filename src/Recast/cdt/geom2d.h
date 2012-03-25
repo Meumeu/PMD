@@ -27,10 +27,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <stdexcept>
+#include <ostream>
 #include "common.h"
 #include "../Recast.h"
 
-#define EPS 1e-6
+#define EPS 1e-3
 
 namespace Delaunay {
 
@@ -41,7 +42,6 @@ class Vector2d {
 public:
 	Vector2d()                          { x = 0; y = 0; }
 	Vector2d(Real a, Real b)            { x = a; y = b; }
-	Vector2d(const Vector2d &v)         { *this = v; }
 	Vector2d(const Recast::FloatVertex & v): x(v.x), y(v.z) {}
 	Real const& getX() const {return x;}
 	Real const& getY() const {return y;}
@@ -55,6 +55,8 @@ public:
 	friend Vector2d operator/(const Vector2d&, Real);
 	friend Real dot(const Vector2d&, const Vector2d&);
 };
+
+std::ostream & operator<<(std::ostream & stream, Vector2d const& v);
 
 typedef Vector2d Point2d;
 

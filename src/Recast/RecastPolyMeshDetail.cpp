@@ -24,6 +24,7 @@
 #include "RecastCompactHeightfield.h"
 #include "RecastCompactHeightfield.h"
 #include "cdt/quadedge.h"
+#include "PolygonUtils.h"
 
 #include <boost/foreach.hpp>
 
@@ -59,7 +60,7 @@ struct Bounds
 	{
 		xmin = std::min(xmin, v.x - 1);
 		xmax = std::max(xmax, v.x + 1);
-		zmax = std::min(zmin, v.z - 1);
+		zmin = std::min(zmin, v.z - 1);
 		zmax = std::max(zmax, v.z + 1);
 		
 		return *this;
@@ -111,6 +112,7 @@ public:
 			for(int z = bnds.zmin; z < bnds.zmax; ++z)
 			{
 				IntVertex m(x,0,z);
+				if (a1 == m || b1 == m || c1 == m) continue;
 				int lambda = den * IntVertex::det2d(m-a1, c1-a1);
 				int mu = den * IntVertex::det2d(b1-a1, m-a1);
 				if (lambda >= 0 && mu >= 0 && lambda + mu < sqrden)
@@ -323,10 +325,35 @@ private:
 	float _maxDistance;
 };
 
-static void buildDetail(std::vector<FloatVertex> const & poly, const CompactHeightfield & /* chf */, const float sampleDist, const float sampleMaxError, const HeightData & hd)
+class TriangleExtractoroid
 {
-	assert(poly.size() == 3);
-	Delaunay::Mesh triangles(poly[0], poly[1], poly[2]);
+public:
+	TriangleExtractoroid(std::vector<PolyMeshDetail::Triangle>& meshes, HeightData const& hd): _meshes(meshes), _hd(hd) {}
+	void operator()(Delaunay::Point2d const& a, Delaunay::Point2d const& b, Delaunay::Point2d const& c)
+	{
+		FloatVertex a1(a.getX(), 0, a.getY()); a1.y = _hd.getHeight(a1);
+		FloatVertex b1(b.getX(), 0, b.getY()); b1.y = _hd.getHeight(b1);
+		FloatVertex c1(c.getX(), 0, c.getY()); c1.y = _hd.getHeight(c1);
+		_meshes.push_back(PolyMeshDetail::Triangle(a1,b1,c1));
+	}
+private:
+	std::vector<PolyMeshDetail::Triangle>& _meshes;
+	HeightData const& _hd;
+};
+
+static void edgePrinter(void*, void* voidEdges, bool)
+{
+	Delaunay::Edge * edges = (Delaunay::Edge *) voidEdges;
+	std::cerr << edges[0].Org2d() << std::endl;
+	std::cerr << edges[0].Dest2d() << std::endl << std::endl;
+}
+
+static void buildDetail(std::vector<FloatVertex> const & poly, const CompactHeightfield & /* chf */, const float sampleDist, const float sampleMaxError, const HeightData & hd, std::vector<PolyMeshDetail::Triangle>& meshes)
+{
+	//assert(poly.size() == 3);
+	//Delaunay::Mesh triangles(poly[0], poly[1], poly[2]);
+
+	std::vector<Delaunay::Point2d> boundingtriangle;
 	
 	for(size_t size = poly.size(), i = 0, j = size - 1; i < size; j = i++)
 	{
@@ -337,6 +364,7 @@ static void buildDetail(std::vector<FloatVertex> const & poly, const CompactHeig
 		const FloatVertex d = vi - vj;
 		const float length = std::sqrt(d.x * d.x + d.z * d.z);
 		const int n = 1 + std::floor(length / sampleDist);
+		const bool swapped = poly[i] > poly[j];
 		
 		edge.resize(n+1);
 		for(int k = 0; k <= n; ++k)
@@ -378,22 +406,66 @@ static void buildDetail(std::vector<FloatVertex> const & poly, const CompactHeig
 			}
 		}
 		
-		indices.pop_back();
-		indices.pop_front();
-		BOOST_FOREACH(size_t & i, indices)
+		if (swapped)
 		{
-			triangles.InsertSite(edge[i]);
+			indices.pop_back();
+			BOOST_REVERSE_FOREACH(size_t & i, indices)
+			{
+				boundingtriangle.push_back(edge[i]);
+			}
+		}
+		else
+		{
+			indices.pop_front();
+			BOOST_FOREACH(size_t & i, indices)
+			{
+				boundingtriangle.push_back(edge[i]);
+			}
 		}
 	}
 
+// 	if (boundingtriangle.size() > 3)
+// 	{
+// 		std::cerr << "************\n";
+// 		BOOST_FOREACH(Delaunay::Point2d const & v, boundingtriangle)
+// 		{
+// 			std::cerr << v << std::endl;
+// 		}
+// 	}
+
+	boundingtriangle.clear();
+	boundingtriangle.push_back(poly[2]);
+	boundingtriangle.push_back(poly[1]);
+	boundingtriangle.push_back(poly[0]);
+	Delaunay::Mesh triangles(boundingtriangle);
+	std::cerr << "************\n";
+	triangles.ApplyEdges(&edgePrinter, 0);
 	while (true)
 	{
 		DistanceAccumulatoroid d(hd);
 		triangles.ApplyTriangles(d);
 		if (d.getFarthestDistance() < sampleMaxError) break;
+
+		Delaunay::Point2d const & v = d.getFarthestPoint();
+		int size = triangles.getSize();
 		triangles.InsertSite(d.getFarthestPoint());
+		if (size == triangles.getSize())
+		{
+			std::cerr << "max distance: " << d.getFarthestDistance() << std::endl;
+			std::cerr << "Quadedge ate point "<< v << std::endl;
+			break;
+		}
 	}
-	
+
+	TriangleExtractoroid t(meshes, hd);
+	triangles.ApplyTriangles(t);
+// 	BOOST_FOREACH(PolyMeshDetail::Triangle const& tri, meshes)
+// 	{
+// 		std::cerr << Delaunay::Point2d(tri._vertices[0])<< std::endl
+// 		<< Delaunay::Point2d(tri._vertices[1])<< std::endl
+// 		<< Delaunay::Point2d(tri._vertices[2]) << std::endl << std::endl;
+// 	}
+	fillPolygonNeighbours<PolyMeshDetail::Triangle, FloatVertex>(meshes, 3);
 }
 
 PolyMeshDetail::PolyMeshDetail(const Recast::PolyMesh& pm, const CompactHeightfield & chf, const float sampleDist, const float sampleMaxError)
@@ -402,17 +474,17 @@ PolyMeshDetail::PolyMeshDetail(const Recast::PolyMesh& pm, const CompactHeightfi
 	
 	for(size_t i = 0, size = pm.polys.size(); i < size; ++i)
 	{
-		const HeightData hd(chf, pm.polys[i].vertices);
+		const HeightData hd(chf, pm.polys[i]._vertices);
 
 		std::vector<FloatVertex> poly(PolyMesh::Polygon::NVertices);
 		for(size_t j = 0; j < PolyMesh::Polygon::NVertices; ++j)
 		{
-			poly[j].x = pm.polys[i].vertices[j].x * chf._cs;
-			poly[j].y = pm.polys[i].vertices[j].y * chf._ch;
-			poly[j].z = pm.polys[i].vertices[j].z * chf._cs;
+			poly[j].x = pm.polys[i]._vertices[j].x * chf._cs;
+			poly[j].y = pm.polys[i]._vertices[j].y * chf._ch;
+			poly[j].z = pm.polys[i]._vertices[j].z * chf._cs;
 		}
 		
-		buildDetail(poly, chf, sampleDist, sampleMaxError, hd);
+		buildDetail(poly, chf, sampleDist, sampleMaxError, hd, _meshes);
 	}
 }
 

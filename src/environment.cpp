@@ -40,6 +40,7 @@
 #include "Recast/RecastCompactHeightfield.h"
 #include "Recast/RecastContourSet.h"
 #include "Recast/RecastPolyMesh.h"
+#include "Recast/RecastPolyMeshDetail.h"
 
 #include "DebugDrawer.h"
 
@@ -145,6 +146,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	boost::posix_time::ptime t8 = boost::posix_time::microsec_clock::universal_time();
 	Recast::PolyMesh pm(cs);
 	boost::posix_time::ptime t9 = boost::posix_time::microsec_clock::universal_time();
+	Recast::PolyMeshDetail pmd(pm, chf, 0.1f, 0.0002f);
 
 #if DEBUG_RECAST == 1 || DEBUG_RECAST == 2
 	for(int x = 0; x < chf._xsize; ++x)
@@ -246,13 +248,13 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 #if DEBUG_RECAST == 5
 	BOOST_FOREACH(Recast::PolyMesh::Polygon const & p, pm.polys)
 	{
-		unsigned int r = p.regionID;
+		unsigned int r = p._regionID;
 		Ogre::Vector3 v[3];
 		for(int i = 0; i < 3; i++)
 		{
-			v[i].x = (p.vertices[i].x + chf._xmin) * chf._cs;
-			v[i].y = p.vertices[i].y * chf._ch;
-			v[i].z = (p.vertices[i].z + chf._zmin) * chf._cs;
+			v[i].x = (p._vertices[i].x + chf._xmin) * chf._cs;
+			v[i].y = p._vertices[i].y * chf._ch;
+			v[i].z = (p._vertices[i].z + chf._zmin) * chf._cs;
 		}
 		
 		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
@@ -262,15 +264,15 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		
 		for(int i = 0; i < 3; i++)
 		{
-			if (p.neighbours[i] == -1) continue;
-			Recast::PolyMesh::Polygon const & neighbour = pm.polys[p.neighbours[i]];
+			if (p._neighbours[i] == -1) continue;
+			Recast::PolyMesh::Polygon const & neighbour = pm.polys[p._neighbours[i]];
 			
 			Ogre::Vector3 ncentre(0, 0, 0);
 			for(int i = 0; i < 3; i++)
 			{
-				ncentre.x += (neighbour.vertices[i].x + chf._xmin) * chf._cs;
-				ncentre.y += neighbour.vertices[i].y * chf._ch;
-				ncentre.z += (neighbour.vertices[i].z + chf._zmin) * chf._cs;
+				ncentre.x += (neighbour._vertices[i].x + chf._xmin) * chf._cs;
+				ncentre.y += neighbour._vertices[i].y * chf._ch;
+				ncentre.z += (neighbour._vertices[i].z + chf._zmin) * chf._cs;
 			}
 			ncentre /= 3;
 			

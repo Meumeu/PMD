@@ -24,8 +24,14 @@
 #include "quadedge.h"
 
 #include <stdexcept>
+#include <boost/foreach.hpp>
 
 namespace Delaunay {
+
+std::ostream & operator<<(std::ostream & stream, Vector2d const& v)
+{
+	return stream << v.getX() << "\t" << v.getY();
+}
 
 /*********************** Basic Topological Operators ************************/
 
@@ -165,35 +171,35 @@ Mesh::Mesh(const Point2d& a, const Point2d& b,
 typedef Point2d* Point2dPtr;
 typedef Edge*    EdgePtr;
 
-Mesh::Mesh( int numVertices, double *bdryVertices )
+Mesh::Mesh( std::vector<Point2d> const& convexPolygon )
 // Initialize the mesh to the Delaunay triangulation of the
-// convex polygon defined by the coordinates in the bdryVertices
-// array. The number of vertices (coordinate pairs) is specified
-// via numVertices.
+// convex polygon defined by the coordinates in the convexPolygon
 // NOTE: polygon is assumed convex.
 {
-	Point2d orig, dest;
-	register int i;
+	size_t numVertices = convexPolygon.size();
 
 	Assert(numVertices >= 3);
 
-	Point2d **verts = new Point2dPtr[numVertices + 1];
-	Edge **edges = new EdgePtr[numVertices + 1];
+	std::vector<Point2d *> verts;
+	verts.reserve(numVertices+1);
+	std::vector<Edge *> edges;
+	edges.reserve(numVertices+1);
 
 	// Create all vertices:
-	for (i = 0; i < numVertices; i++) {
-		verts[i] = new Point2d(bdryVertices[2*i], bdryVertices[2*i+1]);
+	BOOST_FOREACH(Point2d const& p, convexPolygon)
+	{
+		verts.push_back(new Point2d(p));
 	}
-	verts[numVertices] = verts[0];
+	verts.push_back(verts.front());
 
 	// Create all edges:
-	for (i = 0; i < numVertices; i++) {
-		edges[i] = MakeEdge(verts[i], verts[i+1], true);
+	for (size_t i = 0; i < numVertices; i++) {
+		edges.push_back(MakeEdge(verts[i], verts[i+1], true));
 	}
-	edges[numVertices] = edges[0];
+	edges.push_back(edges.front());
 
 	// Connect edges together:
-	for (i = 0; i < numVertices; i++) {
+	for (size_t i = 0; i < numVertices; i++) {
 		Splice(edges[i]->Sym(), edges[i+1]);
 	}
 	
@@ -202,9 +208,6 @@ Mesh::Mesh( int numVertices, double *bdryVertices )
 
 	// Initialize starting edge:
 	startingEdge = edges[0];
-
-	delete[] verts;
-	delete[] edges;
 }
 
 Edge* Mesh::Connect(Edge* a, Edge* b)
@@ -332,6 +335,7 @@ bool OnEdge(const Point2d& x, Edge* e)
 	if (t1 > t3 || t2 > t3)
 	    return false;
 	Line line(a, b);
+	std::cerr << "line.eval(x)=" << line.eval(x) << std::endl;
 	return (x == line);
 }
 
@@ -439,7 +443,7 @@ Edge *Mesh::InsertSite(const Point2d& x, Real dist /* = EPS */)
 {
 	Edge *e = Locate(x);
 	if (!e)
-		return e;
+		throw std::runtime_error("InsertSite: 404 Edge not found");
 
 	if (coincide(x, e->Org2d(), dist))
 		return e;
@@ -756,11 +760,9 @@ Edge* Mesh::Locate(const Point2d& x)
 Edge* Mesh::BruteForceLocate(const Point2d& x)
 // Same as Locate, but uses a brute force exhaustive search.
 {
-	Edge *e;
-
 	for (LlistPos p = edges.first(); !edges.isEnd(p); p = edges.next(p)) {
 
-		e = ((QuadEdge *)edges.retrieve(p))->edges();
+		Edge * e = ((QuadEdge *)edges.retrieve(p))->edges();
 		// first, examine the endpoints for coincidence:
 		if (x == e->Org2d())
 			return startingEdge = e;

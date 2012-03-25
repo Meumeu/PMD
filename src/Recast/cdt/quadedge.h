@@ -26,6 +26,8 @@
 #include "geom2d.h"
 #include "dllist.h"
 
+#include <list>
+
 namespace Delaunay {
 
 class QuadEdge;
@@ -92,9 +94,10 @@ class Mesh {
 	void Triangulate(Edge*);
 	void MarkEdges(Edge*);
   public:
+	int getSize() const {return edges.length();}
 	Mesh(const Point2d&, const Point2d&, const Point2d&);
 	Mesh(const Point2d&, const Point2d&, const Point2d&, const Point2d&);
-	Mesh(int numVertices, double *bdryVertices);
+	Mesh(std::vector<Point2d> const& convexPolygon);
 	Edge *InsertSite(const Point2d&, Real dist = EPS);
 	void InsertEdge(const Point2d&, const Point2d&);
 	int  numEdges() const { return edges.length(); }
@@ -109,6 +112,8 @@ class Mesh {
 			Edge *e = ((QuadEdge *)edges.retrieve(p))->edges();
 			if (hasLeftFace(e))
 				functionoid(e->Org2d(), e->Dest2d(), e->Lprev()->Org2d());
+			else
+				std::cerr << e->Org2d() << "\t" << e->Dest2d() << " has no left face" << std::endl ;
 		}
 	}
 	~Mesh();

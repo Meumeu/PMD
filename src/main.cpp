@@ -37,8 +37,10 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR strCmdLine, INT )
 
 int main(/* int argc, char *argv[] */)
 {
+#ifdef NDEBUG
 	try
 	{
+#endif
 #ifdef _WINDOWS
 		char buf[MAX_PATH];
 		if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, SHGFP_TYPE_CURRENT, buf)))
@@ -71,7 +73,9 @@ int main(/* int argc, char *argv[] */)
 		boost::shared_ptr<MainMenu> menu(new MainMenu);
 		//boost::shared_ptr<Game> menu(new Game);
 		manager.MainLoop(menu);
+#ifdef NDEBUG
 	}
+
 	catch(std::exception& e)
 	{
 #ifdef _WINDOWS
@@ -81,6 +85,7 @@ int main(/* int argc, char *argv[] */)
 #endif
 		return 1;
 	}
+#endif
 
 	return 0;
 }

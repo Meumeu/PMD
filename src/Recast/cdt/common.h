@@ -24,8 +24,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <cstdlib>
 #include <cassert>
+#include <iostream>
 
 #ifdef NDEBUG
 #	define Assert(e)	(void(0))
@@ -33,13 +33,9 @@
 #else
 #	define Assert(e)	assert(e)
 #	define Warning(msg) \
-		(cerr << "Warning: " << msg \
+		(std::cerr << "Warning: " << msg \
 		      << ", file " << __FILE__ \
 		      << ", line " << __LINE__ << "\n")
 #endif
-#define Abort(msg) \
-		((cerr << "Fatal Error: " << msg \
-		       << ", file " << __FILE__ \
-		       << ", line " << __LINE__ << "\n"), abort())
 	
 #endif

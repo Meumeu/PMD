@@ -36,25 +36,25 @@ public:
 	struct Polygon
 	{
 		static const size_t NVertices = 3;
-		Polygon(IntVertex v1, IntVertex v2, IntVertex v3, int r) : regionID(r)
+		Polygon(IntVertex v1, IntVertex v2, IntVertex v3, int r) : _regionID(r)
 		{
-			vertices[0] = v1;
-			vertices[1] = v2;
-			vertices[2] = v3;
-			neighbours[0] = -1;
-			neighbours[1] = -1;
-			neighbours[2] = -1;
+			_vertices[0] = v1;
+			_vertices[1] = v2;
+			_vertices[2] = v3;
+			_neighbours[0] = -1;
+			_neighbours[1] = -1;
+			_neighbours[2] = -1;
 		}
-		int regionID;
-		int flags;
-		IntVertex vertices[NVertices];
-		int neighbours[NVertices];
+		int _regionID;
+		int _flags;
+		IntVertex _vertices[NVertices];
+		int _neighbours[NVertices];
 	};
 	
 	std::vector<Polygon> polys;       ///< Polygon and neighbour data
 	
 	void triangulate(Contour const & cont);
-	void fillPolygonNeighbours();
+	void fillNeighbours();
 	
 public:
 	PolyMesh(ContourSet const & cset);
