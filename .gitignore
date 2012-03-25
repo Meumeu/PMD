@@ -41,3 +41,4 @@ build/
 dist/
 objects/
 *.zip
+_ogre_debug.txt
