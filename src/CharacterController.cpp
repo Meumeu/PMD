@@ -204,3 +204,26 @@ void CharacterController::UpdateGraphics(float dt)
 	
 	_Animations.Update(dt);
 }
+
+void CharacterController::UpdateAI(float dt, Ogre::Vector3 const & target, boost::shared_ptr<Environment> env)
+{
+	_CurrentPathAge += dt;
+	if (_CurrentPathAge > 0.2)
+	{
+		_CurrentPathAge = 0;
+		_CurrentPath = env->QueryPath(GetPosition(), target);
+		if (_CurrentPath.empty())
+			Jump();
+		
+		//std::cerr << "Path size: " << _CurrentPath.size() << "\n";
+		
+		Pathfinding::NavMesh::Path::iterator it = _CurrentPath.begin();
+		if (it == _CurrentPath.end()) return;
+		++it;
+		if (it == _CurrentPath.end()) return;
+		Ogre::Vector3 target = *it - GetPosition();
+		target.normalise();
+		
+		SetVelocity(target*3);
+	}
+}

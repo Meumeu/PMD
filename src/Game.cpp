@@ -186,24 +186,26 @@ void Game::BulletCallback(btScalar timeStep)
 
 	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
 	{
-		Ogre::Vector3 target = _Player->GetPosition() - cc->GetPosition();
+// 		Ogre::Vector3 target = _Player->GetPosition() - cc->GetPosition();
+// 
+// 		if (target.length() > 7)
+// 		{
+// 			float theta = atan2(cc->GetVelocity().z, cc->GetVelocity().x);
+// 			theta += (rand() % 100 - 50) * 0.001;
+// 
+// 			target.x = cos(theta);
+// 			target.y = 0;
+// 			target.z = sin(theta);
+// 			cc->SetVelocity(2 * target);
+// 		}
+// 		else
+// 		{
+// 			target.y = 0;
+// 			target.normalise();
+// 			cc->SetVelocity(5 * target);
+// 		}
 
-		if (target.length() > 7)
-		{
-			float theta = atan2(cc->GetVelocity().z, cc->GetVelocity().x);
-			theta += (rand() % 100 - 50) * 0.001;
-
-			target.x = cos(theta);
-			target.y = 0;
-			target.z = sin(theta);
-			cc->SetVelocity(2 * target);
-		}
-		else
-		{
-			target.y = 0;
-			target.normalise();
-			cc->SetVelocity(5 * target);
-		}
+		cc->UpdateAI(timeStep, _Player->GetPosition(), _Env);
 		
 		cc->UpdatePhysics(timeStep);
 	}
@@ -248,29 +250,10 @@ void Game::go(void)
 
 	_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
 
-	/*Ogre::Plane plane(Ogre::Vector3::UNIT_Y, 0);
-	Ogre::MeshManager::getSingleton().createPlane(
-		"ground",
-		Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-		plane,
-		240, 240, 100, 100, true, 1, 5, 5, Ogre::Vector3::UNIT_Z);
-	
-	// ground
-	Ogre::Entity* entGround = _SceneMgr->createEntity("GroundEntity", "ground");
-	entGround->setCastShadows(false);
-	entGround->setMaterialName("Examples/Rockwall");
-	_SceneMgr->getRootSceneNode()->createChildSceneNode(Ogre::Vector3(0, -0.5, 0))->attachObject(entGround);
-
-	btRigidBody * btGround = new btRigidBody(
-		0,
-		new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(0, -10.5, 0))),
-		new btBoxShape(btVector3(120, 10, 120)));
-	_World->addRigidBody(btGround);*/
-
 	for(float x = -10; x < 10; x += 1)
 	{
-		btVector3 pos(x, 0, -3);
-		//_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
+		btVector3 pos(x, 10, -3);
+		_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
 	}
 
 	/*for(float x = -10; x < 10; x += 0.4)

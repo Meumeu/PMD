@@ -1,8 +1,5 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
-// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
-// Copyright 2012 Guillaume Meunier <guillaume.meunier@centraliens.net>
-// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -19,37 +16,18 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#ifndef RECAST_POLYMESHDETAIL_H
-#define RECAST_POLYMESHDETAIL_H
+#ifndef DETOURASSERT_H
+#define DETOURASSERT_H
 
-#include "Recast.h"
+// Note: This header file's only purpose is to include define assert.
+// Feel free to change the file and include your own implementation instead.
 
-namespace Recast
-{
-class PolyMesh;
-class CompactHeightfield;
+#ifdef NDEBUG
+// From http://cnicholson.net/2009/02/stupid-c-tricks-adventures-in-assert/
+#	define dtAssert(x) do { (void)sizeof(x); } while((void)(__LINE__==-1),false)  
+#else
+#	include <assert.h> 
+#	define dtAssert assert
+#endif
 
-class PolyMeshDetail
-{	
-public:
-	PolyMeshDetail(PolyMesh const & pm, CompactHeightfield const & chf, const float sampleDist, const float sampleMaxError);
-	struct Triangle
-	{
-		Triangle(FloatVertex v1, FloatVertex v2, FloatVertex v3)
-		{
-			_vertices[0] = v1;
-			_vertices[1] = v2;
-			_vertices[2] = v3;
-			_neighbours[0] = -1;
-			_neighbours[1] = -1;
-			_neighbours[2] = -1;
-		}
-		FloatVertex _vertices[3];
-		int _neighbours[3];
-	};
-private:
-	std::vector<Triangle> _meshes;       ///< Triangle and neighbour data
-};
-}
-
-#endif // RECAST_POLYMESHDETAIL_H
+#endif // DETOURASSERT_H

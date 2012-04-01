@@ -25,6 +25,7 @@
 #include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
 #include "bullet/LinearMath/btDefaultMotionState.h"
+#include "Pathfinding/Pathfinding.h"
 
 namespace Ogre {
 class SceneManager;
@@ -50,6 +51,12 @@ public:
 	
 	Environment(Ogre::SceneManager *sceneManager, btDynamicsWorld& world, std::istream &level);
 	~Environment();
+	
+	Pathfinding::NavMesh::Path QueryPath(Ogre::Vector3 const & start, Ogre::Vector3 const & end) const
+	{
+		return _NavMesh.Query(start, end);
+	}
+	
 private:
 	Ogre::SceneManager * _sceneManager;
 	btDynamicsWorld& _world;
@@ -57,7 +64,7 @@ private:
 	btTriangleMesh _TriMesh;
 	boost::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
 	boost::shared_ptr<btRigidBody> _EnvBody;
-
+	Pathfinding::NavMesh _NavMesh;
 };
 
 #endif // ENVIRONMENT_H

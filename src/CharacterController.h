@@ -29,8 +29,10 @@
 
 #include "RigidBody.h"
 #include "CharacterAnimation.h"
+#include "Pathfinding/Pathfinding.h"
 
 #include <boost/shared_ptr.hpp>
+#include "environment.h"
 
 namespace Ogre
 {
@@ -48,7 +50,7 @@ public:
 		float                              Mass,
 		btVector3&                         Position,
 		float                              Heading);
-	~CharacterController(void);
+	~CharacterController();
 
 	void UpdatePhysics(btScalar dt);
 	void UpdateGraphics(float dt);
@@ -56,7 +58,7 @@ public:
 	{
 		_TargetVelocity = btVector3(Velocity.x, Velocity.y, Velocity.z);
 	}
-	Ogre::Vector3 GetVelocity(void)
+	Ogre::Vector3 GetVelocity()
 	{
 		return Ogre::Vector3(_TargetVelocity.x(), _TargetVelocity.y(), _TargetVelocity.z());
 	}
@@ -64,7 +66,7 @@ public:
 	{
 		_Jump = _GroundContact;
 	}
-	Ogre::Vector3 GetPosition(void)
+	Ogre::Vector3 GetPosition()
 	{
 		return _Node->getPosition();
 	}
@@ -72,12 +74,13 @@ public:
 	{
 		return _CurrentHeading;
 	}
-	const btRigidBody * GetBody(void)
+	const btRigidBody * GetBody()
 	{
 		return &_Body;
 	}
 
-
+	void UpdateAI(float dt, Ogre::Vector3 const & target, boost::shared_ptr<Environment> env);
+	
 private:
 	btScalar                           _MaxYawSpeed;
 	btScalar                           _CurrentHeading;
@@ -101,6 +104,9 @@ private:
 	
 	float                              _IdleTime;
 	Ogre::Vector3                      _CoG;
+	
+	Pathfinding::NavMesh::Path         _CurrentPath;
+	float                              _CurrentPathAge;
 };
 
 #endif // CHARACTERCONTROLLER_H

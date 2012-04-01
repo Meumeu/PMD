@@ -28,19 +28,20 @@ using boost::uint32_t;
 #endif
 
 #include <OgreVector3.h>
+
 namespace Ogre
 {
 	class VertexData;
 	class IndexData;
 	class Entity;
-	class Matricx;
+	class Matrix4;
 }
 
 class btTriangleMesh;
 
-namespace Recast
+namespace Pathfinding
 {
-class Heightfield;
+class NavMesh;
 }
 
 class OgreConverter
@@ -59,7 +60,7 @@ class OgreConverter
 public:
 	OgreConverter(Ogre::Entity& entity);
 	void AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const;
-	void AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField) const;
+	void AddToHeightField(Ogre::Matrix4 const& transform, Pathfinding::NavMesh& navmesh) const;
 };
 
 #endif

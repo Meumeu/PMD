@@ -259,8 +259,10 @@ void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 {
 	Singleton->_Window = Singleton->_OgreRoot->initialise(true, "Ponies Must Die");
 
+#ifdef NDEBUG
 	try
 	{
+#endif
 		Singleton->_Timer = Singleton->_OgreRoot->getTimer();
 		
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
@@ -318,12 +320,14 @@ void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 		InitialState->Enter();
 
 		Singleton->_OgreRoot->startRendering();
+#ifdef NDEBUG
 	}
 	catch(...)
 	{
 		Singleton->cleanup();
 		throw;
 	}
+#endif
 
 	Singleton->cleanup();
 }

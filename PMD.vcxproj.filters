@@ -47,9 +47,6 @@
     <Filter Include="Source Files\btOgre">
       <UniqueIdentifier>{6ab0cca0-d1b0-46cb-825c-4d1228f1b6c0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Recast">
-      <UniqueIdentifier>{9713e397-2d9a-471c-a0b9-50ea3ab5a20f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
@@ -96,18 +93,27 @@
     <Filter Include="Header Files\btOgre">
       <UniqueIdentifier>{88bc802c-d00b-4b4b-8e72-a009b396809d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Recast">
-      <UniqueIdentifier>{a1b09745-6cd2-4ca9-8643-5c42f9728168}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Source Files\Recast\cdt">
-      <UniqueIdentifier>{26f14a89-23c4-4eab-a202-3a4c4f46a062}</UniqueIdentifier>
+    <Filter Include="Source Files\Pathfinding">
+      <UniqueIdentifier>{9713e397-2d9a-471c-a0b9-50ea3ab5a20f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Recast\cdt">
-      <UniqueIdentifier>{a2252929-702d-442c-a920-1a4a16ca339c}</UniqueIdentifier>
+    <Filter Include="Header Files\Pathfinding">
+      <UniqueIdentifier>{a1b09745-6cd2-4ca9-8643-5c42f9728168}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pathfinding\Recast">
+      <UniqueIdentifier>{7d96dd0c-b619-437d-8939-296162d526b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Pathfinding\Detour">
+      <UniqueIdentifier>{55504355-f5da-4051-970e-e299ea4628a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pathfinding\Recast">
+      <UniqueIdentifier>{39ebb074-71e7-4492-844c-ad5429eb3655}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Pathfinding\Detour">
+      <UniqueIdentifier>{a6e41ec8-146b-4d78-8214-5d48e8668f33}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -495,29 +501,68 @@
     <ClCompile Include="src\btOgre\BtOgre.cpp">
       <Filter>Source Files\btOgre</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastCompactHeightfield.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\RecastWrapperUtils.cpp">
+      <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastCompactHeightfieldArea.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\RecastDebug.cpp">
+      <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastContourSet.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\RecastWrapperAlloc.cpp">
+      <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastHeightfield.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\RecastWrapperBuild.cpp">
+      <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastPolyMesh.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\RecastWrapperQuery.cpp">
+      <Filter>Source Files\Pathfinding</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastPolyMeshDetail.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\Detour\DetourNode.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\RecastRegion.cpp">
-      <Filter>Source Files\Recast</Filter>
+    <ClCompile Include="src\Pathfinding\Detour\DetourAlloc.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
     </ClCompile>
-    <ClCompile Include="src\Recast\cdt\quadedge.cpp">
-      <Filter>Source Files\Recast\cdt</Filter>
+    <ClCompile Include="src\Pathfinding\Detour\DetourCommon.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Detour\DetourNavMesh.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Detour\DetourNavMeshQuery.cpp">
+      <Filter>Source Files\Pathfinding\Detour</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastContour.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastFilter.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastLayers.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastMesh.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastMeshDetail.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastRasterization.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastRegion.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\Recast.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastAlloc.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pathfinding\Recast\RecastArea.cpp">
+      <Filter>Source Files\Pathfinding\Recast</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1088,32 +1133,41 @@
     <ClInclude Include="src\btOgre\BtOgrePG.h">
       <Filter>Header Files\btOgre</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\Recast.h">
-      <Filter>Header Files\Recast</Filter>
+    <ClInclude Include="src\Pathfinding\Pathfinding.h">
+      <Filter>Header Files\Pathfinding</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\RecastCompactHeightfield.h">
-      <Filter>Header Files\Recast</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourAlloc.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\RecastContourSet.h">
-      <Filter>Header Files\Recast</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourAssert.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\RecastHeightfield.h">
-      <Filter>Header Files\Recast</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourCommon.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\RecastPolyMeshDetail.h">
-      <Filter>Header Files\Recast</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourNavMesh.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\cdt\quadedge.h">
-      <Filter>Header Files\Recast\cdt</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourNavMeshBuilder.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\cdt\common.h">
-      <Filter>Header Files\Recast\cdt</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourNavMeshQuery.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\cdt\dllist.h">
-      <Filter>Header Files\Recast\cdt</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourNode.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
     </ClInclude>
-    <ClInclude Include="src\Recast\cdt\geom2d.h">
-      <Filter>Header Files\Recast\cdt</Filter>
+    <ClInclude Include="src\Pathfinding\Detour\DetourStatus.h">
+      <Filter>Header Files\Pathfinding\Detour</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pathfinding\Recast\RecastAssert.h">
+      <Filter>Header Files\Pathfinding\Recast</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pathfinding\Recast\Recast.h">
+      <Filter>Header Files\Pathfinding\Recast</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pathfinding\Recast\RecastAlloc.h">
+      <Filter>Header Files\Pathfinding\Recast</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

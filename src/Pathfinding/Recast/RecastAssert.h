@@ -1,8 +1,5 @@
 //
 // Copyright (c) 2009-2010 Mikko Mononen memon@inside.org
-// Copyright 2012 Patrick Nicolas <patricknicolas@laposte.net>
-// Copyright 2012 Guillaume Meunier <guillaume.meunier@centraliens.net>
-// This version is derived from original Recast source
 //
 // This software is provided 'as-is', without any express or implied
 // warranty.  In no event will the authors be held liable for any damages
@@ -19,46 +16,18 @@
 // 3. This notice may not be removed or altered from any source distribution.
 //
 
-#ifndef RECAST_POLYMESH_H
-#define RECAST_POLYMESH_H
+#ifndef RECASTASSERT_H
+#define RECASTASSERT_H
 
-#include <vector>
-#include "Recast.h"
+// Note: This header file's only purpose is to include define assert.
+// Feel free to change the file and include your own implementation instead.
 
-namespace Recast{
-	
-class ContourSet;
-class Contour;
-
-class PolyMesh
-{	
-public:
-	struct Polygon
-	{
-		static const size_t NVertices = 3;
-		Polygon(IntVertex v1, IntVertex v2, IntVertex v3, int r) : _regionID(r)
-		{
-			_vertices[0] = v1;
-			_vertices[1] = v2;
-			_vertices[2] = v3;
-			_neighbours[0] = -1;
-			_neighbours[1] = -1;
-			_neighbours[2] = -1;
-		}
-		int _regionID;
-		int _flags;
-		IntVertex _vertices[NVertices];
-		int _neighbours[NVertices];
-	};
-	
-	std::vector<Polygon> polys;       ///< Polygon and neighbour data
-	
-	void triangulate(Contour const & cont);
-	void fillNeighbours();
-	
-public:
-	PolyMesh(ContourSet const & cset);
-};
-}
-
+#ifdef NDEBUG
+// From http://cnicholson.net/2009/02/stupid-c-tricks-adventures-in-assert/
+#	define rcAssert(x) do { (void)sizeof(x); } while((void)(__LINE__==-1),false)  
+#else
+#	include <assert.h> 
+#	define rcAssert assert
 #endif
+
+#endif // RECASTASSERT_H

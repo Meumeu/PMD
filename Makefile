@@ -3,8 +3,8 @@
 
 OGRE_PLUGINS_DIR=`pkg-config OGRE --variable=plugindir`
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE gts | sed s/-I/-I/g` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include -march=corei7-avx
-LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE gts` -lboost_filesystem -lboost_system
+CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE | sed s/-I/-I/g` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include -std=c++0x -march=corei7-avx
+LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
 
@@ -80,7 +80,7 @@ dist/bin/poniesmustdie: $(OBJS) Makefile
 $(OBJDIR)/release/bullet/%.o: $(SRCDIR)/bullet/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_REL) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@ -fpermissive
 
 $(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp Makefile
 	echo Building $(notdir $@)
@@ -90,7 +90,7 @@ $(OBJDIR)/release/%.o: $(SRCDIR)/%.cpp Makefile
 $(OBJDIR)/debug/bullet/%.o: $(SRCDIR)/bullet/%.cpp Makefile
 	echo Building $(notdir $@)
 	$(MKDIR) -p $(dir $@)
-	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@
+	$(CXX) $(CXXFLAGS) $(CXXFLAGS_DBG) -c -MMD $< -MT $@ -MF $(patsubst %.o,%.d,$@) -o $@ -fpermissive
 
 $(OBJDIR)/debug/%.o: $(SRCDIR)/%.cpp Makefile
 	echo Building $(notdir $@)

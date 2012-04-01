@@ -29,9 +29,7 @@
 #include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 
 #include "OgreConverter.h"
-
-#include "Recast/Recast.h"
-#include "Recast/RecastHeightfield.h"
+#include "Pathfinding/Pathfinding.h"
 
 void OgreConverter::AddVertices(Ogre::VertexData * data)
 {
@@ -136,15 +134,14 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 	std::cout << "Convert to bullet: " << t << "\n";
 }
 
-void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Recast::Heightfield& heightField) const
+void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Pathfinding::NavMesh & navmesh) const
 {
 	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 	BOOST_FOREACH(Face const& i, Faces)
 	{
-		heightField.rasterizeTriangle(
-			transform * Vertices[i.VertexIndices[0]],
-			transform * Vertices[i.VertexIndices[1]],
-			transform * Vertices[i.VertexIndices[2]]);
+		navmesh.AddTriangle(transform * Vertices[i.VertexIndices[0]],
+		                    transform * Vertices[i.VertexIndices[1]],
+		                    transform * Vertices[i.VertexIndices[2]], 1);
 	}
 	boost::posix_time::time_duration t = boost::posix_time::microsec_clock::universal_time() - start;
 	
