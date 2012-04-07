@@ -21,10 +21,12 @@
 #include "environment.h"
 #include "AppStateManager.h"
 #include "CharacterController.h"
+#include "DebugDrawer.h"
 
 #include <stdio.h>
 #include <OgreEntity.h>
 #include <OgreMeshManager.h>
+#include <boost/foreach.hpp>
 
 #include "bullet/btBulletDynamicsCommon.h"
 #include "bullet/btBulletCollisionCommon.h"
@@ -74,6 +76,8 @@ bool Game::keyPressed(const OIS::KeyEvent& e)
 void Game::Update(float TimeSinceLastFrame)
 {
 	if (_Window->isClosed()) return;
+
+	DebugDrawer::getSingleton().clear();
 
 	if (_EscPressed)
 	{
@@ -143,9 +147,11 @@ void Game::Update(float TimeSinceLastFrame)
 #endif
 
 	_Player->UpdateGraphics(TimeSinceLastFrame);
-	for(auto & cc : _Enemies)
+	//for(auto & cc : _Enemies)
+	BOOST_FOREACH(auto & cc, _Enemies)
 	{
 		cc->UpdateGraphics(TimeSinceLastFrame);
+		cc->DebugDrawAI();
 	}
 
 	btVector3 CamDirection(
@@ -169,6 +175,8 @@ void Game::Update(float TimeSinceLastFrame)
 		Cam1.z() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.z() / 1.2);
 	_Camera->setPosition(CameraPosition);
 
+	DebugDrawer::getSingleton().build();
+
 	return;
 }
 
@@ -176,7 +184,8 @@ void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
 
-	for(auto & cc : _Enemies)
+	//for(auto & cc : _Enemies)
+	BOOST_FOREACH(auto & cc, _Enemies)
 	{
 		cc->UpdateAITarget(_Player->GetPosition(), _Env, 3);
 		cc->UpdateAI(timeStep);

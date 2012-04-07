@@ -10,7 +10,7 @@ NavMesh::Path::Path(std::shared_ptr<dtNavMesh> navmeshref,
 		    const float * start,
 		    const float * end,
 		    const float * extent,
-		    const dtQueryFilter & filter) : navmesh(navmeshref)
+		    const dtQueryFilter & filter) : navmesh(navmeshref), vertices()
 {
 	dtNavMeshQuery navmeshquery;
 	
@@ -23,16 +23,29 @@ NavMesh::Path::Path(std::shared_ptr<dtNavMesh> navmeshref,
 
 	if (dtStatusFailed(navmeshquery.findNearestPoly(start, extent, &filter, &startpoly, 0)))
 	{
-		std::cerr << "Warning: cannot find start poly (" << start << ")\n";
+		std::cerr << "Warning: cannot find start poly (" << start[0] << ", " << start[1] << ", " << start[2] << ")\n";
 		return;
 	}
 
 	if (dtStatusFailed(navmeshquery.findNearestPoly(end, extent, &filter, &endpoly, 0)))
 	{
-		std::cerr << "Warning: cannot find end poly (" << end << ")\n";
+		std::cerr << "Warning: cannot find end poly (" << end[0] << ", " << end[1] << ", " << end[2] << ")\n";
 		return;
 	}
 
+	if (startpoly == 0)
+	{
+		std::cerr << "Warning: cannot find start poly (" << start[0] << ", " << start[1] << ", " << start[2] << ")\n";
+		return;
+	}
+
+	if (endpoly == 0)
+	{
+		std::cerr << "Warning: cannot find end poly (" << end[0] << ", " << end[1] << ", " << end[2] << ")\n";
+		return;
+	}
+
+	
 	const int buffersize = 10000;
 
 	int npolys = 0;
@@ -45,7 +58,10 @@ NavMesh::Path::Path(std::shared_ptr<dtNavMesh> navmeshref,
 		start, end,
 		&filter,
 		polys.get(), &npolys, buffersize)))
-	    std::cerr << "Warning: findPath failed, status = " << sta << "\n";
+	{
+		std::cerr << "Warning: findPath failed, status = " << sta << "\n";
+		return;
+	}
 
 	if (npolys > 0)
 	{
@@ -65,7 +81,7 @@ NavMesh::Path::Path(std::shared_ptr<dtNavMesh> navmeshref,
 		boost::scoped_array<float> buffer(new float[maxvertices * 3]);
 
 		navmeshquery.findStraightPath(start, end2, polys.get(), npolys, buffer.get(), 0, 0, &nvertices, maxvertices);
-
+		//std::cerr << "nvertices=" << nvertices << "\n"; 
 		vertices.resize(nvertices);
 
 		for (int i = 0; i < nvertices; ++i)

@@ -42,3 +42,10 @@ dist/
 objects/
 *.zip
 _ogre_debug.txt
+
+ipch/
+*.sdf
+*.opensdf
+tests/
+Win32/
+Win64/

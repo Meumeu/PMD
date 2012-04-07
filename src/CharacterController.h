@@ -80,8 +80,8 @@ public:
 	}
 
 	void UpdateAITarget(Ogre::Vector3 const & target, std::shared_ptr<Environment> env, float velocity);
-	
 	void UpdateAI(float dt);
+	void DebugDrawAI();
 
 private:
 	btScalar                           _MaxYawSpeed;

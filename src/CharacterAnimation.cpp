@@ -21,6 +21,8 @@
 #include <OgreEntity.h>
 #include <OgreSkeletonInstance.h>
 
+#include <boost/foreach.hpp>
+
 CharacterAnimation::CharacterAnimation(Ogre::Entity* ent)
 {
 	Ogre::AnimationStateSet * anims = ent->getAllAnimationStates();
@@ -37,7 +39,7 @@ CharacterAnimation::CharacterAnimation(Ogre::Entity* ent)
 
 void CharacterAnimation::SetAnimation(std::string AnimName, float weight)
 {
-	for(auto & i : Animations)
+	BOOST_FOREACH(auto & i, Animations)
 	{
 		if (i.first == AnimName)
 		{
@@ -52,7 +54,7 @@ void CharacterAnimation::SetAnimation(std::string AnimName, float weight)
 
 void CharacterAnimation::ClearAnimations(void )
 {
-	for(auto & i : Animations)
+	BOOST_FOREACH(auto & i, Animations)
 	{
 		i.second._TargetWeight = 0;
 	}
@@ -109,7 +111,7 @@ void CharacterAnimation::SetWeight(std::string AnimName, float weight)
 
 void CharacterAnimation::Update(float dt)
 {
-	for(auto & i : Animations)
+	BOOST_FOREACH(auto & i, Animations)
 	{
 		float CurWeight = i.second._as->getWeight();
 		if (CurWeight > i.second._TargetWeight)

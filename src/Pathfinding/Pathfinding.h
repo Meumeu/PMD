@@ -65,6 +65,10 @@ public:
 		typedef std::vector<Vertex>::const_iterator iterator;
 		Vertex operator[](size_t i) const
 		{
+#ifndef NDEBUG
+			if (i >= vertices.size())
+				throw std::out_of_range("Pathfinding::NavMesh::Path::operator[]: out of range");
+#endif
 			return vertices[i];
 		}
 

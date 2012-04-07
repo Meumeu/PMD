@@ -1,4 +1,5 @@
 #include "Pathfinding.h"
+#include <boost/foreach.hpp>
 
 namespace Pathfinding
 {
@@ -50,7 +51,8 @@ namespace Pathfinding
 	if (!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch))
 	    throw std::bad_alloc();
 	    
-	for(std::pair<Triangle, int> const & tri : Triangles)
+	//for(std::pair<Triangle, int> const & tri : Triangles)
+	BOOST_FOREACH(auto const & tri, Triangles)
 	{
 	    const int flagMergeThreshold = 0;
 		

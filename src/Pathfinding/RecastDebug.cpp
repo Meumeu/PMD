@@ -187,6 +187,7 @@ void NavMesh::DebugDrawPolyMeshDetail()
 {
 	if (!dmesh) return;
 
+	int n = 0;
 	for (int i = 0; i < dmesh->nmeshes; ++i)
 	{
 		const unsigned int* meshDef = &dmesh->meshes[i*4];
@@ -209,8 +210,12 @@ void NavMesh::DebugDrawPolyMeshDetail()
 					       dmesh->verts[3 * (baseVerts + tri[2]) + 1],
 					       dmesh->verts[3 * (baseVerts + tri[2]) + 2]);
 
-			Ogre::ColourValue col(((i / 16) % 4) * 0.333, ((i / 4) % 4) * 0.333, (i % 4) * 0.333);
+			++n;
+			if (n == 64) n = 1;
+			Ogre::ColourValue col(((n / 16) % 4) * 0.333, ((n / 4) % 4) * 0.333, (n % 4) * 0.333);
 
+			DebugDrawer::getSingleton().drawTri(abc, col, true);
+			abc[1].swap(abc[2]);
 			DebugDrawer::getSingleton().drawTri(abc, col, true);
 		}
 	}

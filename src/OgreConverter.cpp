@@ -24,6 +24,7 @@
 #include <OgreEntity.h>
 #include <OgreSubEntity.h>
 #include <OgreSubMesh.h>
+#include <boost/foreach.hpp>
 
 #include "bullet/BulletCollision/CollisionShapes/btTriangleMesh.h"
 
@@ -118,7 +119,8 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 {
 	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 
-	for(auto const i : Faces)
+	//for(auto const i : Faces)
+	BOOST_FOREACH(auto const i, Faces)
 	{
 		Ogre::Vector3 v1 = transform * Vertices[i.VertexIndices[0]];
 		Ogre::Vector3 v2 = transform * Vertices[i.VertexIndices[1]];
@@ -138,7 +140,8 @@ void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Pathfinding
 {
 	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
 	
-	for(auto const i : Faces)
+	//for(auto const i : Faces)
+	BOOST_FOREACH(auto const i, Faces)
 	{
 		navmesh.AddTriangle(transform * Vertices[i.VertexIndices[0]],
 		                    transform * Vertices[i.VertexIndices[1]],

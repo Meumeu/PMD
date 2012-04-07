@@ -18,6 +18,7 @@
 
 #include "CharacterController.h"
 #include "pmd.h"
+#include "DebugDrawer.h"
 
 #include <OGRE/OgreSceneManager.h>
 #include <OGRE/OgreEntity.h>
@@ -297,4 +298,15 @@ void CharacterController::UpdateAI(float dt)
 	inst_target.normalise();
 	SetVelocity(inst_target * velocity);*/
 #endif
+}
+
+void CharacterController::DebugDrawAI()
+{
+	for(int i = 0, size = _CurrentPath.size() - 1; i < size; ++i)
+	{
+		DebugDrawer::getSingleton().drawLine(
+			_CurrentPath[i] + Ogre::Vector3(0, 0.1, 0),
+			_CurrentPath[i+1] + Ogre::Vector3(0, 0.1, 0),
+			Ogre::ColourValue::Blue);
+	}
 }

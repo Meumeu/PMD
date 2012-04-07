@@ -25,6 +25,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdexcept>
+#include <boost/foreach.hpp>
 #include "OgreConverter.h"
 #include "OgreMeshManager.h"
 #include "bullet/BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
@@ -119,14 +120,15 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 
 	_NavMesh.AgentHeight = 1.8;
-	_NavMesh.AgentRadius = 0.5;
+	_NavMesh.AgentRadius = 0.8;
 	_NavMesh.AgentMaxSlope = M_PI / 4;
 	_NavMesh.AgentMaxClimb = 0.5;
 	_NavMesh.CellHeight = 0.2;
-	_NavMesh.CellSize = 0.3;
+	_NavMesh.CellSize = 0.2;
 	_NavMesh.QueryExtent = Ogre::Vector3(10, 10, 10);
 
-	for(auto const & block : _blocks)
+	//for(auto const & block : _blocks)
+	BOOST_FOREACH(auto const & block, _blocks)
 	{
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
@@ -143,7 +145,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	//_NavMesh.DrawCompactHeightfield = true;
 	//_NavMesh.DrawRawContours = true;
 	//_NavMesh.DrawContours = true;
-	_NavMesh.DrawPolyMeshDetail = true;
+	//_NavMesh.DrawPolyMeshDetail = true;
 
 	_NavMesh.DebugDraw();
 	DebugDrawer::getSingleton().build();
@@ -170,7 +172,8 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	//sg->setCastShadows(true);
 	boost::posix_time::ptime t11 = boost::posix_time::microsec_clock::universal_time();
 
-	for(auto const & block : _blocks)
+	//for(auto const & block : _blocks)
+	BOOST_FOREACH(auto const & block, _blocks)
 	{
 		_sceneManager->destroyEntity(block._entity);
 	}
