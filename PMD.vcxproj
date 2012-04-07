@@ -220,7 +220,6 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Game_setup.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\MainMenu.cpp" />
     <ClCompile Include="src\OgreConverter.cpp" />
     <ClCompile Include="src\Pathfinding\Detour\DetourAlloc.cpp" />
     <ClCompile Include="src\Pathfinding\Detour\DetourCommon.cpp" />

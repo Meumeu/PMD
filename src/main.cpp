@@ -16,7 +16,7 @@
 */
 
 #include "pmd.h"
-#include "MainMenu.h"
+//#include "MainMenu.h"
 #include "Game.h"
 #include "AppStateManager.h"
 
@@ -50,7 +50,7 @@ int main(/* int argc, char *argv[] */)
 #else
 		std::string SettingsDir;
 		char * EnvVar;
-		
+
 		if ((EnvVar = getenv("XDG_CONFIG_HOME")))
 		{
 			SettingsDir = EnvVar;
@@ -66,12 +66,12 @@ int main(/* int argc, char *argv[] */)
 			throw std::runtime_error("XDG_CONFIG_HOME and HOME not defined");
 		}
 #endif
-		
+
 		boost::filesystem::create_directories(SettingsDir);
-		
+
 		AppStateManager manager(SettingsDir);
-		boost::shared_ptr<MainMenu> menu(new MainMenu);
-		//boost::shared_ptr<Game> menu(new Game);
+		//std::shared_ptr<MainMenu> menu(new MainMenu);
+		std::shared_ptr<Game> menu(new Game);
 		manager.MainLoop(menu);
 #ifdef NDEBUG
 	}

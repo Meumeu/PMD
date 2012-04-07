@@ -22,16 +22,16 @@
 #include <OgreWindowEventUtilities.h>
 #include <OgreFrameListener.h>
 #include <deque>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
-#include <CEGUIInputEvent.h>
+//#include <CEGUIInputEvent.h>
 #include <OISMouse.h>
 
-namespace CEGUI
+/*namespace CEGUI
 {
 	class Window;
 	class OgreRenderer;
-}
+}*/
 
 namespace Ogre
 {
@@ -57,27 +57,27 @@ private:
 	void cleanupOIS(void);
 	void cleanup(void);
 
-	std::deque<boost::shared_ptr<AppState> > StateStack;
-	
+	std::deque<std::shared_ptr<AppState> > StateStack;
+
 	Ogre::Root *           _OgreRoot;
 	Ogre::RenderWindow *   _Window;
 	Ogre::Timer *          _Timer;
-	
+
 	//OIS Input devices
 	OIS::InputManager *    _InputManager;
 	OIS::Mouse *           _Mouse;
 	OIS::Keyboard *        _Keyboard;
-	
+
 	//CEGUI
-	CEGUI::OgreRenderer *  _CeguiRenderer;
-	CEGUI::Window *        _CeguiRootWindow;
-	
+	//CEGUI::OgreRenderer *  _CeguiRenderer;
+	//CEGUI::Window *        _CeguiRootWindow;
+
 	bool                   _Shutdown;
 	static AppStateManager * Singleton;
 	std::string            _SettingsDir;
 	std::string            _ResourcesDir;
 	std::string            _LogDir;
-		
+
 public:
 	AppStateManager(std::string SettingsDir);
 	~AppStateManager();
@@ -85,26 +85,26 @@ public:
 	static void AddResourceDirectory(std::string const& path);
 	static void RemoveResourceDirectory(std::string const& path);
 
-	static void Enter(boost::shared_ptr<AppState> NewState);
-	static void SwitchTo(boost::shared_ptr<AppState> NewState);
+	static void Enter(std::shared_ptr<AppState> NewState);
+	static void SwitchTo(std::shared_ptr<AppState> NewState);
 	static void Exit(void);
-	static void MainLoop(boost::shared_ptr<AppState> InitialState);
-	
+	static void MainLoop(std::shared_ptr<AppState> InitialState);
+
 	static Ogre::Root *          GetOgreRoot(void)        { return Singleton->_OgreRoot; }
 	static Ogre::RenderWindow *  GetWindow(void)          { return Singleton->_Window; }
 	static OIS::InputManager *   GetInputManager(void)    { return Singleton->_InputManager; }
 	static OIS::Mouse *          GetMouse(void)           { return Singleton->_Mouse; }
 	static OIS::Keyboard *       GetKeyboard(void)        { return Singleton->_Keyboard; }
-	
-	static CEGUI::Window *       GetCeguiRootWindow(void) { return Singleton->_CeguiRootWindow; }
-	static CEGUI::OgreRenderer * GetOgreRenderer(void)    { return Singleton->_CeguiRenderer; }
-	
+
+	//static CEGUI::Window *       GetCeguiRootWindow(void) { return Singleton->_CeguiRootWindow; }
+	//static CEGUI::OgreRenderer * GetOgreRenderer(void)    { return Singleton->_CeguiRenderer; }
+
 	static const std::string     GetSettingsDir(void)     { return Singleton->_SettingsDir; }
 	static const std::string     GetResourcesDir(void)    { return Singleton->_ResourcesDir; }
 	static const std::string     GetLogDir(void)          { return Singleton->_LogDir; }
-	
-	static CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID);
-	
+
+	//static CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID);
+
 protected:
 	virtual void windowResized(Ogre::RenderWindow * rw);
 	virtual void windowClosed(Ogre::RenderWindow* rw);

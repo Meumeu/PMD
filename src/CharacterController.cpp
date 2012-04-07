@@ -24,7 +24,7 @@
 
 CharacterController::CharacterController(
 	Ogre::SceneManager *               SceneMgr,
-	boost::shared_ptr<btDynamicsWorld> World,
+	std::shared_ptr<btDynamicsWorld>   World,
 	std::string                        MeshName,
 	float                              Height,
 	float                              Mass,
@@ -54,24 +54,26 @@ CharacterController::CharacterController(
 	_World(World),
 	_Animations(_Entity),
 	_IdleTime(0),
-	_CoG(0, Height / 2, 0)
+	_CoG(0, Height / 2, 0),
+	_CurrentPathIndex(0),
+	_CurrentPathAge(FLT_MAX)
 {
 	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode(
 		Ogre::Vector3(Position.x(), Position.y(), Position.z()),
 		Ogre::Quaternion(Ogre::Radian(Heading), Ogre::Vector3::UNIT_Y));
-	
+
 	Ogre::SceneNode * entnode = _Node->createChildSceneNode(
 		Ogre::Vector3(
 			-_MeshCenter.x * _Scale,
 			-_Entity->getBoundingBox().getMinimum().y * _Scale,
 			-_MeshCenter.z * _Scale));
-	
+
 	entnode->scale(_Scale, _Scale, _Scale);
 	entnode->attachObject(_Entity);
-	
+
 	_Body.setCenterOfMassTransform(btTransform(btQuaternion(btVector3(0, 1, 0), Heading), Position + btVector3(0, _CoG.y, 0)));
 	_CurrentHeading = Heading;
-	
+
 	_MotionState.setNode(_Node);
 
 	World->addRigidBody(&_Body);
@@ -91,46 +93,46 @@ void CharacterController::UpdatePhysics(btScalar dt)
 {
 	bool IsIdle = true;
 	btVector3 CurrentVelocity = _Body.getLinearVelocity();
-	
+
 	if (_TargetVelocity.length2() > 1)
 	{
 		btScalar TargetHeading = atan2(_TargetVelocity.x(), _TargetVelocity.z());
-		
+
 		btScalar DeltaHeading = TargetHeading - _CurrentHeading;
 		if (DeltaHeading > M_PI)
 			DeltaHeading -= 2 * M_PI;
 		else if (DeltaHeading < -M_PI)
 			DeltaHeading += 2 * M_PI;
-		
+
 		if (DeltaHeading > _MaxYawSpeed * dt)
 			DeltaHeading = _MaxYawSpeed * dt;
 		else if(DeltaHeading < -_MaxYawSpeed * dt)
 			DeltaHeading = -_MaxYawSpeed * dt;
-		
+
 		_CurrentHeading += DeltaHeading;
 		if (_CurrentHeading > M_PI)
 			_CurrentHeading -= 2 * M_PI;
 		else if (_CurrentHeading < -M_PI)
 			_CurrentHeading += 2 * M_PI;
-	
+
 		btQuaternion TargetQ(btVector3(0,1,0), _CurrentHeading);
-		
+
 		btTransform comtr = _Body.getCenterOfMassTransform();
 		comtr.setRotation(TargetQ);
 		_Body.setCenterOfMassTransform(comtr);
-		
+
 		IsIdle = false;
 	}
 	btVector3 F = 10 * _Mass * (_TargetVelocity - CurrentVelocity);
 	F.setY(0);
 
-	// Update collision status	
+	// Update collision status
 	int numManifolds = _World->getDispatcher()->getNumManifolds();
 	_GroundContact = false;
 	for(int i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold =  _World->getDispatcher()->getManifoldByIndexInternal(i);
-		
+
 		if (contactManifold->getBody0() == &_Body || contactManifold->getBody1() == &_Body)
 		{
 			int numContacts = contactManifold->getNumContacts();
@@ -163,14 +165,14 @@ void CharacterController::UpdatePhysics(btScalar dt)
 
 	_Body.activate(true);
 	_Body.applyCentralForce(F);
-	
+
 	_IdleTime = IsIdle ? _IdleTime + dt : 0;
 }
 
 void CharacterController::UpdateGraphics(float dt)
 {
 	_Animations.ClearAnimations();
-	
+
 	if (!_GroundContact)
 	{
 		_Animations.PushAnimation("JumpLoop");
@@ -201,29 +203,98 @@ void CharacterController::UpdateGraphics(float dt)
 			_IdleTime = 0;
 		}
 	}
-	
+
 	_Animations.Update(dt);
 }
 
-void CharacterController::UpdateAI(float dt, Ogre::Vector3 const & target, boost::shared_ptr<Environment> env)
+void CharacterController::UpdateAITarget(const Ogre::Vector3& target, std::shared_ptr< Environment > env, float velocity)
+{
+	if (target.squaredDistance(_CurrentTarget) > 0.001 || _CurrentPathAge > 0.1)
+	{
+		boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
+		_CurrentPath = env->QueryPath(GetPosition(), target);
+		boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
+		_CurrentPathIndex = 0;
+		_CurrentTarget = target;
+		_CurrentVelocity = velocity;
+		std::cerr << "Pathfinding in " << (t2-t1).total_microseconds() << " µs\n";
+	}
+}
+
+
+void CharacterController::UpdateAI(float dt)
 {
 	_CurrentPathAge += dt;
-	if (_CurrentPathAge > 0.2)
+	//std::cerr << _CurrentPathIndex << " / " << _CurrentPath.size() << "\n";
+	if (_CurrentPathIndex + 2 <= _CurrentPath.size())
+	{
+		Ogre::Vector3 const & a = _CurrentPath[_CurrentPathIndex];
+		Ogre::Vector3 const & b = _CurrentPath[_CurrentPathIndex+1];
+		Ogre::Vector3 const & m = GetPosition();
+		Ogre::Vector3 const ab = b - a;
+		Ogre::Vector3 const am = m - a;
+		Ogre::Vector3 const mb = b - m;
+		Ogre::Vector3 const mb_unit = mb.normalisedCopy();
+		
+		float remaining = mb.length();
+		for(size_t i = _CurrentPathIndex + 1; i + 2 <= _CurrentPath.size(); ++i)
+		{
+			remaining += _CurrentPath[i].distance(_CurrentPath[i+1]);
+		}
+		std::cerr << "Remaining distance: " << remaining << " m\n";
+		
+		float lambda = am.dotProduct(ab) / ab.squaredLength();
+		
+		//const float tau = 0.1;
+		
+		SetVelocity(_CurrentVelocity * mb_unit);
+		
+		if (lambda > 1) _CurrentPathIndex++;
+		/*if (_CurrentPathIndex + 1 == _CurrentPath.size())
+			SetVelocity(Ogre::Vector3(0.));*/
+	}
+	
+	return;
+	
+	
+#if 0
+	_CurrentPathAge += dt;
+	if (_CurrentPathAge > 0.2 /*&& target.squaredDistance(_CurrentTarget) > 0.5 * 0.5*/)
 	{
 		_CurrentPathAge = 0;
+// 		_CurrentTarget = target;
+		
+		boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
 		_CurrentPath = env->QueryPath(GetPosition(), target);
-		if (_CurrentPath.empty())
-			Jump();
+		boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
+		std::cerr << "Pathfinding in " << (t2-t1).total_microseconds() << " µs\n";
+		//if (_CurrentPath.empty()) Jump();
 		
-		//std::cerr << "Path size: " << _CurrentPath.size() << "\n";
+		//_CurrentPathIndex = 0;
 		
-		Pathfinding::NavMesh::Path::iterator it = _CurrentPath.begin();
-		if (it == _CurrentPath.end()) return;
-		++it;
-		if (it == _CurrentPath.end()) return;
-		Ogre::Vector3 target = *it - GetPosition();
+		if (_CurrentPath.size() < 2) return;
+		Ogre::Vector3 target = _CurrentPath[1] - GetPosition();
 		target.normalise();
-		
-		SetVelocity(target*3);
+
+		SetVelocity(target * velocity);
 	}
+	
+	/*if (_CurrentPath.empty()) return;
+	Ogre::Vector3 const &  Pos = GetPosition();
+	size_t PathSize = _CurrentPath.size();
+	
+	while(_CurrentPathIndex < PathSize - 1)
+	{
+		Ogre::Vector3 am = Pos - _CurrentPath[_CurrentPathIndex];
+		Ogre::Vector3 ab = _CurrentPath[_CurrentPathIndex + 1] - _CurrentPath[_CurrentPathIndex];
+		float ab2 = ab.squaredLength();
+		
+		if (am.dotProduct(ab) < ab2) break;
+		_CurrentPathIndex++;
+	}
+	
+	Ogre::Vector3 inst_target = _CurrentPath[_CurrentPathIndex+1] - Pos;
+	inst_target.normalise();
+	SetVelocity(inst_target * velocity);*/
+#endif
 }

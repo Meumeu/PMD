@@ -18,7 +18,6 @@
 #include "pmd.h"
 #include "environment.h"
 
-#include <boost/foreach.hpp>
 #include <boost/date_time.hpp>
 #include <OgreEntity.h>
 #include <OgreSceneManager.h>
@@ -35,18 +34,9 @@
 #include "bullet/BulletCollision/CollisionDispatch/btInternalEdgeUtility.h"
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
 
-// #include "Recast/Recast.h"
-// #include "Recast/RecastHeightfield.h"
-// #include "Recast/RecastCompactHeightfield.h"
-// #include "Recast/RecastContourSet.h"
-// #include "Recast/RecastPolyMesh.h"
-// #include "Recast/RecastPolyMeshDetail.h"
-
 #include "Pathfinding/Pathfinding.h"
 
 #include "DebugDrawer.h"
-
-#define DEBUG_RECAST 0
 
 static bool CustomMaterialCombinerCallback(
 	btManifoldPoint& cp,
@@ -74,7 +64,7 @@ static Ogre::Quaternion getQuaternion(Environment::orientation_t orientation)
 		case Environment::West:
 			return Ogre::Quaternion(Ogre::Radian(M_PI/2) ,Ogre::Vector3::UNIT_Y);
 	}
-	
+
 	throw std::runtime_error("Invalid Environment::orientation_t");
 }
 static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Vector3 translation)
@@ -87,7 +77,7 @@ static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Ve
 Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
 {
 	new DebugDrawer(_sceneManager, 0.5);
-	
+
 	boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
 	while (!level.eof())
 	{
@@ -126,16 +116,17 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	Ogre::StaticGeometry *sg = _sceneManager->createStaticGeometry("environment");
 
 	boost::posix_time::ptime t3 = boost::posix_time::microsec_clock::universal_time();
-	
-	
+
+
 	_NavMesh.AgentHeight = 1.8;
 	_NavMesh.AgentRadius = 0.5;
 	_NavMesh.AgentMaxSlope = M_PI / 4;
 	_NavMesh.AgentMaxClimb = 0.5;
 	_NavMesh.CellHeight = 0.2;
 	_NavMesh.CellSize = 0.3;
-	
-	BOOST_FOREACH(Block const& block, _blocks)
+	_NavMesh.QueryExtent = Ogre::Vector3(10, 10, 10);
+
+	for(auto const & block : _blocks)
 	{
 		sg->addEntity(block._entity, block._position, getQuaternion(block._orientation));
 
@@ -144,7 +135,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 		converter.AddToTriMesh(transform, _TriMesh);
 		converter.AddToHeightField(transform, _NavMesh);
 	}
-	
+
 	boost::posix_time::ptime t4= boost::posix_time::microsec_clock::universal_time();
 	_NavMesh.Build();
 	boost::posix_time::ptime t5 = boost::posix_time::microsec_clock::universal_time();
@@ -152,17 +143,17 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	//_NavMesh.DrawCompactHeightfield = true;
 	//_NavMesh.DrawRawContours = true;
 	//_NavMesh.DrawContours = true;
-	//_NavMesh.DrawPolyMeshDetail = true;
-	
-	//_NavMesh.DebugDraw();
+	_NavMesh.DrawPolyMeshDetail = true;
+
+	_NavMesh.DebugDraw();
 	DebugDrawer::getSingleton().build();
 	boost::posix_time::ptime t6 = boost::posix_time::microsec_clock::universal_time();
-	
-	_TriMeshShape = boost::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
+
+	_TriMeshShape = std::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
 	boost::posix_time::ptime t7 = boost::posix_time::microsec_clock::universal_time();
 
 	btRigidBody::btRigidBodyConstructionInfo rbci(0, 0, _TriMeshShape.get());
-	_EnvBody = boost::shared_ptr<btRigidBody>(new btRigidBody(rbci));
+	_EnvBody = std::shared_ptr<btRigidBody>(new btRigidBody(rbci));
 	boost::posix_time::ptime t8 = boost::posix_time::microsec_clock::universal_time();
 
 	_world.addRigidBody(_EnvBody.get());
@@ -175,19 +166,18 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	_EnvBody->setContactProcessingThreshold(0);
 	boost::posix_time::ptime t10 = boost::posix_time::microsec_clock::universal_time();
 
-
 	sg->build();
 	//sg->setCastShadows(true);
 	boost::posix_time::ptime t11 = boost::posix_time::microsec_clock::universal_time();
-	
-	BOOST_FOREACH(Block const& block, _blocks)
+
+	for(auto const & block : _blocks)
 	{
 		_sceneManager->destroyEntity(block._entity);
 	}
 	boost::posix_time::ptime t12 = boost::posix_time::microsec_clock::universal_time();
 
 	std::stringstream str;
-	
+
 	str << "Read level file: .  .  .  .  .  .  .  .  .  .  " << t2 - t1;
 	Ogre::LogManager::getSingleton().logMessage(str.str());
 	str.str("");

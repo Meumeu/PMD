@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <OgreEntity.h>
 #include <OgreMeshManager.h>
-#include <boost/foreach.hpp>
 
 #include "bullet/btBulletDynamicsCommon.h"
 #include "bullet/btBulletCollisionCommon.h"
@@ -68,7 +67,7 @@ bool Game::keyPressed(const OIS::KeyEvent& e)
 	{
 		_Player->Jump();
 	}
-	
+
 	return true;
 }
 
@@ -83,7 +82,7 @@ void Game::Update(float TimeSinceLastFrame)
 	}
 
 	float velX = 0, velZ = 0;
-	
+
 	if (_Keyboard->isKeyDown(OIS::KC_Z) || _Keyboard->isKeyDown(OIS::KC_W))
 	{
 		velZ = -1;
@@ -120,7 +119,7 @@ void Game::Update(float TimeSinceLastFrame)
 	}
 
 	OIS::MouseState ms = _Mouse->getMouseState();
-	
+
 	_Pitch -= Ogre::Radian(ms.Y.rel * 0.003);
 	if (_Pitch.valueRadians() > M_PI / 2)
 		_Pitch = Ogre::Radian(M_PI / 2);
@@ -132,88 +131,64 @@ void Game::Update(float TimeSinceLastFrame)
 		_Heading -= Ogre::Radian(2 * M_PI);
 	else if (_Heading.valueRadians() < -M_PI)
 		_Heading += Ogre::Radian(2 * M_PI);
-	
+
 	_Camera->setOrientation(
 		Ogre::Quaternion(_Heading, Ogre::Vector3::UNIT_Y) *
 		Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 
 	_World->stepSimulation(TimeSinceLastFrame, 3);
-	
+
 #ifdef PHYSICS_DEBUG
 	_debugDrawer->step();
 #endif
-	
+
 	_Player->UpdateGraphics(TimeSinceLastFrame);
-	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
+	for(auto & cc : _Enemies)
 	{
 		cc->UpdateGraphics(TimeSinceLastFrame);
 	}
-	
+
 	btVector3 CamDirection(
 		 cos(_Pitch.valueRadians()) * sin(_Heading.valueRadians()),
 		-sin(_Pitch.valueRadians()),
 		 cos(_Pitch.valueRadians()) * cos(_Heading.valueRadians()));
-	
+
 	btVector3 Cam1(
 		_Player->GetPosition().x,
 		_Player->GetPosition().y + CameraHeight,
 		_Player->GetPosition().z);
-	
+
 	btVector3 Cam2 = Cam1 + (CameraDistance + CameraMargin) * CamDirection;
-	
+
 	CameraCollisionCallback CamCallback(_Player->GetBody());
-	
+
 	_World->rayTest(Cam1, Cam2, CamCallback);
 	Ogre::Vector3 CameraPosition(
 		Cam1.x() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.x() / 1.2,
 		Cam1.y() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.y() / 1.2,
 		Cam1.z() + (CamCallback._hitfraction * CameraDistance - CameraMargin) * CamDirection.z() / 1.2);
 	_Camera->setPosition(CameraPosition);
-	
+
 	return;
 }
 
 void Game::BulletCallback(btScalar timeStep)
 {
 	_Player->UpdatePhysics(timeStep);
-	/*char buf[100];
-	btRigidBody& body = this->_Player->_Body;
-	sprintf(buf, "x=%0.4f, y=%0.4f, z=%0.4f",
-		body.getCenterOfMassPosition().x(),
-		body.getCenterOfMassPosition().y(),
-		body.getCenterOfMassPosition().z());
-	Ogre::LogManager::getSingleton().logMessage(buf);*/
 
-	BOOST_FOREACH(boost::shared_ptr<CharacterController> cc, _Enemies)
+	for(auto & cc : _Enemies)
 	{
-// 		Ogre::Vector3 target = _Player->GetPosition() - cc->GetPosition();
-// 
-// 		if (target.length() > 7)
-// 		{
-// 			float theta = atan2(cc->GetVelocity().z, cc->GetVelocity().x);
-// 			theta += (rand() % 100 - 50) * 0.001;
-// 
-// 			target.x = cos(theta);
-// 			target.y = 0;
-// 			target.z = sin(theta);
-// 			cc->SetVelocity(2 * target);
-// 		}
-// 		else
-// 		{
-// 			target.y = 0;
-// 			target.normalise();
-// 			cc->SetVelocity(5 * target);
-// 		}
+		cc->UpdateAITarget(_Player->GetPosition(), _Env, 3);
+		cc->UpdateAI(timeStep);
+		//cc->UpdateAI(timeStep, _Player->GetPosition(), _Env, 3);
 
-		cc->UpdateAI(timeStep, _Player->GetPosition(), _Env);
-		
 		cc->UpdatePhysics(timeStep);
 	}
 }
 
-boost::shared_ptr<CharacterController> Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
+std::shared_ptr<CharacterController> Game::CreateCharacter(std::string MeshName, float Height, float mass, btVector3& position, float heading)
 {
-	return boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, MeshName, Height, mass, position, heading));
+	return std::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, MeshName, Height, mass, position, heading));
 }
 
 void Game::go(void)
@@ -225,12 +200,12 @@ void Game::go(void)
 	std::fstream f((level+"/level.txt").c_str(), std::fstream::in);
 	if (f.is_open())
 	{
-		_Env = boost::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));
+		_Env = std::shared_ptr<Environment>(new Environment(_SceneMgr, *_World, f));
 	}
 
 	btVector3 PlayerPosition(0, 10, 0);
-	_Player = boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Sinbad.mesh", 1.8, 100, PlayerPosition, 0));
-	
+	_Player = std::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Sinbad.mesh", 1.8, 100, PlayerPosition, 0));
+
 	_Camera->setOrientation(Ogre::Quaternion(_Pitch, Ogre::Vector3::UNIT_X));
 	_Camera->setPosition(0, CameraHeight - CameraDistance * sin(_Pitch.valueRadians()), CameraDistance * cos(_Pitch.valueRadians()));
 
@@ -250,17 +225,11 @@ void Game::go(void)
 
 	_SceneMgr->setAmbientLight(Ogre::ColourValue(0.05, 0.05, 0.05));
 
-	for(float x = -10; x < 10; x += 1)
+	for(float x = 0; x < 8; x += 1)
 	{
 		btVector3 pos(x, 10, -3);
-		_Enemies.push_back(boost::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
+		_Enemies.push_back(std::shared_ptr<CharacterController>(new CharacterController(_SceneMgr, _World, "Pony.mesh", 1.2, 30, pos, 0)));
 	}
 
-	/*for(float x = -10; x < 10; x += 0.4)
-	{
-		btRigidBody * body = new btRigidBody(0, new btDefaultMotionState(btTransform(btQuaternion(0,0,0,1), btVector3(x, -1+x/20, -15))),
-			new btBoxShape(btVector3(0.2,2,2)));
-		_World->addRigidBody(body);
-	}*/
 	Ogre::LogManager::getSingleton().logMessage("Game started");
 }

@@ -31,7 +31,7 @@
 #include "CharacterAnimation.h"
 #include "Pathfinding/Pathfinding.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "environment.h"
 
 namespace Ogre
@@ -44,7 +44,7 @@ class CharacterController
 public:
 	CharacterController(
 		Ogre::SceneManager *               SceneMgr,
-		boost::shared_ptr<btDynamicsWorld> World,
+		std::shared_ptr<btDynamicsWorld> World,
 		std::string                        MeshName,
 		float                              Height,
 		float                              Mass,
@@ -79,15 +79,17 @@ public:
 		return &_Body;
 	}
 
-	void UpdateAI(float dt, Ogre::Vector3 const & target, boost::shared_ptr<Environment> env);
+	void UpdateAITarget(Ogre::Vector3 const & target, std::shared_ptr<Environment> env, float velocity);
 	
+	void UpdateAI(float dt);
+
 private:
 	btScalar                           _MaxYawSpeed;
 	btScalar                           _CurrentHeading;
 	btVector3                          _TargetVelocity;
 	bool                               _Jump;
 	bool                               _GroundContact;
-	
+
 	Ogre::SceneNode *                  _Node;
 	RigidBody<Ogre::SceneNode>         _MotionState;
 	Ogre::Entity *                     _Entity;
@@ -98,15 +100,18 @@ private:
 	//btCapsuleShape                     _Shape;
 	btScalar                           _Mass;
 	btRigidBody                        _Body;
-	boost::shared_ptr<btDynamicsWorld> _World;
-	
+	std::shared_ptr<btDynamicsWorld> _World;
+
 	CharacterAnimation                 _Animations;
-	
+
 	float                              _IdleTime;
 	Ogre::Vector3                      _CoG;
-	
+
+	Ogre::Vector3                      _CurrentTarget;
 	Pathfinding::NavMesh::Path         _CurrentPath;
+	size_t                             _CurrentPathIndex;
 	float                              _CurrentPathAge;
+	float                              _CurrentVelocity;
 };
 
 #endif // CHARACTERCONTROLLER_H

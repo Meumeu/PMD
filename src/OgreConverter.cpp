@@ -17,7 +17,6 @@
 
 #include <vector>
 
-#include <boost/foreach.hpp>
 #include <boost/date_time.hpp>
 
 #include <OgreVector3.h>
@@ -118,7 +117,8 @@ static btVector3 Ogre2Bullet(Ogre::Vector3 const& v)
 void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh& trimesh) const
 {
 	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
-	BOOST_FOREACH(Face const& i, Faces)
+
+	for(auto const i : Faces)
 	{
 		Ogre::Vector3 v1 = transform * Vertices[i.VertexIndices[0]];
 		Ogre::Vector3 v2 = transform * Vertices[i.VertexIndices[1]];
@@ -137,7 +137,8 @@ void OgreConverter::AddToTriMesh(Ogre::Matrix4 const& transform, btTriangleMesh&
 void OgreConverter::AddToHeightField(Ogre::Matrix4 const& transform, Pathfinding::NavMesh & navmesh) const
 {
 	boost::posix_time::ptime start = boost::posix_time::microsec_clock::universal_time();
-	BOOST_FOREACH(Face const& i, Faces)
+	
+	for(auto const i : Faces)
 	{
 		navmesh.AddTriangle(transform * Vertices[i.VertexIndices[0]],
 		                    transform * Vertices[i.VertexIndices[1]],

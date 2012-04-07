@@ -3,8 +3,10 @@
 
 OGRE_PLUGINS_DIR=`pkg-config OGRE --variable=plugindir`
 
-CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE | sed s/-I/-I/g` -I$(SRCDIR)/bullet -I$(SRCDIR)/Recast/Include -std=c++0x -march=corei7-avx
-LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
+#CXXFLAGS = `pkg-config --cflags OGRE OIS CEGUI-OGRE` -I$(SRCDIR)/bullet -std=c++0x -march=corei7-avx
+#LDFLAGS = `pkg-config --libs OGRE OIS CEGUI-OGRE` -lboost_filesystem -lboost_system
+CXXFLAGS = `pkg-config --cflags OGRE OIS` -I$(SRCDIR)/bullet -std=c++0x -march=corei7-avx
+LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
 

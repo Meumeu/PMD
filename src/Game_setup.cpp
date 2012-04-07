@@ -45,7 +45,7 @@ void Game::Enter(void)
 	_Window = AppStateManager::GetWindow();
 	_Mouse = AppStateManager::GetMouse();
 	_Keyboard = AppStateManager::GetKeyboard();
-	
+
 	_SceneMgr = _Root->createSceneManager("OctreeSceneManager");
 	_Camera = _SceneMgr->createCamera("PlayerCam");
 	_Viewport = _Window->addViewport(_Camera, 0);
@@ -57,7 +57,7 @@ void Game::Enter(void)
 	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World.get());
 	_World->setDebugDrawer(_debugDrawer);
 #endif
-	
+
 	go();
 }
 
@@ -66,12 +66,12 @@ void Game::Exit(void)
 #ifdef PHYSICS_DEBUG
 	delete _debugDrawer;
 #endif
-	
-	_Player = boost::shared_ptr<CharacterController>();
+
+	_Player = std::shared_ptr<CharacterController>();
 	_Enemies.clear();
-	_Env = boost::shared_ptr<Environment>();
+	_Env = std::shared_ptr<Environment>();
 	cleanupBullet();
-	
+
 	AppStateManager::GetWindow()->removeViewport(0);
 	_SceneMgr->destroyCamera(_Camera);
 	AppStateManager::GetOgreRoot()->destroySceneManager(_SceneMgr);
@@ -93,12 +93,12 @@ void Game::StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep)
 
 void Game::setupBullet(void)
 {
-	_CollisionConfiguration = boost::shared_ptr<btCollisionConfiguration>(new btDefaultCollisionConfiguration());
-	_Dispatcher = boost::shared_ptr<btCollisionDispatcher>(new btCollisionDispatcher(_CollisionConfiguration.get()));
-	_OverlappingPairCache = boost::shared_ptr<btBroadphaseInterface>(new btDbvtBroadphase());
-	_Solver = boost::shared_ptr<btConstraintSolver>(new btSequentialImpulseConstraintSolver());
+	_CollisionConfiguration = std::shared_ptr<btCollisionConfiguration>(new btDefaultCollisionConfiguration());
+	_Dispatcher = std::shared_ptr<btCollisionDispatcher>(new btCollisionDispatcher(_CollisionConfiguration.get()));
+	_OverlappingPairCache = std::shared_ptr<btBroadphaseInterface>(new btDbvtBroadphase());
+	_Solver = std::shared_ptr<btConstraintSolver>(new btSequentialImpulseConstraintSolver());
 
-	_World = boost::shared_ptr<btDynamicsWorld>(new btDiscreteDynamicsWorld(
+	_World = std::shared_ptr<btDynamicsWorld>(new btDiscreteDynamicsWorld(
 		_Dispatcher.get(),
 		_OverlappingPairCache.get(),
 		_Solver.get(),
@@ -114,6 +114,6 @@ void Game::setupBullet(void)
 
 void Game::cleanupBullet(void)
 {
-	_World = boost::shared_ptr<btDynamicsWorld>();
-	_Dispatcher = boost::shared_ptr<btCollisionDispatcher>();
+	_World = std::shared_ptr<btDynamicsWorld>();
+	_Dispatcher = std::shared_ptr<btCollisionDispatcher>();
 }

@@ -26,7 +26,7 @@
 
 #include <boost/filesystem.hpp>
 
-#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
+/*#include <RendererModules/Ogre/CEGUIOgreRenderer.h>
 #include <CEGUIImageset.h>
 #include <CEGUIScheme.h>
 #include <CEGUIWindowManager.h>
@@ -37,7 +37,7 @@
 #include <CEGUIImagesetManager.h>
 #include <CEGUIFontManager.h>
 
-#include <CEGUI.h>
+#include <CEGUI.h>*/
 
 #ifndef _WINDOWS
 
@@ -52,7 +52,7 @@
 #endif
 
 AppStateManager * AppStateManager::Singleton;
-	
+
 AppStateManager::AppStateManager(std::string SettingsDir) :
 	_OgreRoot(0),
 	_Window(0),
@@ -60,20 +60,20 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	_InputManager(0),
 	_Mouse(0),
 	_Keyboard(0),
-	_CeguiRenderer(0),
-	_CeguiRootWindow(0),
+	//_CeguiRenderer(0),
+	//_CeguiRootWindow(0),
 	_Shutdown(false),
 	_SettingsDir(SettingsDir)
 {
 	if (Singleton) abort();
 	Singleton = this;
-	
+
 
 #ifdef _WINDOWS
 	char buf[MAX_PATH];
 	if (!GetModuleFileName(NULL, buf, MAX_PATH))
 		throw std::runtime_error("GetModuleFileName failed");
-	
+
 	char * last_slash = strrchr(buf, '\\');
 	if (last_slash) *last_slash = 0;
 	_ResourcesDir = buf;
@@ -82,9 +82,9 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	_ResourcesDir = PATH_RESOURCES;
 	_LogDir = "/tmp";
 #endif
-	
+
 	_OgreRoot = new Ogre::Root("", SettingsDir + "ogre.cfg", _LogDir + "/ogre.log");
-	
+
 #ifdef _WINDOWS
 #	ifdef _DEBUG
 	_OgreRoot->loadPlugin(_ResourcesDir + "/RenderSystem_GL_d.dll");
@@ -97,7 +97,7 @@ AppStateManager::AppStateManager(std::string SettingsDir) :
 	_OgreRoot->loadPlugin(OGRE_PLUGINS_DIR "/RenderSystem_GL.so");
 	_OgreRoot->loadPlugin(OGRE_PLUGINS_DIR "/Plugin_OctreeSceneManager.so");
 #endif
-	
+
 	if (!_OgreRoot->restoreConfig() && !_OgreRoot->showConfigDialog())
 	{
 		exit(0);
@@ -117,7 +117,7 @@ void AppStateManager::AddResourceDirectory(const std::string& path)
 {
 	Ogre::ResourceGroupManager& manager = Ogre::ResourceGroupManager::getSingleton();
 	manager.addResourceLocation(path, "FileSystem", path);
-	
+
 	for (boost::filesystem::directory_iterator files(path), end; files != end ; ++files)
 	{
 		if (files->path().extension() == ".zip")
@@ -171,7 +171,7 @@ void AppStateManager::cleanupOIS(void)
 	}
 }
 
-void AppStateManager::Enter(boost::shared_ptr<AppState> NewState)
+void AppStateManager::Enter(std::shared_ptr<AppState> NewState)
 {
 	assert(!Singleton->StateStack.empty());
 
@@ -186,14 +186,14 @@ void AppStateManager::Exit(void)
 {
 	assert(!Singleton->StateStack.empty());
 
-	boost::shared_ptr<AppState> LastState = Singleton->StateStack.back();
+	std::shared_ptr<AppState> LastState = Singleton->StateStack.back();
 	LastState->Exit();
 	Singleton->StateStack.pop_back();
-	
+
 	if (!Singleton->StateStack.empty())
 	{
-		boost::shared_ptr<AppState> NewState = Singleton->StateStack.back();
-		
+		std::shared_ptr<AppState> NewState = Singleton->StateStack.back();
+
 		Singleton->_Keyboard->setEventCallback(NewState.get());
 		Singleton->_Mouse->setEventCallback(NewState.get());
 		NewState->Resume();
@@ -205,11 +205,11 @@ void AppStateManager::Exit(void)
 	}
 }
 
-void AppStateManager::SwitchTo(boost::shared_ptr<AppState> NewState)
+void AppStateManager::SwitchTo(std::shared_ptr<AppState> NewState)
 {
 	assert(!Singleton->StateStack.empty());
 
-	boost::shared_ptr<AppState> LastState = Singleton->StateStack.back();
+	std::shared_ptr<AppState> LastState = Singleton->StateStack.back();
 	LastState->Exit();
 	Singleton->StateStack.pop_back();
 
@@ -231,15 +231,15 @@ bool AppStateManager::frameRenderingQueued(const Ogre::FrameEvent &evt)
 
 void AppStateManager::cleanup()
 {
-	CEGUI::WindowManager::getSingleton().destroyAllWindows();
+	/*CEGUI::WindowManager::getSingleton().destroyAllWindows();
 	_CeguiRootWindow = 0;
-	
+
 	if (_CeguiRenderer)
 	{
 		_CeguiRenderer->destroySystem();
 		_CeguiRenderer = 0;
-	}
-	
+	}*/
+
 	if (_OgreRoot)
 		_OgreRoot->removeFrameListener(this);
 
@@ -255,7 +255,7 @@ void AppStateManager::cleanup()
 	}
 }
 
-void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
+void AppStateManager::MainLoop(std::shared_ptr<AppState> InitialState)
 {
 	Singleton->_Window = Singleton->_OgreRoot->initialise(true, "Ponies Must Die");
 
@@ -264,52 +264,52 @@ void AppStateManager::MainLoop(boost::shared_ptr<AppState> InitialState)
 	{
 #endif
 		Singleton->_Timer = Singleton->_OgreRoot->getTimer();
-		
+
 		Ogre::TextureManager::getSingleton().setDefaultNumMipmaps(5);
 
 		AddResourceDirectory(Singleton->_ResourcesDir + "/models");//default resources
 		Ogre::ResourceGroupManager::getSingleton().initialiseAllResourceGroups();
-		
+
 		Singleton->setupOIS();
 
 		//Set initial mouse clipping size
 		Singleton->windowResized(Singleton->_Window);
-		
-		new CEGUI::DefaultLogger;
+
+		/*new CEGUI::DefaultLogger;
 		CEGUI::Logger::getSingleton().setLoggingLevel(CEGUI::Informative);
 		CEGUI::Logger::getSingleton().setLogFilename(Singleton->_LogDir + "/cegui.log");
-		
+
 		Singleton->_CeguiRenderer = &CEGUI::OgreRenderer::bootstrapSystem(*Singleton->_Window);
-		CEGUI::System * GuiSystem = CEGUI::System::getSingletonPtr();
-		
+		CEGUI::System * GuiSystem = CEGUI::System::getSingletonPtr();*/
+
 		Ogre::ResourceGroupManager::getSingleton().addResourceLocation(Singleton->_ResourcesDir + "/gui", "FileSystem", "GUI");
-		CEGUI::Imageset::setDefaultResourceGroup("GUI");
+		/*CEGUI::Imageset::setDefaultResourceGroup("GUI");
 		CEGUI::Font::setDefaultResourceGroup("GUI");
 		CEGUI::Scheme::setDefaultResourceGroup("GUI");
 		CEGUI::WidgetLookManager::setDefaultResourceGroup("GUI");
 		CEGUI::WindowManager::setDefaultResourceGroup("GUI");
-		
+
 		CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
 		CEGUI::ImagesetManager::getSingleton().create("TaharezLook.imageset");
 
 		CEGUI::FontManager::getSingleton().create("DejaVuSans-10.font");
 		CEGUI::System::getSingleton().setDefaultFont("DejaVuSans-10");
-		
+
 		GuiSystem->setDefaultMouseCursor((CEGUI::utf8*)"TaharezLook", (CEGUI::utf8*)"MouseArrow");
-		
+
 		// set the mouse cursor initially in the middle of the screen
 		GuiSystem->injectMousePosition((float)Singleton->_Window->getWidth() / 2.0f, (float)Singleton->_Window->getHeight() / 2.0f);
-		
+
 		Singleton->_CeguiRootWindow = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "Root");
 		CEGUI::System::getSingleton().setGUISheet(Singleton->_CeguiRootWindow);
-		
+
 		float Height = Singleton->_Window->getHeight();
 		float Width = Singleton->_Window->getWidth();
 		if (Height * 4.0 / 3.0 < Width) Width = Height * 4.0 / 3.0;
 		else if (Height * 4.0 / 3.0 > Width) Height = Width * 3.0 / 4.0;
-		
+
 		Singleton->_CeguiRootWindow->setSize(CEGUI::UVector2(CEGUI::UDim(0.0, Width), CEGUI::UDim(0.0, Height)));
-		Singleton->_CeguiRootWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0.5, -Width / 2.0), CEGUI::UDim(0.5, -Height / 2.0)));
+		Singleton->_CeguiRootWindow->setPosition(CEGUI::UVector2(CEGUI::UDim(0.5, -Width / 2.0), CEGUI::UDim(0.5, -Height / 2.0)));*/
 
 		Ogre::WindowEventUtilities::addWindowEventListener(Singleton->_Window, Singleton);
 		Singleton->_OgreRoot->addFrameListener(Singleton);
@@ -354,23 +354,23 @@ void AppStateManager::windowClosed(Ogre::RenderWindow* rw)
 	}
 }
 
-CEGUI::MouseButton AppStateManager::convertButton(OIS::MouseButtonID buttonID)
+/*CEGUI::MouseButton AppStateManager::convertButton(OIS::MouseButtonID buttonID)
 {
 	switch (buttonID)
 	{
 	case OIS::MB_Left:
 		return CEGUI::LeftButton;
-	
+
 	case OIS::MB_Right:
 		return CEGUI::RightButton;
-	
+
 	case OIS::MB_Middle:
 		return CEGUI::MiddleButton;
-	
+
 	default:
 		return CEGUI::LeftButton;
 	}
-}
+}*/
 
 AppState::~AppState()
 {

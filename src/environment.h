@@ -43,27 +43,27 @@ public:
 	{
 		Block(Ogre::Entity * entity, orientation_t orientation, Ogre::Vector3 position):
 		_entity(entity), _orientation(orientation), _position(position) {}
-		
+
 		Ogre::Entity * _entity;
 		orientation_t _orientation;
 		Ogre::Vector3 _position;
 	};
-	
+
 	Environment(Ogre::SceneManager *sceneManager, btDynamicsWorld& world, std::istream &level);
 	~Environment();
-	
+
 	Pathfinding::NavMesh::Path QueryPath(Ogre::Vector3 const & start, Ogre::Vector3 const & end) const
 	{
 		return _NavMesh.Query(start, end);
 	}
-	
+
 private:
 	Ogre::SceneManager * _sceneManager;
 	btDynamicsWorld& _world;
 	std::vector<Block> _blocks;
 	btTriangleMesh _TriMesh;
-	boost::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
-	boost::shared_ptr<btRigidBody> _EnvBody;
+	std::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
+	std::shared_ptr<btRigidBody> _EnvBody;
 	Pathfinding::NavMesh _NavMesh;
 };
 

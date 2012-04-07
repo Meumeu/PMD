@@ -8,22 +8,22 @@ endif(WIN32)
 
 if(UNIX)
 	if(EXISTS "/usr/local/lib/OGRE/cmake")
-	  set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+	set(CMAKE_MODULE_PATH "/usr/local/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
 	elseif(EXISTS "/usr/lib/OGRE/cmake")
-	  set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+	set(CMAKE_MODULE_PATH "/usr/lib/OGRE/cmake/;${CMAKE_MODULE_PATH}")
 	elseif(EXISTS "/usr/share/OGRE/cmake/modules")
-	  set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules;${CMAKE_MODULE_PATH}")
+	set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/modules;${CMAKE_MODULE_PATH}")
 	elseif(EXISTS "/usr/share/OGRE/cmake")
-	  set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/;${CMAKE_MODULE_PATH}")
+	set(CMAKE_MODULE_PATH "/usr/share/OGRE/cmake/;${CMAKE_MODULE_PATH}")
 	else ()
-	  message(SEND_ERROR "Failed to find module path.")
+	message(SEND_ERROR "Failed to find module path.")
 	endif()
 endif(UNIX)
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
-  # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
-  # differentiation between debug and release builds.
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+# CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
+# differentiation between debug and release builds.
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -42,8 +42,6 @@ find_package(OGRE REQUIRED)
 find_package(OIS REQUIRED)
 pkg_check_modules(CEGUI-OGRE REQUIRED CEGUI-OGRE)
 use_pkgconfig(CEGUI_PKGC CEGUI-OGRE)
-pkg_check_modules(gts REQUIRED gts)
-use_pkgconfig(GTS_PKGC gts)
 
 if(NOT OIS_FOUND)
 	message(SEND_ERROR "Failed to find OIS.")
@@ -66,7 +64,7 @@ if (MINGW)
 	# search names with "lib". This is the workaround.
 	set(CMAKE_FIND_LIBRARY_PREFIXES ${CMAKE_FIND_LIBRARY_PREFIXES} "")
 endif ()
-set(Boost_ADDITIONAL_VERSIONS "1.46.1" "1.44")
+set(Boost_ADDITIONAL_VERSIONS "1.48.0" "1.46.1" "1.44")
 # Components that need linking (NB does not include header-only components like bind)
 set(OGRE_BOOST_COMPONENTS thread date_time filesystem system)
 find_package(Boost COMPONENTS ${OGRE_BOOST_COMPONENTS} QUIET)
@@ -285,7 +283,6 @@ set(SRCS
 	src/environment.cpp
 	src/Game_setup.cpp
 	src/main.cpp
-	src/MainMenu.cpp
 	src/OgreConverter.cpp
 	src/DebugDrawer.cpp
 
@@ -416,23 +413,22 @@ include_directories(SYSTEM
 	${GTS_INCLUDE_DIRS}
 )
 
-add_subdirectory(src/Recast)
+add_subdirectory(src/Pathfinding)
 INCLUDE_DIRECTORIES(
-	src/Recast/Include
 	"src/bullet"
 	"src/btOgre"
 	)
 
-add_executable(poniesmustdie WIN32 ${HDRS} ${recast_HDRS} ${SRCS}
-${recast_SRCS})
+add_executable(poniesmustdie WIN32 ${HDRS} ${Pathfinding_HDRS} ${SRCS}
+${Pathfinding_SRCS})
 
 add_subdirectory(blender)
 add_dependencies(poniesmustdie generate_models)
 
-target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system ${GTS_LIBRARIES})
+target_link_libraries(poniesmustdie ${OGRE_LIBRARIES} ${OIS_LIBRARIES} boost_filesystem boost_system)
 
 if(CMAKE_COMPILER_IS_GNUCC)
-	add_definitions(-Wall)
+	add_definitions(-Wall -std=c++0x -fpermissive)
 endif(CMAKE_COMPILER_IS_GNUCC)
 
 
@@ -446,11 +442,19 @@ if(WIN32)
 	endif()
 else()
 	if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-		get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_DBG} PATH)
-		add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
+		if (NOT OGRE_RenderSystem_GL_LIBRARY_DBG)
+			message(SEND_ERROR "RenderSystem_GL not found")
+		else()
+			get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_DBG} PATH)
+			add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
+		endif()
 	elseif (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-		get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_REL} PATH)
-		add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
+		if (NOT OGRE_RenderSystem_GL_LIBRARY_REL)
+			message(SEND_ERROR "RenderSystem_GL not found")
+		else()
+			get_filename_component(OGRE_PLUGINS_DIR ${OGRE_RenderSystem_GL_LIBRARY_REL} PATH)
+			add_definitions(-DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\")
+		endif()
 	endif()
 endif()
 
@@ -515,19 +519,19 @@ if(WIN32)
 		CONFIGURATIONS Debug
 	)
 
-   # as of sdk 1.7.2 we need to copy the boost dll's as well
-   # because they're not linked statically (it worked with 1.7.1 though)
-   install(FILES ${Boost_DATE_TIME_LIBRARY_RELEASE}
-      ${Boost_THREAD_LIBRARY_RELEASE}
-      DESTINATION bin
-      CONFIGURATIONS Release RelWithDebInfo
-   )
+# as of sdk 1.7.2 we need to copy the boost dll's as well
+# because they're not linked statically (it worked with 1.7.1 though)
+install(FILES ${Boost_DATE_TIME_LIBRARY_RELEASE}
+${Boost_THREAD_LIBRARY_RELEASE}
+DESTINATION bin
+CONFIGURATIONS Release RelWithDebInfo
+)
 
-   install(FILES ${Boost_DATE_TIME_LIBRARY_DEBUG}
-      ${Boost_THREAD_LIBRARY_DEBUG}
-      DESTINATION bin
-      CONFIGURATIONS Debug
-   )
+install(FILES ${Boost_DATE_TIME_LIBRARY_DEBUG}
+${Boost_THREAD_LIBRARY_DEBUG}
+DESTINATION bin
+CONFIGURATIONS Debug
+)
 endif(WIN32)
 
 if(UNIX)

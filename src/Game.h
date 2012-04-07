@@ -30,7 +30,7 @@
 
 #include "bullet/btBulletDynamicsCommon.h"
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "AppState.h"
 #include "btOgre/BtOgreExtras.h"
@@ -43,14 +43,14 @@ class Game : public AppState
 public:
 	Game(void);
 	~Game(void);
-	
+
 	virtual void Enter(void);
 	virtual void Exit(void);
 	virtual void Pause(void);
 	virtual void Resume(void);
-	
+
 	virtual void Update(float TimeSinceLastFrame);
-	
+
 	virtual bool keyPressed(const OIS::KeyEvent&);
 
 private:
@@ -61,13 +61,13 @@ private:
 	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
 	void BulletCallback(btScalar timeStep);
 
-	boost::shared_ptr<CharacterController> CreateCharacter(
+	std::shared_ptr<CharacterController> CreateCharacter(
 		std::string MeshName,
 		float HeightY,
 		float mass,
 		btVector3& position,
 		float heading = 0);
-	
+
 	Ogre::Root *                                         _Root;
 	Ogre::Camera *                                       _Camera;
 	Ogre::SceneManager *                                 _SceneMgr;
@@ -81,16 +81,16 @@ private:
 	Ogre::Radian                                         _Heading;
 	Ogre::Radian                                         _Pitch;
 
-	boost::shared_ptr<btCollisionConfiguration>          _CollisionConfiguration;
-	boost::shared_ptr<btCollisionDispatcher>             _Dispatcher;
-	boost::shared_ptr<btBroadphaseInterface>             _OverlappingPairCache;
-	boost::shared_ptr<btConstraintSolver>                _Solver;
-	boost::shared_ptr<btDynamicsWorld>                   _World;
+	std::shared_ptr<btCollisionConfiguration>          _CollisionConfiguration;
+	std::shared_ptr<btCollisionDispatcher>             _Dispatcher;
+	std::shared_ptr<btBroadphaseInterface>             _OverlappingPairCache;
+	std::shared_ptr<btConstraintSolver>                _Solver;
+	std::shared_ptr<btDynamicsWorld>                   _World;
 
-	boost::shared_ptr<CharacterController>               _Player;
-	std::vector<boost::shared_ptr<CharacterController> > _Enemies;
+	std::shared_ptr<CharacterController>               _Player;
+	std::vector<std::shared_ptr<CharacterController> > _Enemies;
 
-	boost::shared_ptr<Environment>                       _Env;
+	std::shared_ptr<Environment>                       _Env;
 
 #ifdef PHYSICS_DEBUG
 	BtOgre::DebugDrawer *                                _debugDrawer;
