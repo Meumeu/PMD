@@ -71,7 +71,7 @@ install: dist/bin/poniesmustdie $(BLENDERZIP)
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
 	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
 	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
-	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
+#	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
 	$(CP) -r resources/levels/* $(PREFIX)/share/pmd/levels
 
 dist/bin/poniesmustdie: $(OBJS) Makefile

@@ -417,7 +417,7 @@ _CONFIG_DEFAULTS_WINDOWS = {
 
 _CONFIG_DEFAULTS_UNIX = {
 #    'JMONKEY_ROOT' : '/usr/local/jmonkeyplatform',
-    'OGRETOOLS_XML_CONVERTER' : '/usr/local/bin/OgreXMLConverter',  # source build is better
+    'OGRETOOLS_XML_CONVERTER' : 'OgreXMLConverter',  # source build is better
     'OGRETOOLS_MESH_MAGICK' : '/usr/local/bin/MeshMagick',
     'TUNDRA_ROOT' : '~/Tundra2',
     'OGRE_MESHY' : '~/OgreMeshy/Ogre Meshy.exe',
