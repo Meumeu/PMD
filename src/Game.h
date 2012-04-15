@@ -34,6 +34,8 @@
 
 #include "AppState.h"
 #include "btOgre/BtOgreExtras.h"
+#include "DebugDrawer.h"
+#include "BulletDebug.h"
 
 class Environment;
 class CharacterController;
@@ -42,7 +44,7 @@ class Game : public AppState
 {
 public:
 	Game(void);
-	~Game(void);
+	virtual ~Game(void);
 
 	virtual void Enter(void);
 	virtual void Exit(void);
@@ -61,12 +63,12 @@ private:
 	static void StaticBulletCallback(btDynamicsWorld *world, btScalar timeStep);
 	void BulletCallback(btScalar timeStep);
 
-	std::shared_ptr<CharacterController> CreateCharacter(
+	/*std::shared_ptr<CharacterController> CreateCharacter(
 		std::string MeshName,
 		float HeightY,
 		float mass,
 		btVector3& position,
-		float heading = 0);
+		float heading = 0);*/
 
 	Ogre::Root *                                         _Root;
 	Ogre::Camera *                                       _Camera;
@@ -92,11 +94,11 @@ private:
 
 	std::shared_ptr<Environment>                       _Env;
 
-#ifdef PHYSICS_DEBUG
-	BtOgre::DebugDrawer *                                _debugDrawer;
-#endif
+	std::unique_ptr<BulletDebug>                       _bulletDebug;
 
-	bool                                                 _EscPressed;
+	bool                                               _EscPressed;
+	bool                                               _DebugAI;
+	std::unique_ptr<DebugDrawer>                       _dd;
 };
 
 #endif // GAME_H

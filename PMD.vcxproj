@@ -213,6 +213,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AppStateManager.cpp" />
+    <ClCompile Include="src\BulletDebug.cpp" />
     <ClCompile Include="src\CharacterAnimation.cpp" />
     <ClCompile Include="src\CharacterController.cpp" />
     <ClCompile Include="src\DebugDrawer.cpp" />
@@ -359,11 +360,11 @@
     <ClCompile Include="src\bullet\LinearMath\btGeometryUtil.cpp" />
     <ClCompile Include="src\bullet\LinearMath\btQuickprof.cpp" />
     <ClCompile Include="src\bullet\LinearMath\btSerializer.cpp" />
-    <ClCompile Include="src\btOgre\BtOgre.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AppState.h" />
     <ClInclude Include="src\AppStateManager.h" />
+    <ClInclude Include="src\BulletDebug.h" />
     <ClInclude Include="src\CharacterAnimation.h" />
     <ClInclude Include="src\CharacterController.h" />
     <ClInclude Include="src\DebugDrawer.h" />
@@ -560,9 +561,6 @@
     <ClInclude Include="src\bullet\LinearMath\btTransform.h" />
     <ClInclude Include="src\bullet\LinearMath\btTransformUtil.h" />
     <ClInclude Include="src\bullet\LinearMath\btVector3.h" />
-    <ClInclude Include="src\btOgre\BtOgreExtras.h" />
-    <ClInclude Include="src\btOgre\BtOgreGP.h" />
-    <ClInclude Include="src\btOgre\BtOgrePG.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

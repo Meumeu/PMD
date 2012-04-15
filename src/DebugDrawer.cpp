@@ -101,9 +101,9 @@ void IcoSphere::create(int recursionLevel)
  
 	for (int i = 0; i < recursionLevel; i++)
 	{
-		std::list<TriangleIndices> faces2;
+		std::vector<TriangleIndices> faces2;
  
-		for (std::list<TriangleIndices>::iterator j = faces.begin(); j != faces.end(); j++)
+		for (std::vector<TriangleIndices>::iterator j = faces.begin(); j != faces.end(); j++)
 		{
 			TriangleIndices f = *j;
 			int a = getMiddlePoint(f.v1, f.v2);
@@ -135,7 +135,7 @@ void IcoSphere::addLineIndices(int index0, int index1)
  
 void IcoSphere::removeLineIndices(int index0, int index1)
 {
-	std::list<LineIndices>::iterator result = std::find(lineIndices.begin(), lineIndices.end(), LineIndices(index0, index1));
+	std::vector<LineIndices>::iterator result = std::find(lineIndices.begin(), lineIndices.end(), LineIndices(index0, index1));
  
 	if (result != lineIndices.end())
 		lineIndices.erase(result);
@@ -179,18 +179,18 @@ void IcoSphere::addFace(int index0, int index1, int index2)
 	faces.push_back(TriangleIndices(index0, index1, index2));
 }
  
-void IcoSphere::addToLineIndices(int baseIndex, std::list<int> *target)
+void IcoSphere::addToLineIndices(int baseIndex, std::vector<int> *target)
 {
-	for (std::list<LineIndices>::iterator i = lineIndices.begin(); i != lineIndices.end(); i++)
+	for (std::vector<LineIndices>::iterator i = lineIndices.begin(); i != lineIndices.end(); i++)
 	{
 		target->push_back(baseIndex + (*i).v1);
 		target->push_back(baseIndex + (*i).v2);
 	}
 }
  
-void IcoSphere::addToTriangleIndices(int baseIndex, std::list<int> *target)
+void IcoSphere::addToTriangleIndices(int baseIndex, std::vector<int> *target)
 {
-	for (std::list<TriangleIndices>::iterator i = faces.begin(); i != faces.end(); i++)
+	for (std::vector<TriangleIndices>::iterator i = faces.begin(); i != faces.end(); i++)
 	{
 		target->push_back(baseIndex + (*i).v1);
 		target->push_back(baseIndex + (*i).v2);
@@ -198,7 +198,7 @@ void IcoSphere::addToTriangleIndices(int baseIndex, std::list<int> *target)
 	}
 }
  
-int IcoSphere::addToVertices(std::list<VertexPair> *target, const Ogre::Vector3 &position, const Ogre::ColourValue &colour, float scale)
+int IcoSphere::addToVertices(std::vector<VertexPair> *target, const Ogre::Vector3 &position, const Ogre::ColourValue &colour, float scale)
 {
 	Ogre::Matrix4 transform = Ogre::Matrix4::IDENTITY;
 	transform.setTrans(position);
@@ -212,26 +212,20 @@ int IcoSphere::addToVertices(std::list<VertexPair> *target, const Ogre::Vector3 
  
 // ===============================================================================================
 
-namespace Ogre {
-template<> ::DebugDrawer* Singleton< ::DebugDrawer>::ms_Singleton = 0;
-}
-DebugDrawer* DebugDrawer::getSingletonPtr(void)
-{
-    return ms_Singleton;
-}
- 
-DebugDrawer& DebugDrawer::getSingleton(void)
-{  
-    assert( ms_Singleton );  return ( *ms_Singleton );  
-}
-
-
 DebugDrawer::DebugDrawer(Ogre::SceneManager *_sceneManager, float _fillAlpha)
    : sceneManager(_sceneManager), manualObject(0), fillAlpha(_fillAlpha), linesIndex(0), trianglesIndex(0)
 {
 	initialise();
 }
- 
+
+DebugDrawer::DebugDrawer()
+{
+}
+
+DebugDrawer::DebugDrawer(DebugDrawer & rhs)
+{
+}
+
 DebugDrawer::~DebugDrawer()
 {
 	shutdown();
@@ -239,8 +233,9 @@ DebugDrawer::~DebugDrawer()
  
 void DebugDrawer::initialise()
 {
-        manualObject = sceneManager->createManualObject("debug_object");
-        sceneManager->getRootSceneNode()->createChildSceneNode("debug_object")->attachObject(manualObject);
+        manualObject = sceneManager->createManualObject();
+        sceneNode = sceneManager->getRootSceneNode()->createChildSceneNode();
+		sceneNode->attachObject(manualObject);
         manualObject->setDynamic(true);
  
 		icoSphere.create(DEFAULT_ICOSPHERE_RECURSION_LEVEL);
@@ -258,18 +253,27 @@ void DebugDrawer::initialise()
  
 		linesIndex = trianglesIndex = 0;
 }
- 
+
 void DebugDrawer::setIcoSphereRecursionLevel(int recursionLevel)
 {
 	icoSphere.create(recursionLevel);
 }
- 
+
 void DebugDrawer::shutdown()
 {
-    sceneManager->destroySceneNode("debug_object");
-    sceneManager->destroyManualObject(manualObject);
+    if (sceneNode)
+	{
+		sceneManager->destroySceneNode(sceneNode->getName());
+		sceneNode = 0;
+	}
+
+	if (manualObject)
+	{
+		sceneManager->destroyManualObject(manualObject);
+		manualObject = 0;
+	}
 }
- 
+
 void DebugDrawer::buildLine(const Ogre::Vector3& start,
                      const Ogre::Vector3& end,
                      const Ogre::ColourValue& colour,
@@ -638,12 +642,12 @@ void DebugDrawer::build()
 	{
 		manualObject->estimateVertexCount(lineVertices.size());
 		manualObject->estimateIndexCount(lineIndices.size());
-		for (std::list<VertexPair>::iterator i = lineVertices.begin(); i != lineVertices.end(); i++)
+		for (std::vector<VertexPair>::iterator i = lineVertices.begin(); i != lineVertices.end(); i++)
 		{
 				manualObject->position(i->first);
 				manualObject->colour(i->second);
 		}
-		for (std::list<int>::iterator i = lineIndices.begin(); i != lineIndices.end(); i++)
+		for (std::vector<int>::iterator i = lineIndices.begin(); i != lineIndices.end(); i++)
 			manualObject->index(*i);
 	}
 	manualObject->end();
@@ -653,12 +657,12 @@ void DebugDrawer::build()
 	{
 		manualObject->estimateVertexCount(triangleVertices.size());
 		manualObject->estimateIndexCount(triangleIndices.size());
-		for (std::list<VertexPair>::iterator i = triangleVertices.begin(); i != triangleVertices.end(); i++)
+		for (std::vector<VertexPair>::iterator i = triangleVertices.begin(); i != triangleVertices.end(); i++)
 		{
 				manualObject->position(i->first);
 				manualObject->colour(i->second.r, i->second.g, i->second.b, fillAlpha);
 		}
-		for (std::list<int>::iterator i = triangleIndices.begin(); i != triangleIndices.end(); i++)
+		for (std::vector<int>::iterator i = triangleIndices.begin(); i != triangleIndices.end(); i++)
 			manualObject->index(*i);
 	}
 	manualObject->end();

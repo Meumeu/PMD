@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2011  Patrick Nicolas <patricknicolas@laposte.net>
+    Copyright (C) 2011-2012  Guillaume Meunier <guillaume.meunier@centraliens.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 #include "bullet/BulletDynamics/Dynamics/btRigidBody.h"
 #include "bullet/LinearMath/btDefaultMotionState.h"
 #include "Pathfinding/Pathfinding.h"
+#include "DebugDrawer.h"
 
 namespace Ogre {
 class SceneManager;
@@ -57,6 +59,15 @@ public:
 		return _NavMesh.Query(start, end);
 	}
 
+	void DebugSwitch()
+	{
+		DebugAI++;
+		if (DebugAI > 5) DebugAI = 0;
+		
+		for(int i = 0; i < 5; ++i)
+			_DebugDrawers[i]->setEnabled(i == DebugAI);
+	}
+
 private:
 	Ogre::SceneManager * _sceneManager;
 	btDynamicsWorld& _world;
@@ -65,6 +76,8 @@ private:
 	std::shared_ptr<btBvhTriangleMeshShape> _TriMeshShape;
 	std::shared_ptr<btRigidBody> _EnvBody;
 	Pathfinding::NavMesh _NavMesh;
+	std::vector<std::unique_ptr<DebugDrawer> > _DebugDrawers;
+	int DebugAI;
 };
 
 #endif // ENVIRONMENT_H

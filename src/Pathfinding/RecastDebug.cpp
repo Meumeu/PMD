@@ -5,22 +5,22 @@
 
 namespace Pathfinding
 {
-void NavMesh::DebugDraw()
+void NavMesh::DebugDraw(DebugDrawer & dd)
 {
-	if (DrawHeightfield) DebugDrawHeightfield();
+	if (DrawHeightfield) DebugDrawHeightfield(dd);
 
-	if (DrawCompactHeightfield) DebugDrawCompactHeightfield();
+	if (DrawCompactHeightfield) DebugDrawCompactHeightfield(dd);
 
-	if (DrawRawContours) DebugDrawRawContours();
+	if (DrawRawContours) DebugDrawRawContours(dd);
 
-	if (DrawContours) DebugDrawContours();
+	if (DrawContours) DebugDrawContours(dd);
 
-	if (DrawPolyMesh) DebugDrawPolyMesh();
+	if (DrawPolyMesh) DebugDrawPolyMesh(dd);
 
-	if (DrawPolyMeshDetail) DebugDrawPolyMeshDetail();
+	if (DrawPolyMeshDetail) DebugDrawPolyMeshDetail(dd);
 }
 
-void NavMesh::DebugDrawHeightfield()
+void NavMesh::DebugDrawHeightfield(DebugDrawer & dd)
 {
 	if (!hf) return;
 
@@ -61,7 +61,7 @@ void NavMesh::DebugDrawHeightfield()
 				v[6] = Ogre::Vector3(fx, fymax, fz);
 				v[7] = Ogre::Vector3(fx + cs, fymax, fz);
 
-				DebugDrawer::getSingleton().drawCuboid(v, s->area ? Ogre::ColourValue::Blue : Ogre::ColourValue::Green, true);
+				dd.drawCuboid(v, s->area ? Ogre::ColourValue::Blue : Ogre::ColourValue::Green, true);
 
 				s = s->next;
 			}
@@ -69,7 +69,7 @@ void NavMesh::DebugDrawHeightfield()
 	}
 }
 
-void NavMesh::DebugDrawCompactHeightfield()
+void NavMesh::DebugDrawCompactHeightfield(DebugDrawer & dd)
 {
 	if (!chf) return;
 
@@ -109,14 +109,14 @@ void NavMesh::DebugDrawCompactHeightfield()
 					v[6] = Ogre::Vector3(fx, fy + 0.11, fz);
 					v[7] = Ogre::Vector3(fx + chf->cs, fy + 0.11, fz);
 
-					DebugDrawer::getSingleton().drawCuboid(v, Ogre::ColourValue::Blue, true);
+					dd.drawCuboid(v, Ogre::ColourValue::Blue, true);
 				}
 			}
 		}
 	}
 }
 
-void NavMesh::DebugDrawRawContours()
+void NavMesh::DebugDrawRawContours(DebugDrawer & dd)
 {
 	if (!cset) return;
 
@@ -127,7 +127,7 @@ void NavMesh::DebugDrawRawContours()
 	for (int i = 0; i < cset->nconts; ++i)
 	{
 		rcContour const & cont = cset->conts[i];
-		unsigned int r = cont.rverts[3];
+		unsigned int r = cont.reg;
 		Ogre::ColourValue c(((r / 16) % 4) * 0.333, ((r / 4) % 4) * 0.333, (r % 4) * 0.333);
 
 		for (int j = 0; j < cont.nrverts; ++j)
@@ -142,12 +142,12 @@ void NavMesh::DebugDrawRawContours()
 					cset->bmin[1] + cont.rverts[4*k+1] * ch,
 					cset->bmin[2] + cont.rverts[4*k+2] * cs);
 
-			DebugDrawer::getSingleton().drawLine(a, b, c);
+			dd.drawLine(a, b, c);
 		}
 	}
 }
 
-void NavMesh::DebugDrawContours()
+void NavMesh::DebugDrawContours(DebugDrawer & dd)
 {
 	if (!cset) return;
 
@@ -173,17 +173,17 @@ void NavMesh::DebugDrawContours()
 					cset->bmin[1] + cont.verts[4*k+1] * ch,
 					cset->bmin[2] + cont.verts[4*k+2] * cs);
 
-			DebugDrawer::getSingleton().drawLine(a, b, c);
+			dd.drawLine(a, b, c);
 		}
 	}
 }
 
-void NavMesh::DebugDrawPolyMesh()
+void NavMesh::DebugDrawPolyMesh(DebugDrawer & dd)
 {
 	if (!mesh) return;
 }
 
-void NavMesh::DebugDrawPolyMeshDetail()
+void NavMesh::DebugDrawPolyMeshDetail(DebugDrawer & dd)
 {
 	if (!dmesh) return;
 
@@ -214,9 +214,9 @@ void NavMesh::DebugDrawPolyMeshDetail()
 			if (n == 64) n = 1;
 			Ogre::ColourValue col(((n / 16) % 4) * 0.333, ((n / 4) % 4) * 0.333, (n % 4) * 0.333);
 
-			DebugDrawer::getSingleton().drawTri(abc, col, true);
+			dd.drawTri(abc, col, true);
 			abc[1].swap(abc[2]);
-			DebugDrawer::getSingleton().drawTri(abc, col, true);
+			dd.drawTri(abc, col, true);
 		}
 	}
 }

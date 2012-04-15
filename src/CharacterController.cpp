@@ -30,7 +30,8 @@ CharacterController::CharacterController(
 	float                              Height,
 	float                              Mass,
 	btVector3&                         Position,
-	float                              Heading) :
+	float                              Heading,
+	float                              InitialHitPoints) :
 	_MaxYawSpeed(2 * 2 * M_PI),
 	_CurrentHeading(0),
 	_TargetVelocity(0, 0, 0),
@@ -45,10 +46,15 @@ CharacterController::CharacterController(
 	_MeshSize(_Entity->getBoundingBox().getMaximum() - _Entity->getBoundingBox().getMinimum()),
 	_MeshCenter((_Entity->getBoundingBox().getMaximum() + _Entity->getBoundingBox().getMinimum()) / 2),
 	_Scale(Height / _MeshSize.y),
-	_Shape(btVector3(
+	_Radius(std::max(_MeshSize.x, _MeshSize.z) / 2),
+	/*_Shape(btVector3(
 		_Scale * _MeshSize.x / 2,
 		Height / 2,
-		_Scale * _MeshSize.z / 2)),
+		_Scale * _MeshSize.z / 2)),*/
+	_Shape(btVector3(
+		_Scale * _Radius,
+		Height / 2,
+		_Scale * _Radius)),
 	//_Shape(Height - _Scale * _MeshSize.z, _Scale * _MeshSize.z / 2),
 	_Mass(Mass),
 	_Body(_Mass, &_MotionState, &_Shape, btVector3(0, 0, 0)),
@@ -57,7 +63,8 @@ CharacterController::CharacterController(
 	_IdleTime(0),
 	_CoG(0, Height / 2, 0),
 	_CurrentPathIndex(0),
-	_CurrentPathAge(FLT_MAX)
+	_CurrentPathAge(FLT_MAX),
+	_HitPoints(InitialHitPoints)
 {
 	_Node = SceneMgr->getRootSceneNode()->createChildSceneNode(
 		Ogre::Vector3(Position.x(), Position.y(), Position.z()),
@@ -212,13 +219,13 @@ void CharacterController::UpdateAITarget(const Ogre::Vector3& target, std::share
 {
 	if (target.squaredDistance(_CurrentTarget) > 0.001 || _CurrentPathAge > 0.1)
 	{
-		boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
+		//boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
 		_CurrentPath = env->QueryPath(GetPosition(), target);
-		boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
+		//boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
 		_CurrentPathIndex = 0;
 		_CurrentTarget = target;
 		_CurrentVelocity = velocity;
-		std::cerr << "Pathfinding in " << (t2-t1).total_microseconds() << " µs\n";
+		//std::cerr << "Pathfinding in " << (t2-t1).total_microseconds() << " µs\n";
 	}
 }
 
@@ -242,7 +249,7 @@ void CharacterController::UpdateAI(float dt)
 		{
 			remaining += _CurrentPath[i].distance(_CurrentPath[i+1]);
 		}
-		std::cerr << "Remaining distance: " << remaining << " m\n";
+		//std::cerr << "Remaining distance: " << remaining << " m\n";
 		
 		float lambda = am.dotProduct(ab) / ab.squaredLength();
 		
@@ -254,59 +261,20 @@ void CharacterController::UpdateAI(float dt)
 		/*if (_CurrentPathIndex + 1 == _CurrentPath.size())
 			SetVelocity(Ogre::Vector3(0.));*/
 	}
-	
-	return;
-	
-	
-#if 0
-	_CurrentPathAge += dt;
-	if (_CurrentPathAge > 0.2 /*&& target.squaredDistance(_CurrentTarget) > 0.5 * 0.5*/)
-	{
-		_CurrentPathAge = 0;
-// 		_CurrentTarget = target;
-		
-		boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
-		_CurrentPath = env->QueryPath(GetPosition(), target);
-		boost::posix_time::ptime t2 = boost::posix_time::microsec_clock::universal_time();
-		std::cerr << "Pathfinding in " << (t2-t1).total_microseconds() << " µs\n";
-		//if (_CurrentPath.empty()) Jump();
-		
-		//_CurrentPathIndex = 0;
-		
-		if (_CurrentPath.size() < 2) return;
-		Ogre::Vector3 target = _CurrentPath[1] - GetPosition();
-		target.normalise();
-
-		SetVelocity(target * velocity);
-	}
-	
-	/*if (_CurrentPath.empty()) return;
-	Ogre::Vector3 const &  Pos = GetPosition();
-	size_t PathSize = _CurrentPath.size();
-	
-	while(_CurrentPathIndex < PathSize - 1)
-	{
-		Ogre::Vector3 am = Pos - _CurrentPath[_CurrentPathIndex];
-		Ogre::Vector3 ab = _CurrentPath[_CurrentPathIndex + 1] - _CurrentPath[_CurrentPathIndex];
-		float ab2 = ab.squaredLength();
-		
-		if (am.dotProduct(ab) < ab2) break;
-		_CurrentPathIndex++;
-	}
-	
-	Ogre::Vector3 inst_target = _CurrentPath[_CurrentPathIndex+1] - Pos;
-	inst_target.normalise();
-	SetVelocity(inst_target * velocity);*/
-#endif
 }
 
-void CharacterController::DebugDrawAI()
+void CharacterController::DebugDrawAI(DebugDrawer & dd)
 {
 	for(int i = 0, size = _CurrentPath.size() - 1; i < size; ++i)
 	{
-		DebugDrawer::getSingleton().drawLine(
+		dd.drawLine(
 			_CurrentPath[i] + Ogre::Vector3(0, 0.1, 0),
 			_CurrentPath[i+1] + Ogre::Vector3(0, 0.1, 0),
 			Ogre::ColourValue::Blue);
 	}
+}
+
+void CharacterController::Damage(float DamagePoints)
+{
+	_HitPoints -= DamagePoints;
 }

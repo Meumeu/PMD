@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2011-2012  Patrick Nicolas <patricknicolas@laposte.net>
+    Copyright (C) 2011-2012  Guillaume Meunier <guillaume.meunier@centraliens.net>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -75,9 +76,16 @@ static Ogre::Matrix4 getMatrix4(Environment::orientation_t orientation, Ogre::Ve
 	return matrix;
 }
 
-Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) : _sceneManager(sceneManager), _world(world)
+Environment::Environment(Ogre::SceneManager* sceneManager, btDynamicsWorld& world, std::istream& level) :
+	_sceneManager(sceneManager),
+	_world(world),
+	_DebugDrawers(),
+	DebugAI(-1)
 {
-	new DebugDrawer(_sceneManager, 0.5);
+	for(int i = 0; i < 5; ++i)
+	{
+		_DebugDrawers.push_back(std::unique_ptr<DebugDrawer>(new DebugDrawer(sceneManager, 0.5)));
+	}
 
 	boost::posix_time::ptime t1 = boost::posix_time::microsec_clock::universal_time();
 	while (!level.eof())
@@ -142,13 +150,22 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	_NavMesh.Build();
 	boost::posix_time::ptime t5 = boost::posix_time::microsec_clock::universal_time();
 
-	//_NavMesh.DrawCompactHeightfield = true;
-	//_NavMesh.DrawRawContours = true;
-	//_NavMesh.DrawContours = true;
-	//_NavMesh.DrawPolyMeshDetail = true;
+	for(int i = 0; i < 5; ++i)
+		_DebugDrawers[i]->clear();
 
-	_NavMesh.DebugDraw();
-	DebugDrawer::getSingleton().build();
+	_NavMesh.DebugDrawHeightfield(*_DebugDrawers[0]);
+	_NavMesh.DebugDrawCompactHeightfield(*_DebugDrawers[1]);
+	_NavMesh.DebugDrawRawContours(*_DebugDrawers[2]);
+	_NavMesh.DebugDrawContours(*_DebugDrawers[3]);
+	_NavMesh.DebugDrawPolyMeshDetail(*_DebugDrawers[4]);
+
+	for(int i = 0; i < 5; ++i)
+	{
+		_DebugDrawers[i]->setEnabled(true);
+		_DebugDrawers[i]->build();
+		_DebugDrawers[i]->setEnabled(false);
+	}
+
 	boost::posix_time::ptime t6 = boost::posix_time::microsec_clock::universal_time();
 
 	_TriMeshShape = std::shared_ptr<btBvhTriangleMeshShape>(new btBvhTriangleMeshShape(&_TriMesh, true));
@@ -164,7 +181,7 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 	btTriangleInfoMap * triinfomap = new btTriangleInfoMap();
 	btGenerateInternalEdgeInfo(_TriMeshShape.get(), triinfomap);
 	gContactAddedCallback = CustomMaterialCombinerCallback;
-	_EnvBody->setCollisionFlags(_EnvBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT);
+	_EnvBody->setCollisionFlags(_EnvBody->getCollisionFlags() | btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK | btCollisionObject::CF_STATIC_OBJECT | btCollisionObject::CF_DISABLE_VISUALIZE_OBJECT);
 	_EnvBody->setContactProcessingThreshold(0);
 	boost::posix_time::ptime t10 = boost::posix_time::microsec_clock::universal_time();
 
@@ -232,6 +249,5 @@ Environment::Environment ( Ogre::SceneManager* sceneManager, btDynamicsWorld& wo
 
 Environment::~Environment()
 {
-	delete DebugDrawer::getSingletonPtr();
 	_world.removeRigidBody(_EnvBody.get());
 }

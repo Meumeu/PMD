@@ -1,7 +1,7 @@
 #ifndef DEBUGDRAWER_H_INCLUDED
 #define DEBUGDRAWER_H_INCLUDED
- 
-#include <OGRE/OgreSingleton.h>
+
+#include <OgreSceneNode.h>
 #include <map>
 #include <boost/cstdint.hpp>
 using boost::uint64_t;
@@ -38,9 +38,9 @@ public:
 	~IcoSphere();
  
 	void create(int recursionLevel);
-	void addToLineIndices(int baseIndex, std::list<int> *target);
-	int addToVertices(std::list<VertexPair> *target, const Ogre::Vector3 &position, const Ogre::ColourValue &colour, float scale);
-	void addToTriangleIndices(int baseIndex, std::list<int> *target);
+	void addToLineIndices(int baseIndex, std::vector<int> *target);
+	int addToVertices(std::vector<VertexPair> *target, const Ogre::Vector3 &position, const Ogre::ColourValue &colour, float scale);
+	void addToTriangleIndices(int baseIndex, std::vector<int> *target);
  
 private:
 	int addVertex(const Ogre::Vector3 &vertex);
@@ -52,21 +52,20 @@ private:
 	void removeLineIndices(int index0, int index1);
  
 	std::vector<Ogre::Vector3> vertices;
-	std::list<LineIndices> lineIndices;
-	std::list<int> triangleIndices;
-	std::list<TriangleIndices> faces;
+	std::vector<LineIndices> lineIndices;
+	std::vector<int> triangleIndices;
+	std::vector<TriangleIndices> faces;
 	std::map<uint64_t, int> middlePointIndexCache;
 	int index;
 };
  
-class DebugDrawer : public Ogre::Singleton<DebugDrawer>
+class DebugDrawer
 {
+	DebugDrawer();
+	DebugDrawer(DebugDrawer &);
 public:
 	DebugDrawer(Ogre::SceneManager *_sceneManager, float _fillAlpha);
 	~DebugDrawer();
-
-	static DebugDrawer& getSingleton(void);
-	static DebugDrawer* getSingletonPtr(void);
  
 	void build();
  
@@ -82,8 +81,12 @@ public:
 	void drawTetrahedron(const Ogre::Vector3 &centre, float scale, const Ogre::ColourValue& colour, bool isFilled = false);
 
 	bool getEnabled() { return isEnabled; }
-	void setEnabled(bool _isEnabled) { isEnabled = _isEnabled; }
-	void switchEnabled() { isEnabled = !isEnabled; }
+	void setEnabled(bool _isEnabled)
+	{
+		sceneNode->setVisible(_isEnabled);
+		isEnabled = _isEnabled;
+	}  
+	void switchEnabled() { setEnabled(!isEnabled); }
 	
 	void clear();
  
@@ -91,13 +94,14 @@ private:
  
 	Ogre::SceneManager *sceneManager;
 	Ogre::ManualObject *manualObject;
+	Ogre::SceneNode * sceneNode;
 	float fillAlpha;
 	IcoSphere icoSphere;
 	
 	bool isEnabled;
  
-	std::list<VertexPair> lineVertices, triangleVertices;
-	std::list<int> lineIndices, triangleIndices;
+	std::vector<VertexPair> lineVertices, triangleVertices;
+	std::vector<int> lineIndices, triangleIndices;
  
 	int linesIndex, trianglesIndex;
 

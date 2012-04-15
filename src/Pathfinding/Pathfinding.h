@@ -21,6 +21,8 @@
 
 #include <OgreVector3.h>
 
+#include "../DebugDrawer.h"
+
 namespace Pathfinding
 {
 typedef Ogre::Vector3 Vertex;
@@ -146,13 +148,13 @@ public:
 	bool DrawPolyMesh;
 	bool DrawPolyMeshDetail;
 
-	void DebugDraw();
-	void DebugDrawHeightfield();
-	void DebugDrawCompactHeightfield();
-	void DebugDrawRawContours();
-	void DebugDrawContours();
-	void DebugDrawPolyMesh();
-	void DebugDrawPolyMeshDetail();
+	void DebugDraw(DebugDrawer & dd);
+	void DebugDrawHeightfield(DebugDrawer & dd);
+	void DebugDrawCompactHeightfield(DebugDrawer & dd);
+	void DebugDrawRawContours(DebugDrawer & dd);
+	void DebugDrawContours(DebugDrawer & dd);
+	void DebugDrawPolyMesh(DebugDrawer & dd);
+	void DebugDrawPolyMeshDetail(DebugDrawer & dd);
 };
 }
 

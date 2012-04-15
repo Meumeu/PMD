@@ -33,6 +33,7 @@
 
 #include <memory>
 #include "environment.h"
+#include "DebugDrawer.h"
 
 namespace Ogre
 {
@@ -44,12 +45,13 @@ class CharacterController
 public:
 	CharacterController(
 		Ogre::SceneManager *               SceneMgr,
-		std::shared_ptr<btDynamicsWorld> World,
+		std::shared_ptr<btDynamicsWorld>   World,
 		std::string                        MeshName,
 		float                              Height,
 		float                              Mass,
 		btVector3&                         Position,
-		float                              Heading);
+		float                              Heading,
+		float                              InitialHitPoints);
 	~CharacterController();
 
 	void UpdatePhysics(btScalar dt);
@@ -79,9 +81,11 @@ public:
 		return &_Body;
 	}
 
+	void Damage(float DamagePoints);
+
 	void UpdateAITarget(Ogre::Vector3 const & target, std::shared_ptr<Environment> env, float velocity);
 	void UpdateAI(float dt);
-	void DebugDrawAI();
+	void DebugDrawAI(DebugDrawer & dd);
 
 private:
 	btScalar                           _MaxYawSpeed;
@@ -96,11 +100,13 @@ private:
 	Ogre::Vector3                      _MeshSize;
 	Ogre::Vector3                      _MeshCenter;
 	float                              _Scale;
-	btBoxShape                         _Shape;
+	float                              _Radius;
+	//btBoxShape                         _Shape;
 	//btCapsuleShape                     _Shape;
+	btCylinderShape                    _Shape;
 	btScalar                           _Mass;
 	btRigidBody                        _Body;
-	std::shared_ptr<btDynamicsWorld> _World;
+	std::shared_ptr<btDynamicsWorld>   _World;
 
 	CharacterAnimation                 _Animations;
 
@@ -112,6 +118,8 @@ private:
 	size_t                             _CurrentPathIndex;
 	float                              _CurrentPathAge;
 	float                              _CurrentVelocity;
+
+	float                              _HitPoints;
 };
 
 #endif // CHARACTERCONTROLLER_H

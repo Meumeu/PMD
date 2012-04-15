@@ -10,7 +10,7 @@ LDFLAGS = `pkg-config --libs OGRE OIS` -lboost_filesystem -lboost_system
 
 CXXFLAGS += -DOGRE_PLUGINS_DIR=\"${OGRE_PLUGINS_DIR}\"
 
-CXXFLAGS_REL = -O2 -DNDEBUG
+CXXFLAGS_REL = -g -O2 -DNDEBUG
 CXXFLAGS_DBG = -g
 
 ifeq (y,$(PHYSICS_DEBUG))
@@ -71,7 +71,7 @@ install: dist/bin/poniesmustdie $(BLENDERZIP)
 	$(CP) dist/bin/poniesmustdie $(PREFIX)/bin/poniesmustdie
 	$(CP) $(BLENDERZIP) $(PREFIX)/share/pmd/models
 	$(CP) $(OTHER_MODELS) $(PREFIX)/share/pmd/models
-	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
+#	$(CP) $(GUI_FILES) $(PREFIX)/share/pmd/gui
 	$(CP) -r resources/levels/* $(PREFIX)/share/pmd/levels
 
 dist/bin/poniesmustdie: $(OBJS) Makefile

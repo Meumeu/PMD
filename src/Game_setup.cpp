@@ -31,7 +31,8 @@ Game::Game(void) :
 	_Keyboard(NULL),
 	_Heading(0),
 	_Pitch(0),
-	_EscPressed(false)
+	_EscPressed(false),
+	_DebugAI(false)
 {
 }
 
@@ -53,20 +54,16 @@ void Game::Enter(void)
 
 	setupBullet();
 
-#ifdef PHYSICS_DEBUG
-	_debugDrawer = new BtOgre::DebugDrawer(_SceneMgr->getRootSceneNode(), _World.get());
-	_World->setDebugDrawer(_debugDrawer);
-#endif
-
+	_dd = std::unique_ptr<DebugDrawer>(new DebugDrawer(_SceneMgr, 0.5));
+	_dd->setEnabled(true);
+	
 	go();
 }
 
 void Game::Exit(void)
 {
-#ifdef PHYSICS_DEBUG
-	delete _debugDrawer;
-#endif
-
+	_dd.reset();
+	
 	_Player = std::shared_ptr<CharacterController>();
 	_Enemies.clear();
 	_Env = std::shared_ptr<Environment>();
@@ -110,10 +107,14 @@ void Game::setupBullet(void)
 		&Game::StaticBulletCallback,
 		static_cast<void*>(this),
 		true);
+
+	_bulletDebug = std::unique_ptr<BulletDebug>(new BulletDebug(*_SceneMgr, *_World));
 }
 
 void Game::cleanupBullet(void)
 {
+	_bulletDebug.reset();
+	
 	_World = std::shared_ptr<btDynamicsWorld>();
 	_Dispatcher = std::shared_ptr<btCollisionDispatcher>();
 }
